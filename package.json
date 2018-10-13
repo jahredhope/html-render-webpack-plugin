@@ -1,0 +1,27 @@
+{
+  "name": "multi-static-render-webpack-plugin",
+  "description": "webpack plugin for rendering static HTML in a multi-config webpack build",
+  "author": "Jahred Hope <jahredhope@gmail.com>",
+  "version": "0.0.0-development",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "lint.eslint": "eslint .",
+    "lint.prettier": "prettier --list-different \"**/*.js\"",
+    "lint": "npm run lint.eslint && npm run lint.prettier",
+    "jest": "jest ./tests",
+    "test": "npm run lint && npm run jest",
+    "format": "prettier --write \"**/*.js\""
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.7.0",
+    "jest": "^23.6.0",
+    "prettier": "^1.14.3",
+    "webpack": "^4.20.2"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "eval": "^0.1.2"
+  }
+}
