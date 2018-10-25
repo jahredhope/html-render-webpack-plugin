@@ -6,6 +6,8 @@ This project is a work-in-progress and is not ready for use. Please use [Twitter
 
 # Setup
 
+**Note:** Requires Node v10.12 or greater.
+
 ```bash
 $ npm install webpack multi-static-render-webpack-plugin
 # OR
@@ -76,8 +78,8 @@ Here are some reasons I've needed to use two configurations:
 
 ##### Complex loaders
 
-One solution some projects use is use webpack only to generate the client assets. For the render they then use tools such as babel directly.
-This can become a complex when the project has webpack loaders that affect the behaviour of the code. This can result in differences between rendered HTML and client code.
+Some projects use webpack only to generate the client assets. For the render they then use tools such as babel directly.
+This can become a complex when the project has webpack loaders that affect the behaviour of the code such as [CSS Modules](https://github.com/css-modules/css-modules). This can result in differences between rendered HTML and client code.
 
 ##### Async chunks
 
@@ -98,6 +100,8 @@ For example, when using content hash based file names you need to render with th
 
 # Examples
 
+## Basic
+
 **build.js**
 
 ```js
@@ -110,7 +114,7 @@ const compiler = webpack(config);
 
 // Apply the plugin directly to the MultiCompiler
 compiler.apply(
-  new RenderStaticPlugin({
+  new MultiStaticRenderPlugin({
     renderDirectory: path.join(process.cwd(), "dist")
   })
 );
@@ -139,4 +143,149 @@ module.exports = [
     entry: { render: path.resolve('src', "render.js") },
   }),
 ]
+```
+
+## Example: Live reload
+
+**dev-server.js**
+
+```js
+const DevServer = require("webpack-dev-server");
+const getCompiler = require("./getCompiler");
+const compiler = getCompiler({ liveReload: true, mode: "development" });
+
+const server = new DevServer(compiler, {
+  compress: true
+});
+server.listen(8080, "localhost", function() {});
+```
+
+**getCompiler.js**
+
+```js
+const fs = require("fs");
+const path = require("path");
+const webpack = require("webpack");
+const getConfig = require("./webpack.config");
+const RenderStaticPlugin = require("multi-static-render-webpack-plugin");
+
+module.exports = function getCompiler({ liveReload, mode }) {
+  const compiler = webpack(getConfig({ liveReload, mode }));
+
+  const cwd = process.cwd();
+  const distDirectory = path.join(cwd, "dist");
+
+  const paths = ["", "b", "a", "c", "about", "home", "contact/us"];
+  compiler.apply(
+    new RenderStaticPlugin({
+      paths,
+      mapStatsToParams: ({ clientStats }) => {
+        const fileSystem = compiler.compilers[0].outputFileSystem.readFileSync
+          ? compiler.compilers[0].outputFileSystem
+          : fs;
+        return {
+          clientStats,
+          reactLoadableManifest: JSON.parse(
+            fileSystem.readFileSync(
+              path.join(clientStats.outputPath, "react-loadable-manifest.json"),
+              "utf8"
+            )
+          )
+        };
+      },
+      renderDirectory: distDirectory,
+      fs,
+      verbose: true
+    })
+  );
+
+  return compiler;
+};
+```
+
+**webpack.config.js**
+
+```js
+const webpack = require("webpack");
+const merge = require("webpack-merge");
+const path = require("path");
+const {
+  ReactLoadablePlugin
+} = require("@jahredhope/react-loadable-webpack-plugin");
+
+const cwd = process.cwd();
+const srcPath = path.resolve(cwd, "./src");
+const paths = {
+  renderEntry: path.resolve(srcPath, "render.js"),
+  clientEntry: path.resolve(srcPath, "client.js")
+};
+
+module.exports = ({ liveReload, mode }) => {
+  const domain = "http://localhost:8080";
+  const liveReloadEntry = `${require.resolve(
+    "webpack-dev-server/client/"
+  )}?${domain}`;
+
+  const common = {
+    mode,
+    output: {
+      publicPath: "/"
+    },
+    module: {
+      rules: [
+        {
+          test: /\.m?js$/,
+          exclude: /(node_modules)/,
+          use: {
+            loader: "babel-loader"
+          }
+        }
+      ]
+    }
+  };
+  const clientEntry = liveReload
+    ? [liveReloadEntry, paths.clientEntry]
+    : paths.clientEntry;
+  return [
+    merge(common, {
+      output: {
+        filename: "client-[name]-[contenthash].js"
+      },
+      optimization: {
+        runtimeChunk: {
+          name: "manifest"
+        },
+        splitChunks: {
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              name: "vendor",
+              chunks: "all"
+            }
+          }
+        }
+      },
+      name: "client",
+      target: "web",
+      entry: { client: clientEntry },
+      plugins: [
+        new ReactLoadablePlugin({
+          filename: "react-loadable-manifest.json"
+        }),
+        new webpack.HashedModuleIdsPlugin()
+      ]
+    }),
+    merge(common, {
+      output: {
+        libraryExport: "default",
+        library: "static",
+        libraryTarget: "umd2",
+        filename: "render-[name]-[contenthash].js"
+      },
+      name: "render",
+      target: "node",
+      entry: { render: paths.renderEntry }
+    })
+  ];
+};
 ```
