@@ -98,6 +98,41 @@ There are lots of other [great options for statically rendering your HTML](https
 However when rendering your HTML you may need access to information about all your assets.
 For example, when using content hash based file names you need to render with the node/render assets, but you need to know the names of the static assets generated.
 
+# Options
+
+## routes Array<object|string>
+
+**default:** [""]
+To render multiple pages pass a routes array. Each route will create a seperate `.html` file.
+A route can be a string showing the folder or file to render. `index.html` is automatically appended for paths.
+
+```js
+const routes = ["", "contact", "about"];
+```
+
+A route can be an object, containing a `route` parameter. Additional values will be passed to `mapStatsToParams`.
+
+```js
+const routes = [
+  {
+    route: "en-us/contact",
+    language: "en-us"
+  },
+  {
+    route: "en-us/about"
+    language: "en-us"
+  },
+  {
+    route: "en-au/contact"
+    language: "en-au"
+  },
+  {
+    route: "/en-au/about"
+    language: "en-au"
+  }
+];
+```
+
 # Examples
 
 ## Basic
@@ -130,7 +165,7 @@ module.exports = [
     output: {
       filename: "client-[name]-[contenthash].js",
     }
-    entry: { client: path.resolve('src', "client.js") }
+    entry: { client: path.resolve("src", "client.js") }
   },
   {
     name: "render",
@@ -140,7 +175,7 @@ module.exports = [
       libraryTarget: "umd2",
       filename: "render-[name]-[contenthash].js",
     },
-    entry: { render: path.resolve('src', "render.js") },
+    entry: { render: path.resolve("src", "render.js") },
   }),
 ]
 ```

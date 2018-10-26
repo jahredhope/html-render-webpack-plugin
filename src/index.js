@@ -14,7 +14,7 @@ module.exports = class MultiStaticRenderPlugin {
         chalk.red("🚨 MultiStaticRenderPlugin:"),
         ...args
       );
-    this.routes = opts.routes;
+    this.routes = opts.routes || [""];
     this.verbose = opts.verbose || false;
     this.mapStatsToFilesToRead = opts.files || returnEmptyObject;
     this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
