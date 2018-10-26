@@ -68,11 +68,10 @@ module.exports = async function renderHtml({
         )}. Unable to render page without a path`
       );
     }
-    const newFilePath = path.join(
-      renderDirectory,
-      routeData.route,
-      "index.html"
-    );
+    const includesFilePath = routeData.route.substr(-5) === ".html";
+    const newFilePath = includesFilePath
+      ? path.join(renderDirectory, routeData.route)
+      : path.join(renderDirectory, routeData.route, "index.html");
     const newFileDir = path.dirname(newFilePath);
     let renderResult;
     try {
