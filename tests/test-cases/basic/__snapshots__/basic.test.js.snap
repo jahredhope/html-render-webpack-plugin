@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Render HTML should render a HTML file 1`] = `
+Object {
+  "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"\\"
+    }
+  ]</code>
+</body>
+</html>",
+}
+`;
+
+exports[`Render HTML should render a file per route 1`] = `
+Object {
+  "error.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"error.html\\"
+    }
+  ]</code>
+</body>
+</html>",
+  "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"\\"
+    }
+  ]</code>
+</body>
+</html>",
+  "pageA": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"pageA\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "pageB": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"pageB\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+}
+`;
+
+exports[`Render HTML should render routes with extra information 1`] = `
+Object {
+  "development": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"development\\",
+      \\"language\\": \\"en-us\\",
+      \\"environment\\": \\"development\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "production": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"production\\",
+      \\"language\\": \\"en-us\\",
+      \\"environment\\": \\"production\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+}
+`;
