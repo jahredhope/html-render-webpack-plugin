@@ -50,16 +50,20 @@ module.exports = async function renderHtml({
   }
   async function render(routeValue) {
     const routeData =
-      typeof pathValue === "string" ? { route: routeValue } : routeValue;
+      typeof routeValue === "string" ? { route: routeValue } : routeValue;
     if (verbose) {
       log(`Starting render`, routeData);
     }
-    if (!routeData.path) {
-      throw new Error("Missing path. Unable to render page without a path");
+    if (typeof routeData.route !== "string") {
+      throw new Error(
+        `Missing route in ${JSON.stringify(
+          routeData
+        )}. Unable to render page without a path`
+      );
     }
     const newFilePath = path.join(
       renderDirectory,
-      routeData.path,
+      routeData.route,
       "index.html"
     );
     const newFileDir = path.dirname(newFilePath);
