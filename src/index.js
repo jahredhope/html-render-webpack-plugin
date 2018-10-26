@@ -14,7 +14,7 @@ module.exports = class MultiStaticRenderPlugin {
         chalk.red("🚨 MultiStaticRenderPlugin:"),
         ...args
       );
-    this.paths = opts.paths;
+    this.routes = opts.routes;
     this.verbose = opts.verbose || false;
     this.mapStatsToFilesToRead = opts.files || returnEmptyObject;
     this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
@@ -44,7 +44,7 @@ module.exports = class MultiStaticRenderPlugin {
     }
     try {
       await renderHtml({
-        paths: this.paths,
+        routes: this.routes,
         clientCompiler: this.clientCompiler,
         renderCompiler: this.renderCompiler,
         clientStats: clientStats.toJson(),

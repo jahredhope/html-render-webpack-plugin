@@ -3,7 +3,7 @@ const chalk = require("chalk");
 const createRenderer = require("./createRenderer");
 
 module.exports = async function renderHtml({
-  paths,
+  routes,
   compiler,
   clientCompiler,
   renderCompiler,
@@ -48,18 +48,27 @@ module.exports = async function renderHtml({
       })
     );
   }
-  async function render(url) {
+  async function render(routeValue) {
+    const routeData =
+      typeof pathValue === "string" ? { route: routeValue } : routeValue;
     if (verbose) {
-      log(`Starting render`, { url });
+      log(`Starting render`, routeData);
     }
-    const newFilePath = path.join(renderDirectory, url, "index.html");
+    if (!routeData.path) {
+      throw new Error("Missing path. Unable to render page without a path");
+    }
+    const newFilePath = path.join(
+      renderDirectory,
+      routeData.path,
+      "index.html"
+    );
     const newFileDir = path.dirname(newFilePath);
     let renderResult;
     try {
       renderResult = await renderFunc({
-        url,
+        ...routeData,
         ...mapStatsToParams({
-          url,
+          ...routeData,
           clientStats,
           renderStats
         })
@@ -85,5 +94,5 @@ module.exports = async function renderHtml({
     ensureDirectory(newFileDir);
     writeFile(newFilePath, renderResult);
   }
-  paths.forEach(render);
+  routes.forEach(render);
 };

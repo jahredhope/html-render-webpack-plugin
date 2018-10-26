@@ -175,10 +175,10 @@ module.exports = function getCompiler({ liveReload, mode }) {
   const cwd = process.cwd();
   const distDirectory = path.join(cwd, "dist");
 
-  const paths = ["", "b", "a", "c", "about", "home", "contact/us"];
+  const routes = ["", "b", "a", "c", "about", "home", "contact/us"];
   compiler.apply(
     new RenderStaticPlugin({
-      paths,
+      routes,
       mapStatsToParams: ({ clientStats }) => {
         const fileSystem = compiler.compilers[0].outputFileSystem.readFileSync
           ? compiler.compilers[0].outputFileSystem
@@ -215,7 +215,7 @@ const {
 
 const cwd = process.cwd();
 const srcPath = path.resolve(cwd, "./src");
-const paths = {
+const routes = {
   renderEntry: path.resolve(srcPath, "render.js"),
   clientEntry: path.resolve(srcPath, "client.js")
 };
@@ -244,8 +244,8 @@ module.exports = ({ liveReload, mode }) => {
     }
   };
   const clientEntry = liveReload
-    ? [liveReloadEntry, paths.clientEntry]
-    : paths.clientEntry;
+    ? [liveReloadEntry, routes.clientEntry]
+    : routes.clientEntry;
   return [
     merge(common, {
       output: {
@@ -284,7 +284,7 @@ module.exports = ({ liveReload, mode }) => {
       },
       name: "render",
       target: "node",
-      entry: { render: paths.renderEntry }
+      entry: { render: routes.renderEntry }
     })
   ];
 };
