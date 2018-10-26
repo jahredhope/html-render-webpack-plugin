@@ -35,15 +35,22 @@ module.exports = async function renderHtml({
   }
 
   function ensureDirectory(dir) {
-    return new Promise(resolve =>
-      clientCompiler.outputFileSystem.mkdirp(dir, () => {
+    return new Promise((resolve, reject) =>
+      clientCompiler.outputFileSystem.mkdirp(dir, error => {
+        if (error) {
+          reject(error);
+        }
         resolve();
       })
     );
   }
   function writeFile(dir, content) {
-    return new Promise(resolve =>
-      clientCompiler.outputFileSystem.writeFile(dir, content, () => {
+    return new Promise((resolve, reject) =>
+      clientCompiler.outputFileSystem.writeFile(dir, content, error => {
+        if (error) {
+          reject(error);
+        }
+
         resolve();
       })
     );
@@ -94,8 +101,8 @@ module.exports = async function renderHtml({
       );
     }
 
-    ensureDirectory(newFileDir);
-    writeFile(newFilePath, renderResult);
+    await ensureDirectory(newFileDir);
+    await writeFile(newFilePath, renderResult);
   }
-  routes.forEach(render);
+  return Promise.all(routes.map(render));
 };
