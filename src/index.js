@@ -21,23 +21,44 @@ module.exports = class MultiStaticRenderPlugin {
     this.renderDirectory = opts.renderDirectory;
     this.fs = opts.fs || require("fs");
     this.onDone = this.onDone.bind(this);
+    this.clientDone = this.clientDone.bind(this);
+    this.renderDone = this.renderDone.bind(this);
   }
-  async onDone(multiStats) {
+
+  async clientDone(clientStats) {
+    this.clientStats = clientStats;
+
+    if (this.renderStats) {
+      await this.onDone();
+      return;
+    }
+
+    return Promise.resolve();
+  }
+
+  async renderDone(renderStats) {
+    this.renderStats = renderStats;
+
+    if (this.clientStats) {
+      await this.onDone();
+      return;
+    }
+
+    return Promise.resolve();
+  }
+
+  async onDone() {
     if (this.verbose) {
       this.log(`Recieved stats`);
     }
-    const clientStats = multiStats.stats.find(
-      stat => stat.compilation.name === "client"
-    );
-    if (!clientStats) {
+
+    if (!this.clientStats) {
       throw new Error(
         `Unable to find client compilation. Ensure a config exists with name 'client'.`
       );
     }
-    const renderStats = multiStats.stats.find(
-      stat => stat.compilation.name === "render"
-    );
-    if (!renderStats) {
+
+    if (!this.renderStats) {
       throw new Error(
         `Unable to find render compilation. Ensure a config exists with name 'render'.`
       );
@@ -47,8 +68,8 @@ module.exports = class MultiStaticRenderPlugin {
         routes: this.routes,
         clientCompiler: this.clientCompiler,
         renderCompiler: this.renderCompiler,
-        clientStats: clientStats.toJson(),
-        renderStats: renderStats.toJson(),
+        clientStats: this.clientStats.toJson(),
+        renderStats: this.renderStats.toJson(),
         renderDirectory: this.renderDirectory,
         fs: this.fs,
         getCompiler: this.getCompiler,
@@ -79,6 +100,7 @@ module.exports = class MultiStaticRenderPlugin {
     }
     const hookOptions = { name: "MultiStaticRenderPlugin" };
 
-    compiler.hooks.done.tap(hookOptions, this.onDone);
+    this.clientCompiler.hooks.done.tapPromise(hookOptions, this.clientDone);
+    this.renderCompiler.hooks.done.tapPromise(hookOptions, this.renderDone);
   }
 };

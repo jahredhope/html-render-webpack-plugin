@@ -90,8 +90,8 @@ module.exports = async function renderHtml({
         )}. See below error.`
       );
       console.error(error);
-      ensureDirectory(newFileDir);
-      writeFile(newFilePath, error.toString());
+      await ensureDirectory(newFileDir);
+      await writeFile(newFilePath, error.toString());
       return;
     }
 
@@ -104,5 +104,7 @@ module.exports = async function renderHtml({
     await ensureDirectory(newFileDir);
     await writeFile(newFilePath, renderResult);
   }
-  return Promise.all(routes.map(render));
+
+  await Promise.all(routes.map(render));
+  return;
 };

@@ -8,7 +8,7 @@ const getDirContentsSync = require("../../utils/getDirContentsSync");
 describe("Render HTML", () => {
   const renderDirectory = "/renderDist";
 
-  it("should render a HTML file", async done => {
+  it("should render a HTML file", done => {
     const compiler = webpack(config);
 
     const memoryFs = new MemoryFS();
@@ -21,14 +21,12 @@ describe("Render HTML", () => {
     );
 
     compiler.run(() => {
-      setTimeout(() => {
-        const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-        expect(contents).toMatchSnapshot();
-        done();
-      }, 2000);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+      done();
     });
   });
-  it("should render a file per route", async done => {
+  it("should render a file per route", done => {
     const compiler = webpack(config);
 
     const memoryFs = new MemoryFS();
@@ -42,14 +40,12 @@ describe("Render HTML", () => {
     );
 
     compiler.run(() => {
-      setTimeout(() => {
-        const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-        expect(contents).toMatchSnapshot();
-        done();
-      }, 2000);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+      done();
     });
   });
-  it("should render routes with extra information", async done => {
+  it("should render routes with extra information", done => {
     const compiler = webpack(config);
 
     const memoryFs = new MemoryFS();
@@ -70,11 +66,9 @@ describe("Render HTML", () => {
     );
 
     compiler.run(() => {
-      setTimeout(() => {
-        const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-        expect(contents).toMatchSnapshot();
-        done();
-      }, 2000);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+      done();
     });
   });
 });
