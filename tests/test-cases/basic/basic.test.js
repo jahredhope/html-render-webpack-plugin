@@ -1,12 +1,13 @@
 const MemoryFS = require("memory-fs");
 const webpack = require("webpack");
+const path = require("path");
 
 const config = require("./webpack.config");
 const MultiStaticRenderPlugin = require("../../../src");
 const getDirContentsSync = require("../../utils/getDirContentsSync");
 
 describe("Render HTML", () => {
-  const renderDirectory = "/renderDist";
+  const renderDirectory = path.join(process.cwd(), "dist", "render");
 
   it("should render a HTML file", async done => {
     const compiler = webpack(config);
@@ -14,18 +15,12 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.apply(
-      new MultiStaticRenderPlugin({
-        renderDirectory
-      })
-    );
+    compiler.apply(new MultiStaticRenderPlugin({ renderDirectory: "render" }));
 
     compiler.run(() => {
-      setTimeout(() => {
-        const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-        expect(contents).toMatchSnapshot();
-        done();
-      }, 2000);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+      done();
     });
   });
   it("should render a file per route", async done => {
@@ -37,16 +32,14 @@ describe("Render HTML", () => {
     compiler.apply(
       new MultiStaticRenderPlugin({
         routes: ["", "pageA", "pageB", "error.html"],
-        renderDirectory
+        renderDirectory: "render"
       })
     );
 
     compiler.run(() => {
-      setTimeout(() => {
-        const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-        expect(contents).toMatchSnapshot();
-        done();
-      }, 2000);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+      done();
     });
   });
   it("should render routes with extra information", async done => {
@@ -65,16 +58,14 @@ describe("Render HTML", () => {
             environment: "development"
           }
         ],
-        renderDirectory
+        renderDirectory: "render"
       })
     );
 
     compiler.run(() => {
-      setTimeout(() => {
-        const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-        expect(contents).toMatchSnapshot();
-        done();
-      }, 2000);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+      done();
     });
   });
 });

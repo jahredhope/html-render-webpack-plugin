@@ -28,6 +28,7 @@ module.exports = [
     name: "render",
     target: "node"
     // Creates assets that render HTML that runs well in node
+    dependencies: ["client"], // Requires client files to be ready before render
   }
 ];
 ```
@@ -168,6 +169,7 @@ module.exports = [
     entry: { client: path.resolve("src", "client.js") }
   },
   {
+    dependencies: ["client"],
     name: "render",
     target: "node",
     output: {
@@ -311,6 +313,7 @@ module.exports = ({ liveReload, mode }) => {
       ]
     }),
     merge(common, {
+      dependencies: ["client"],
       output: {
         libraryExport: "default",
         library: "static",

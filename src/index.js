@@ -14,44 +14,28 @@ module.exports = class MultiStaticRenderPlugin {
         chalk.red("🚨 MultiStaticRenderPlugin:"),
         ...args
       );
+    this.renderEntry = opts.renderEntry || "render";
     this.routes = opts.routes || [""];
     this.verbose = opts.verbose || false;
-    this.mapStatsToFilesToRead = opts.files || returnEmptyObject;
     this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
-    this.renderDirectory = opts.renderDirectory;
-    this.fs = opts.fs || require("fs");
+    this.renderDirectory = opts.renderDirectory || "";
     this.onDone = this.onDone.bind(this);
   }
-  async onDone(multiStats) {
+  async onDone(renderCompilation) {
+    const renderStats = renderCompilation.getStats();
     if (this.verbose) {
-      this.log(`Recieved stats`);
+      this.log(`Recieved render compilation`);
     }
-    const clientStats = multiStats.stats.find(
-      stat => stat.compilation.name === "client"
-    );
-    if (!clientStats) {
-      throw new Error(
-        `Unable to find client compilation. Ensure a config exists with name 'client'.`
-      );
-    }
-    const renderStats = multiStats.stats.find(
-      stat => stat.compilation.name === "render"
-    );
-    if (!renderStats) {
-      throw new Error(
-        `Unable to find render compilation. Ensure a config exists with name 'render'.`
-      );
-    }
+    const clientStats = this.clientStats;
+
     try {
       await renderHtml({
         routes: this.routes,
-        clientCompiler: this.clientCompiler,
-        renderCompiler: this.renderCompiler,
+        renderCompilation,
         clientStats: clientStats.toJson(),
         renderStats: renderStats.toJson(),
         renderDirectory: this.renderDirectory,
-        fs: this.fs,
-        getCompiler: this.getCompiler,
+        renderEntry: this.renderEntry,
         mapStatsToParams: this.mapStatsToParams,
         verbose: this.verbose,
         log: this.log
@@ -79,6 +63,12 @@ module.exports = class MultiStaticRenderPlugin {
     }
     const hookOptions = { name: "MultiStaticRenderPlugin" };
 
-    compiler.hooks.done.tap(hookOptions, this.onDone);
+    this.clientCompiler.hooks.emit.tap(hookOptions, compilation => {
+      if (this.verbose) {
+        this.log(`Recieved clientStats`);
+      }
+      this.clientStats = compilation.getStats();
+    });
+    this.renderCompiler.hooks.emit.tapPromise(hookOptions, this.onDone);
   }
 };
