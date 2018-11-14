@@ -1,4 +1,4 @@
-# multi-static-render-webpack-plugin
+# html-render-webpack-plugin
 
 webpack plugin for rendering static HTML in a multi-config webpack build
 
@@ -9,9 +9,9 @@ This project is a work-in-progress and is not ready for use. Please use [Twitter
 **Note:** Requires Node v10.12 or greater.
 
 ```bash
-$ npm install webpack multi-static-render-webpack-plugin
+$ npm install webpack html-render-webpack-plugin
 # OR
-$ yarn add webpack multi-static-render-webpack-plugin
+$ yarn add webpack html-render-webpack-plugin
 ```
 
 Export [multiple webpack configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations).
@@ -44,10 +44,10 @@ const multiCompiler = webpack(config);
 Apply the plugin to your compiler.
 
 ```js
-const MultiStaticRenderPlugin = require("multi-static-render-webpack-plugin");
+const HtmlRenderPlugin = require("html-render-webpack-plugin");
 
 multiCompiler.apply(
-  new MultiStaticRenderPlugin({
+  new HtmlRenderPlugin({
     renderDirectory: path.join(process.cwd(), "dist")
   })
 );
@@ -144,13 +144,13 @@ const routes = [
 const path = require("path");
 const webpack = require("webpack");
 const config = require("./webpack.config");
-const MultiStaticRenderPlugin = require("multi-static-render-webpack-plugin");
+const HtmlRenderPlugin = require("html-render-webpack-plugin");
 
 const compiler = webpack(config);
 
 // Apply the plugin directly to the MultiCompiler
 compiler.apply(
-  new MultiStaticRenderPlugin({
+  new HtmlRenderPlugin({
     renderDirectory: path.join(process.cwd(), "dist")
   })
 );
@@ -204,7 +204,7 @@ const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
 const getConfig = require("./webpack.config");
-const RenderStaticPlugin = require("multi-static-render-webpack-plugin");
+const RenderStaticPlugin = require("html-render-webpack-plugin");
 
 module.exports = function getCompiler({ liveReload, mode }) {
   const compiler = webpack(getConfig({ liveReload, mode }));

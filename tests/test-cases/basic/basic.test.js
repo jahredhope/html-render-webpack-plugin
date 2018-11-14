@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const path = require("path");
 
 const config = require("./webpack.config");
-const MultiStaticRenderPlugin = require("../../../src");
+const HtmlRenderPlugin = require("../../../src");
 const getDirContentsSync = require("../../utils/getDirContentsSync");
 
 describe("Render HTML", () => {
@@ -15,7 +15,7 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.apply(new MultiStaticRenderPlugin({ renderDirectory }));
+    compiler.apply(new HtmlRenderPlugin({ renderDirectory }));
 
     compiler.run(() => {
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
@@ -30,7 +30,7 @@ describe("Render HTML", () => {
     compiler.outputFileSystem = memoryFs;
 
     compiler.apply(
-      new MultiStaticRenderPlugin({
+      new HtmlRenderPlugin({
         routes: ["", "pageA", "pageB", "error.html"],
         renderDirectory
       })
@@ -49,7 +49,7 @@ describe("Render HTML", () => {
     compiler.outputFileSystem = memoryFs;
 
     compiler.apply(
-      new MultiStaticRenderPlugin({
+      new HtmlRenderPlugin({
         routes: [
           { route: "production", language: "en-us", environment: "production" },
           {

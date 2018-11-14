@@ -3,25 +3,19 @@ const chalk = require("chalk");
 const path = require("path");
 
 const returnEmptyObject = () => ({});
-module.exports = class MultiStaticRenderPlugin {
+module.exports = class HtmlRenderPlugin {
   constructor(opts) {
     this.log = (...args) =>
-      (opts.log || console.log)(
-        chalk.blue("MultiStaticRenderPlugin:"),
-        ...args
-      );
+      (opts.log || console.log)(chalk.blue("HtmlRenderPlugin:"), ...args);
     this.logError = (...args) =>
-      (opts.log || console.log)(
-        chalk.red("🚨 MultiStaticRenderPlugin:"),
-        ...args
-      );
+      (opts.log || console.log)(chalk.red("🚨 HtmlRenderPlugin:"), ...args);
     this.renderEntry = opts.renderEntry || "render";
     this.routes = opts.routes || [""];
     this.verbose = opts.verbose || false;
     this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
     this.renderDirectory = opts.renderDirectory || "";
     if (!path.isAbsolute(opts.renderDirectory)) {
-      const errorMessage = `Unable to create MultiStaticRenderPlugin. renderDirectory must be an absolute path. Recieved: ${
+      const errorMessage = `Unable to create HtmlRenderPlugin. renderDirectory must be an absolute path. Recieved: ${
         opts.renderDirectory
       }`;
       this.logError(errorMessage);
@@ -71,7 +65,7 @@ module.exports = class MultiStaticRenderPlugin {
       this.logError(errorMessage);
       throw new Error(errorMessage);
     }
-    const hookOptions = { name: "MultiStaticRenderPlugin" };
+    const hookOptions = { name: "HtmlRenderPlugin" };
 
     // this.renderCompiler.hooks.beforeRun.tapPromise(hookOptions, compiler => {});
     // this.clientCompiler.hooks.beforeRun.tapPromise(hookOptions, compiler => {});

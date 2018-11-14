@@ -1,5 +1,5 @@
 {
-  "name": "multi-static-render-webpack-plugin",
+  "name": "html-render-webpack-plugin",
   "description": "webpack plugin for rendering static HTML in a multi-config webpack build",
   "author": "Jahred Hope <jahredhope@gmail.com>",
   "version": "0.0.0-development",
