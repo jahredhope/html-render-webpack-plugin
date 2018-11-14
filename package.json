@@ -10,7 +10,7 @@
     "lint.eslint": "eslint .",
     "lint.prettier": "prettier --list-different \"**/*.js\"",
     "lint": "npm run lint.eslint && npm run lint.prettier",
-    "jest": "jest ./tests",
+    "jest": "jest",
     "test": "npm run lint && npm run jest",
     "format": "prettier --write \"**/*.js\""
   },
@@ -18,10 +18,10 @@
     "babel-eslint": "^10.0.1",
     "commitizen": "^3.0.4",
     "cz-conventional-changelog": "^2.1.0",
-    "eslint": "^5.7.0",
+    "eslint": "^5.9.0",
     "jest": "^23.6.0",
-    "prettier": "^1.14.3",
-    "webpack": "^4.20.2"
+    "prettier": "^1.15.2",
+    "webpack": "^4.25.1"
   },
   "dependencies": {
     "chalk": "^2.4.1",

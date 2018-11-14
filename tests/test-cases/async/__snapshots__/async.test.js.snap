@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Render asyncronously should render a HTML once resolved 1`] = `
+Object {
+  "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"\\"
+    }
+  ]</code>
+</body>
+</html>",
+}
+`;

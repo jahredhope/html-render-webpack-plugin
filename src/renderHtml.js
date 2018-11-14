@@ -4,26 +4,31 @@ const createRenderer = require("./createRenderer");
 
 module.exports = async function renderHtml({
   routes,
-  compiler,
-  clientCompiler,
-  renderCompiler,
+  renderEntry,
+  renderDirectory,
   renderStats,
   clientStats,
-  renderDirectory,
+  renderCompiler,
+  renderCompilation,
   mapStatsToParams,
   verbose,
   log
 }) {
-  const renderFile = renderStats.assetsByChunkName.render;
+  const renderFile = renderStats.assetsByChunkName[renderEntry];
   if (verbose) {
     log("Render file:", { renderFile });
   }
+  if (!renderFile) {
+    throw new Error(
+      `Unable to find renderEntry ${renderEntry} in assets ${Object.keys(
+        renderStats.assetsByChunkName
+      )}.`
+    );
+  }
 
   const renderFunc = createRenderer({
-    compiler,
-    outputFileSystem: renderCompiler.outputFileSystem,
-    inputFileSystem: renderCompiler.inputFileSystem,
-    fileName: path.join(renderStats.outputPath, renderFile)
+    renderCompilation,
+    fileName: renderFile
   });
   if (typeof renderFunc !== "function") {
     throw new Error(
@@ -31,22 +36,20 @@ module.exports = async function renderHtml({
     );
   }
   if (verbose) {
-    log(`Renderer craeted`);
+    log(`Renderer created`);
   }
 
-  function ensureDirectory(dir) {
-    return new Promise((resolve, reject) =>
-      clientCompiler.outputFileSystem.mkdirp(dir, error => {
+  async function emitFile(dir, content) {
+    await new Promise((resolve, reject) =>
+      renderCompiler.outputFileSystem.mkdirp(path.dirname(dir), error => {
         if (error) {
           reject(error);
         }
         resolve();
       })
     );
-  }
-  function writeFile(dir, content) {
     return new Promise((resolve, reject) =>
-      clientCompiler.outputFileSystem.writeFile(dir, content, error => {
+      renderCompiler.outputFileSystem.writeFile(dir, content, error => {
         if (error) {
           reject(error);
         }
@@ -55,6 +58,7 @@ module.exports = async function renderHtml({
       })
     );
   }
+
   async function render(routeValue) {
     const routeData =
       typeof routeValue === "string" ? { route: routeValue } : routeValue;
@@ -72,7 +76,6 @@ module.exports = async function renderHtml({
     const newFilePath = includesFilePath
       ? path.join(renderDirectory, routeData.route)
       : path.join(renderDirectory, routeData.route, "index.html");
-    const newFileDir = path.dirname(newFilePath);
     let renderResult;
     try {
       renderResult = await renderFunc({
@@ -90,8 +93,7 @@ module.exports = async function renderHtml({
         )}. See below error.`
       );
       console.error(error);
-      ensureDirectory(newFileDir);
-      writeFile(newFilePath, error.toString());
+      await emitFile(newFilePath, error.toString());
       return;
     }
 
@@ -101,8 +103,10 @@ module.exports = async function renderHtml({
       );
     }
 
-    await ensureDirectory(newFileDir);
-    await writeFile(newFilePath, renderResult);
+    await emitFile(newFilePath, renderResult);
+    if (verbose) {
+      log(`Successfully created asset ${newFilePath}`);
+    }
   }
   return Promise.all(routes.map(render));
 };

@@ -1,5 +1,6 @@
 const renderHtml = require("./renderHtml");
 const chalk = require("chalk");
+const path = require("path");
 
 const returnEmptyObject = () => ({});
 module.exports = class MultiStaticRenderPlugin {
@@ -14,44 +15,37 @@ module.exports = class MultiStaticRenderPlugin {
         chalk.red("🚨 MultiStaticRenderPlugin:"),
         ...args
       );
+    this.renderEntry = opts.renderEntry || "render";
     this.routes = opts.routes || [""];
     this.verbose = opts.verbose || false;
-    this.mapStatsToFilesToRead = opts.files || returnEmptyObject;
     this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
-    this.renderDirectory = opts.renderDirectory;
-    this.fs = opts.fs || require("fs");
-    this.onDone = this.onDone.bind(this);
+    this.renderDirectory = opts.renderDirectory || "";
+    if (!path.isAbsolute(opts.renderDirectory)) {
+      const errorMessage = `Unable to create MultiStaticRenderPlugin. renderDirectory must be an absolute path. Recieved: ${
+        opts.renderDirectory
+      }`;
+      this.logError(errorMessage);
+      throw errorMessage;
+    }
+    this.onRender = this.onRender.bind(this);
   }
-  async onDone(multiStats) {
+  async onRender() {
     if (this.verbose) {
-      this.log(`Recieved stats`);
+      this.log(`Recieved render compilation`);
     }
-    const clientStats = multiStats.stats.find(
-      stat => stat.compilation.name === "client"
-    );
-    if (!clientStats) {
-      throw new Error(
-        `Unable to find client compilation. Ensure a config exists with name 'client'.`
-      );
-    }
-    const renderStats = multiStats.stats.find(
-      stat => stat.compilation.name === "render"
-    );
-    if (!renderStats) {
-      throw new Error(
-        `Unable to find render compilation. Ensure a config exists with name 'render'.`
-      );
-    }
+
+    const renderStats = this.renderCompilation.getStats();
+    const clientStats = this.clientCompilation.getStats();
+
     try {
       await renderHtml({
         routes: this.routes,
-        clientCompiler: this.clientCompiler,
-        renderCompiler: this.renderCompiler,
+        renderCompilation: this.renderCompilation,
         clientStats: clientStats.toJson(),
         renderStats: renderStats.toJson(),
+        renderCompiler: this.renderCompiler,
         renderDirectory: this.renderDirectory,
-        fs: this.fs,
-        getCompiler: this.getCompiler,
+        renderEntry: this.renderEntry,
         mapStatsToParams: this.mapStatsToParams,
         verbose: this.verbose,
         log: this.log
@@ -79,6 +73,41 @@ module.exports = class MultiStaticRenderPlugin {
     }
     const hookOptions = { name: "MultiStaticRenderPlugin" };
 
-    compiler.hooks.done.tap(hookOptions, this.onDone);
+    // this.renderCompiler.hooks.beforeRun.tapPromise(hookOptions, compiler => {});
+    // this.clientCompiler.hooks.beforeRun.tapPromise(hookOptions, compiler => {});
+    // this.renderCompiler.hooks.afterEmit.watchRun(hookOptions, compiler => {});
+    // this.clientCompiler.hooks.afterEmit.watchRun(hookOptions, compiler => {});
+    this.renderCompiler.hooks.afterEmit.tapPromise(
+      hookOptions,
+      async compilation => {
+        if (this.verbose) {
+          this.log("Render compiler emit assets");
+        }
+        this.renderCompilation = compilation;
+        if (!this.clientCompilation || this.clientCompiler.running) {
+          if (this.verbose) {
+            this.log("Render assets emited. Waiting for client.");
+          }
+          return;
+        }
+        return this.onRender();
+      }
+    );
+    this.clientCompiler.hooks.afterEmit.tapPromise(
+      hookOptions,
+      async compilation => {
+        if (this.verbose) {
+          this.log("Client compiler emit assets");
+        }
+        this.clientCompilation = compilation;
+        if (!this.renderCompilation || this.renderCompiler.running) {
+          if (this.verbose) {
+            this.log("Client assets emited. Waiting for render.");
+          }
+          return;
+        }
+        return this.onRender();
+      }
+    );
   }
 };
