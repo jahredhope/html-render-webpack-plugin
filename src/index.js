@@ -5,6 +5,8 @@ const path = require("path");
 const returnEmptyObject = () => ({});
 module.exports = class HtmlRenderPlugin {
   constructor(opts) {
+    this.clientBuilding = false;
+    this.renderBuilding = false;
     this.log = (...args) =>
       (opts.log || console.log)(chalk.blue("HtmlRenderPlugin:"), ...args);
     this.logError = (...args) =>
@@ -67,18 +69,34 @@ module.exports = class HtmlRenderPlugin {
     }
     const hookOptions = { name: "HtmlRenderPlugin" };
 
-    // this.renderCompiler.hooks.beforeRun.tapPromise(hookOptions, compiler => {});
-    // this.clientCompiler.hooks.beforeRun.tapPromise(hookOptions, compiler => {});
-    // this.renderCompiler.hooks.afterEmit.watchRun(hookOptions, compiler => {});
-    // this.clientCompiler.hooks.afterEmit.watchRun(hookOptions, compiler => {});
+    const startClient = () => {
+      this.clientBuilding = true;
+    };
+    const startRender = () => {
+      this.renderBuilding = true;
+    };
+    const endClient = () => {
+      this.clientBuilding = false;
+    };
+    const endRender = () => {
+      this.renderBuilding = false;
+    };
+    this.clientCompiler.hooks.run.tap(hookOptions, startClient);
+    this.renderCompiler.hooks.run.tap(hookOptions, startRender);
+    this.clientCompiler.hooks.watchRun.tap(hookOptions, startClient);
+    this.renderCompiler.hooks.watchRun.tap(hookOptions, startRender);
+    this.clientCompiler.hooks.emit.tap(hookOptions, endClient);
+    this.renderCompiler.hooks.emit.tap(hookOptions, endRender);
+
     this.renderCompiler.hooks.afterEmit.tapPromise(
       hookOptions,
       async compilation => {
+        endRender();
         if (this.verbose) {
           this.log("Render compiler emit assets");
         }
         this.renderCompilation = compilation;
-        if (!this.clientCompilation || this.clientCompiler.running) {
+        if (!this.clientCompilation || this.clientBuilding) {
           if (this.verbose) {
             this.log("Render assets emited. Waiting for client.");
           }
@@ -90,11 +108,12 @@ module.exports = class HtmlRenderPlugin {
     this.clientCompiler.hooks.afterEmit.tapPromise(
       hookOptions,
       async compilation => {
+        endClient();
         if (this.verbose) {
           this.log("Client compiler emit assets");
         }
         this.clientCompilation = compilation;
-        if (!this.renderCompilation || this.renderCompiler.running) {
+        if (!this.renderCompilation || this.renderBuilding) {
           if (this.verbose) {
             this.log("Client assets emited. Waiting for render.");
           }
