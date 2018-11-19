@@ -3,6 +3,8 @@ const chalk = require("chalk");
 const path = require("path");
 
 const returnEmptyObject = () => ({});
+const defaultTransformFilePath = ({ route }) => route;
+
 module.exports = class HtmlRenderPlugin {
   constructor(opts) {
     this.clientBuilding = false;
@@ -14,6 +16,7 @@ module.exports = class HtmlRenderPlugin {
     this.renderEntry = opts.renderEntry || "render";
     this.routes = opts.routes || [""];
     this.verbose = opts.verbose || false;
+    this.transformFilePath = opts.transformFilePath || defaultTransformFilePath;
     this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
     this.renderDirectory = opts.renderDirectory || "";
     if (!path.isAbsolute(opts.renderDirectory)) {
@@ -39,6 +42,7 @@ module.exports = class HtmlRenderPlugin {
         renderCompilation: this.renderCompilation,
         clientStats: clientStats.toJson(),
         renderStats: renderStats.toJson(),
+        transformFilePath: this.transformFilePath,
         renderCompiler: this.renderCompiler,
         renderDirectory: this.renderDirectory,
         renderEntry: this.renderEntry,

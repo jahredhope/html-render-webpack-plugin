@@ -1,5 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Render HTML should allow custom file paths 1`] = `
+Object {
+  "development": Object {
+    "en-au": Object {
+      "about": Object {
+        "us": Object {
+          "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"about/us\\",
+      \\"language\\": \\"en-au\\",
+      \\"environment\\": \\"development\\"
+    }
+  ]</code>
+</body>
+</html>",
+        },
+      },
+    },
+  },
+  "production": Object {
+    "en-us": Object {
+      "about": Object {
+        "us": Object {
+          "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"about/us\\",
+      \\"language\\": \\"en-us\\",
+      \\"environment\\": \\"production\\"
+    }
+  ]</code>
+</body>
+</html>",
+        },
+      },
+    },
+  },
+}
+`;
+
 exports[`Render HTML should render a HTML file 1`] = `
 Object {
   "index.html": "<html>

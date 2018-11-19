@@ -11,6 +11,7 @@ module.exports = async function renderHtml({
   renderCompiler,
   renderCompilation,
   mapStatsToParams,
+  transformFilePath,
   verbose,
   log
 }) {
@@ -72,10 +73,12 @@ module.exports = async function renderHtml({
         )}. Unable to render page without a path`
       );
     }
-    const includesFilePath = routeData.route.substr(-5) === ".html";
-    const newFilePath = includesFilePath
-      ? path.join(renderDirectory, routeData.route)
-      : path.join(renderDirectory, routeData.route, "index.html");
+    const relativeFilePath = transformFilePath(routeData);
+    const includesHtmlInFilePath = relativeFilePath.substr(-5) === ".html";
+    const newFilePath = includesHtmlInFilePath
+      ? path.join(renderDirectory, relativeFilePath)
+      : path.join(renderDirectory, relativeFilePath, "index.html");
+
     let renderResult;
     try {
       renderResult = await renderFunc({

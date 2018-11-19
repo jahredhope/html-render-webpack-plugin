@@ -68,4 +68,46 @@ describe("Render HTML", () => {
       done();
     });
   });
+  it("should allow custom file paths", async done => {
+    const compiler = webpack(config);
+
+    const memoryFs = new MemoryFS();
+    compiler.outputFileSystem = memoryFs;
+
+    compiler.apply(
+      new HtmlRenderPlugin({
+        transformFilePath: ({ route, language, environment }) =>
+          `/${environment}/${language}/${route}`,
+        routes: [
+          { route: "about/us", language: "en-us", environment: "production" },
+          {
+            route: "about/us",
+            language: "en-au",
+            environment: "development"
+          }
+        ],
+        renderDirectory
+      })
+    );
+
+    compiler.run(() => {
+      expect(
+        memoryFs.existsSync(
+          path.join(renderDirectory, "/production/en-us/about/us/index.html")
+        )
+      ).toBe(true);
+      expect(
+        memoryFs.existsSync(
+          path.join(renderDirectory, "/development/en-au/about/us/index.html")
+        )
+      ).toBe(true);
+      expect(
+        memoryFs.existsSync(path.join(renderDirectory, "/about/us/index.html"))
+      ).toBe(false);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+
+      done();
+    });
+  });
 });

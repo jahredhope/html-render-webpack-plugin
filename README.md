@@ -2,8 +2,6 @@
 
 webpack plugin for rendering static HTML in a multi-config webpack build
 
-This project is a work-in-progress and is not ready for use. Please use [Twitter](https://twitter.com/jahredhope) for early feedback.
-
 # Setup
 
 **Note:** Requires Node v10.12 or greater.
@@ -133,6 +131,30 @@ const routes = [
   }
 ];
 ```
+
+## transformFilePath
+
+By default a file will be created using the `route` value.
+For example the value `{route: '/about/us'}` would create **about/us/index.html**
+
+If you want to use a different file path you can provide a `transformFilePath` function.
+
+```js
+new HtmlRenderPlugin({
+  ...
+  transformFilePath: ({route, environment}) => `${environment}/${route}`
+  routes: [
+    { route: '/about/us', language: 'en-us' },
+    { route: '/about/us', language: 'en-au' }
+  ]
+});
+```
+
+In this example, the resulting files will be
+
+- **en-us/about/us/index.html**
+
+- **en-au/about/us/index.html**
 
 # Examples
 
