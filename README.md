@@ -142,7 +142,7 @@ If you want to use a different file path you can provide a `transformFilePath` f
 ```js
 new HtmlRenderPlugin({
   ...
-  transformFilePath: ({route, environment}) => `${environment}/${route}`
+  transformFilePath: ({ route, language }) => `${language}/${route}`
   routes: [
     { route: '/about/us', language: 'en-us' },
     { route: '/about/us', language: 'en-au' }
