@@ -12,7 +12,12 @@
     "lint": "npm run lint.eslint && npm run lint.prettier",
     "jest": "jest",
     "test": "npm run lint && npm run jest",
-    "format": "prettier --write \"**/*.js\""
+    "format": "prettier --write \"**/*.js\"",
+    "release": "semantic-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jahredhope/html-render-webpack-plugin.git"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
@@ -25,7 +30,8 @@
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "eval": "^0.1.2"
+    "eval": "^0.1.2",
+    "semantic-release": "^15.12.1"
   },
   "config": {
     "commitizen": {
