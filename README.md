@@ -1,10 +1,41 @@
 # html-render-webpack-plugin
 
-webpack plugin for rendering static HTML in a multi-config webpack build
+webpack plugin for rendering static HTML in a multi-config webpack build.
+
+`html-render-webpack-plugin` is applied to a webpack [MultiCompiler](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations) to enable rendering based on all resulting webpack outputs.
+
+The render build's code is used to generate the HTML, often using values from other builds such as asset names.
+
+For example, you may wish to add a script tag where the name includes a hash:
+**src/render.js**
+
+```js
+export default ({ assetsByChunkName }) => {
+  return `<html>
+<body>
+  <script src="${assetsByChunkName.main}"></script>
+</body>
+</html>`;
+};
+```
+
+**dist/index.html**
+
+```html
+<html>
+<body>
+  <script src="/main-daf2166db871ad045ea4.js"></script>
+</body>
+</html>
+```
+
+See [the full example below](#example-client-assets).
 
 # Setup
 
 **Note:** Requires Node v10.12 or greater.
+
+Install the plugin.
 
 ```bash
 $ npm install webpack html-render-webpack-plugin
@@ -18,15 +49,12 @@ Export [multiple webpack configurations](https://webpack.js.org/configuration/co
 // webpack.config.js
 module.exports = [
   {
-    name: "client",
-    target: "web"
-    // Creates files that run on the browser
+    name: "render",
+    target: "node" // Creates assets that render HTML that runs well in node
   },
   {
-    name: "render",
-    target: "node"
-    // Creates assets that render HTML that runs well in node
-    dependencies: ["client"], // Requires client files to be ready before render
+    name: "client",
+    target: "web" // Creates files that run on the browser
   }
 ];
 ```
@@ -70,46 +98,20 @@ server.listen(8080, "localhost", () => {});
 
 See [examples](#examples) for more details.
 
-## Why two configurations? It's all just JavaScript
-
-For some builds you may be able to avoid needing two configurations. If that is the case you don't need this tool and can avoid the complexity.
-Here are some reasons I've needed to use two configurations:
-
-##### Complex loaders
-
-Some projects use webpack only to generate the client assets. For the render they then use tools such as babel directly.
-This can become a complex when the project has webpack loaders that affect the behaviour of the code such as [CSS Modules](https://github.com/css-modules/css-modules). This can result in differences between rendered HTML and client code.
-
-##### Async chunks
-
-webpack's `target` field helps webpack decide how to handle async chunks.
-For example:
-
-- A web build may try to create `<script />` tags to load in the new file.
-- A node build may try to `require()` the new file.
-
-Code compiled for one target may not work for in the other environment, especially when encountering async chunks.
-
-## Why not just use existing static generation tools?
-
-There are lots of other [great options for statically rendering your HTML](https://github.com/markdalgleish/static-site-generator-webpack-plugin) but they typically work on a single webpack build.
-
-However when rendering your HTML you may need access to information about all your assets.
-For example, when using content hash based file names you need to render with the node/render assets, but you need to know the names of the static assets generated.
-
 # Options
 
-## routes Array<object|string>
+## Option: routes _Array<object|string>_
 
-**default:** [""]
-To render multiple pages pass a routes array. Each route will create a seperate `.html` file.
-A route can be a string showing the folder or file to render. `index.html` is automatically appended for paths.
+**default:** `[""]`
+
+Renders a HTML page for each value in the array.
+A route can be a string showing the folder or file to render, or an object containing a route parameter. `index.html` is automatically appended for paths.
 
 ```js
 const routes = ["", "contact", "about"];
 ```
 
-A route can be an object, containing a `route` parameter. Additional values will be passed to `mapStatsToParams`.
+A route can be an object, containing a `route` parameter.
 
 ```js
 const routes = [
@@ -118,21 +120,32 @@ const routes = [
     language: "en-us"
   },
   {
-    route: "en-us/about"
+    route: "en-us/about",
     language: "en-us"
   },
   {
-    route: "en-au/contact"
+    route: "en-au/contact",
     language: "en-au"
   },
   {
-    route: "/en-au/about"
+    route: "/en-au/about",
     language: "en-au"
   }
 ];
 ```
 
-## transformFilePath
+## Option: mapStatsToParams _Function_
+
+**default:** `({webpackStats, ...route}) => ({})`
+
+mapStatsToParams should accept webpackStats and [route](#option-routes-arrayobjectstring) information and returns values to be passed into render.
+The function is called individually for each render.
+
+**Recommendation:** mapStatsToParams is an opportunity to limit what information is provided to your render function. Keeping the boundary between your build code and application code simple. Avoid passing all webpackStats into your render function, pull out only the information needed.
+
+## Option: transformFilePath _Function_
+
+**default:** `(route) => route.route ? route.route : route`
 
 By default a file will be created using the `route` value.
 For example the value `{route: '/about/us'}` would create **about/us/index.html**
@@ -158,7 +171,7 @@ In this example, the resulting files will be
 
 # Examples
 
-## Basic
+## Example: Basic
 
 **build.js**
 
@@ -176,6 +189,10 @@ compiler.apply(
     renderDirectory: path.join(process.cwd(), "dist")
   })
 );
+
+compiler.run((error, stats) => {
+  console.log("Build complete");
+});
 ```
 
 **webpack.config.js**
@@ -191,7 +208,73 @@ module.exports = [
     entry: { client: path.resolve("src", "client.js") }
   },
   {
-    dependencies: ["client"],
+    name: "render",
+    target: "node",
+    output: {
+      libraryExport: "default",
+      libraryTarget: "umd2",
+      filename: "render-[name]-[contenthash].js",
+    },
+    entry: { render: path.resolve("src", "render.js") },
+  }),
+]
+```
+
+## Example: Client assets
+
+An example of using `mapStatsToParams` to create `<script>` tags.
+
+**build.js**
+
+```js
+const path = require("path");
+const webpack = require("webpack");
+const config = require("./webpack.config");
+const HtmlRenderPlugin = require("html-render-webpack-plugin");
+
+const compiler = webpack(config);
+
+// Apply the plugin directly to the MultiCompiler
+compiler.apply(
+  new HtmlRenderPlugin({
+    mapStatsToParams: ({ webpackStats }) => ({
+      clientStats: webpackStats
+        .toJson()
+        .children.find(({ name }) => name === "client")
+    })
+  })
+);
+
+compiler.run((error, stats) => {
+  console.log("Build complete");
+});
+```
+
+**src/render.js**
+
+```js
+export default ({ clientStats }) => {
+  return `<html>
+  <body>
+    <script src="${clientStats.assetsByChunkName.main}"></script>
+  </body>
+  </html>`;
+};
+```
+
+**webpack.config.js**
+
+```js
+module.exports = [
+  {
+    name: "client",
+    target: "web",
+    output: {
+      filename: "client-[name]-[contenthash].js",
+    }
+    entry: { main: path.resolve("src", "client.js") }
+  },
+  {
     name: "render",
     target: "node",
     output: {
@@ -238,7 +321,10 @@ module.exports = function getCompiler({ liveReload, mode }) {
   compiler.apply(
     new RenderStaticPlugin({
       routes,
-      mapStatsToParams: ({ clientStats }) => {
+      mapStatsToParams: ({ webpackStats }) => {
+        const clientStats = webpackStats
+          .toJson()
+          .children.find(({ name }) => name === "client");
         const fileSystem = compiler.compilers[0].outputFileSystem.readFileSync
           ? compiler.compilers[0].outputFileSystem
           : fs;
@@ -335,7 +421,6 @@ module.exports = ({ liveReload, mode }) => {
       ]
     }),
     merge(common, {
-      dependencies: ["client"],
       output: {
         libraryExport: "default",
         library: "static",
@@ -349,3 +434,30 @@ module.exports = ({ liveReload, mode }) => {
   ];
 };
 ```
+
+## Why two configurations? It's all just JavaScript
+
+For some builds you may be able to avoid needing two configurations. If that is the case you don't need this tool and can avoid the complexity.
+Here are some reasons I've needed to use two configurations:
+
+##### Complex loaders
+
+Some projects use webpack only to generate the client assets. For the render they then use tools such as babel directly.
+This can become a complex when the project has webpack loaders that affect the behaviour of the code such as [CSS Modules](https://github.com/css-modules/css-modules). This can result in differences between rendered HTML and client code.
+
+##### Async chunks
+
+webpack's `target` field helps webpack decide how to handle async chunks.
+For example:
+
+- A web build may try to create `<script />` tags to load in the new file.
+- A node build may try to `require()` the new file.
+
+Code compiled for one target may not work for in the other environment, especially when encountering async chunks.
+
+## Why not just use existing static generation tools?
+
+There are lots of other [great options for statically rendering your HTML](https://github.com/markdalgleish/static-site-generator-webpack-plugin) but they typically work on a single webpack build.
+
+However when rendering your HTML you may need access to information about all your assets.
+For example, when using content hash based file names you need to render with the node/render assets, but you need to know the names of the static assets generated.

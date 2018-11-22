@@ -2,6 +2,8 @@ const renderHtml = require("./renderHtml");
 const chalk = require("chalk");
 const path = require("path");
 
+const MultiStats = require("webpack/lib/MultiStats");
+
 const returnEmptyObject = () => ({});
 const defaultTransformFilePath = ({ route }) => route;
 
@@ -30,17 +32,22 @@ module.exports = class HtmlRenderPlugin {
   }
   async onRender() {
     if (this.verbose) {
-      this.log(`Recieved render compilation`);
+      this.log(`Starting render`);
     }
 
     const renderStats = this.renderCompilation.getStats();
-    const clientStats = this.clientCompilation.getStats();
+
+    const webpackStats = new MultiStats(
+      this.compilations.map(compilation => {
+        return compilation.getStats();
+      })
+    );
 
     try {
       await renderHtml({
         routes: this.routes,
         renderCompilation: this.renderCompilation,
-        clientStats: clientStats.toJson(),
+        webpackStats,
         renderStats: renderStats.toJson(),
         transformFilePath: this.transformFilePath,
         renderCompiler: this.renderCompiler,
@@ -55,76 +62,54 @@ module.exports = class HtmlRenderPlugin {
     }
   }
   apply(compiler) {
-    this.clientCompiler = compiler.compilers.find(
-      childCompiler => childCompiler.name === "client"
-    );
-    if (!this.clientCompiler) {
-      const errorMessage = `Unable to find client compiler. Ensure a config exists with name 'client'.`;
-      this.logError(errorMessage);
-      throw new Error(errorMessage);
-    }
-    this.renderCompiler = compiler.compilers.find(
-      childCompiler => childCompiler.name === "render"
-    );
+    this.compilers = compiler.compilers || [compiler];
+    this.renderCompiler =
+      this.compilers.length === 1
+        ? this.compilers[0]
+        : this.compilers.find(childCompiler => childCompiler.name === "render");
     if (!this.renderCompiler) {
       const errorMessage = `Unable to find render compiler. Ensure a config exists with name 'render'.`;
       this.logError(errorMessage);
       throw new Error(errorMessage);
     }
     const hookOptions = { name: "HtmlRenderPlugin" };
+    this.renderCompiler.hooks.emit.tap(hookOptions, compilation => {
+      this.renderCompilation = compilation;
+    });
 
-    const startClient = () => {
-      this.clientBuilding = true;
-    };
-    const startRender = () => {
-      this.renderBuilding = true;
-    };
-    const endClient = () => {
-      this.clientBuilding = false;
-    };
-    const endRender = () => {
-      this.renderBuilding = false;
-    };
-    this.clientCompiler.hooks.run.tap(hookOptions, startClient);
-    this.renderCompiler.hooks.run.tap(hookOptions, startRender);
-    this.clientCompiler.hooks.watchRun.tap(hookOptions, startClient);
-    this.renderCompiler.hooks.watchRun.tap(hookOptions, startRender);
-    this.clientCompiler.hooks.emit.tap(hookOptions, endClient);
-    this.renderCompiler.hooks.emit.tap(hookOptions, endRender);
+    this.compilations = [];
+    let compilersToRun = this.compilers.length;
+    let compilersRunning = 0;
+    this.compilers.forEach((childCompiler, index) => {
+      childCompiler.hooks.run.tap(hookOptions, () => compilersRunning++);
+      childCompiler.hooks.watchRun.tap(hookOptions, () => compilersRunning++);
+      childCompiler.hooks.emit.tap(hookOptions, compilation => {
+        this.compilations[index] = compilation;
+        compilersRunning--;
+        compilersToRun--;
+      });
 
-    this.renderCompiler.hooks.afterEmit.tapPromise(
-      hookOptions,
-      async compilation => {
-        endRender();
-        if (this.verbose) {
-          this.log("Render compiler emit assets");
-        }
-        this.renderCompilation = compilation;
-        if (!this.clientCompilation || this.clientBuilding) {
+      childCompiler.hooks.afterEmit.tapPromise(
+        hookOptions,
+        async compilation => {
           if (this.verbose) {
-            this.log("Render assets emited. Waiting for client.");
+            this.log(`Compiler emitted assets for ${childCompiler.name}`);
           }
-          return;
-        }
-        return this.onRender();
-      }
-    );
-    this.clientCompiler.hooks.afterEmit.tapPromise(
-      hookOptions,
-      async compilation => {
-        endClient();
-        if (this.verbose) {
-          this.log("Client compiler emit assets");
-        }
-        this.clientCompilation = compilation;
-        if (!this.renderCompilation || this.renderBuilding) {
-          if (this.verbose) {
-            this.log("Client assets emited. Waiting for render.");
+          this.clientCompilation = compilation;
+          if (compilersRunning > 0 || compilersToRun > 0) {
+            if (this.verbose) {
+              this.log(
+                `Assets emitted for ${
+                  childCompiler.name
+                }. Waiting for ${compilersRunning ||
+                  compilersToRun} other compilers`
+              );
+            }
+            return;
           }
-          return;
+          return this.onRender();
         }
-        return this.onRender();
-      }
-    );
+      );
+    });
   }
 };

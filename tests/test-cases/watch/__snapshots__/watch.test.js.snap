@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Watch should render a HTML on initial watch build 1`] = `
+Object {
+  "a": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  common: {
+  \\"value\\": \\"a\\"
+}
+  <code>[
+    {
+      \\"route\\": \\"/a/\\",
+      \\"extra\\": \\"a\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "b": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  common: {
+  \\"value\\": \\"a\\"
+}
+  <code>[
+    {
+      \\"route\\": \\"/b/\\",
+      \\"extra\\": \\"b\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+}
+`;

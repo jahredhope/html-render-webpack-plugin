@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Single webpack build should render a HTML file 1`] = `
+Object {
+  "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"\\"
+    }
+  ]</code>
+</body>
+</html>",
+}
+`;

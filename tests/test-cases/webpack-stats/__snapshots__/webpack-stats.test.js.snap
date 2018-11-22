@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Render WebpackStats should render a with asset names 1`] = `
+Object {
+  "index.html": "[
+  {
+    \\"name\\": \\"client\\",
+    \\"assets\\": {
+      \\"client\\": \\"client-client-daf2166db871ad045ea4.js\\"
+    }
+  },
+  {
+    \\"name\\": \\"render\\",
+    \\"assets\\": {
+      \\"render\\": \\"render-render-e1ab80f2a54520bc3ec7.js\\"
+    }
+  }
+]",
+}
+`;
