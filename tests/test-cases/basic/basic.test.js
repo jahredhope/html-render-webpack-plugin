@@ -17,7 +17,8 @@ describe("Render HTML", () => {
 
     compiler.apply(new HtmlRenderPlugin({ renderDirectory }));
 
-    compiler.run(() => {
+    compiler.run(error => {
+      expect(error).toBe(null);
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();
       done();
@@ -36,7 +37,8 @@ describe("Render HTML", () => {
       })
     );
 
-    compiler.run(() => {
+    compiler.run(error => {
+      expect(error).toBe(null);
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();
       done();
@@ -62,7 +64,8 @@ describe("Render HTML", () => {
       })
     );
 
-    compiler.run(() => {
+    compiler.run(error => {
+      expect(error).toBe(null);
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();
       done();
@@ -90,7 +93,8 @@ describe("Render HTML", () => {
       })
     );
 
-    compiler.run(() => {
+    compiler.run(error => {
+      expect(error).toBe(null);
       expect(
         memoryFs.existsSync(
           path.join(renderDirectory, "/production/en-us/about/us/index.html")

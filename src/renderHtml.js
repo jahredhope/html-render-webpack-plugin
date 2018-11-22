@@ -7,7 +7,7 @@ module.exports = async function renderHtml({
   renderEntry,
   renderDirectory,
   renderStats,
-  clientStats,
+  webpackStats,
   renderCompiler,
   renderCompilation,
   mapStatsToParams,
@@ -85,8 +85,7 @@ module.exports = async function renderHtml({
         ...routeData,
         ...mapStatsToParams({
           ...routeData,
-          clientStats,
-          renderStats
+          webpackStats
         })
       });
     } catch (error) {
