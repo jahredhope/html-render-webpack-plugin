@@ -26,12 +26,12 @@
     "eslint": "5.9.0",
     "jest": "23.6.0",
     "prettier": "1.15.2",
+    "semantic-release": "15.12.1",
     "webpack": "4.26.0"
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "eval": "^0.1.2",
-    "semantic-release": "^15.12.1"
+    "eval": "^0.1.2"
   },
   "config": {
     "commitizen": {
