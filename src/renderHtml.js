@@ -75,6 +75,11 @@ module.exports = async function renderHtml({
     }
     const relativeFilePath = transformFilePath(routeData);
     const includesHtmlInFilePath = relativeFilePath.substr(-5) === ".html";
+    if (!path.isAbsolute(renderDirectory)) {
+      console.log({ renderDirectory });
+      renderDirectory = path.resolve(renderDirectory);
+      console.log({ renderDirectory });
+    }
     const newFilePath = includesHtmlInFilePath
       ? path.join(renderDirectory, relativeFilePath)
       : path.join(renderDirectory, relativeFilePath, "index.html");

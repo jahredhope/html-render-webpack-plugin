@@ -1,6 +1,5 @@
 const renderHtml = require("./renderHtml");
 const chalk = require("chalk");
-const path = require("path");
 
 const MultiStats = require("webpack/lib/MultiStats");
 
@@ -8,7 +7,7 @@ const returnEmptyObject = () => ({});
 const defaultTransformFilePath = ({ route }) => route;
 
 module.exports = class HtmlRenderPlugin {
-  constructor(opts) {
+  constructor(opts = {}) {
     this.clientBuilding = false;
     this.renderBuilding = false;
     this.log = (...args) =>
@@ -20,14 +19,7 @@ module.exports = class HtmlRenderPlugin {
     this.verbose = opts.verbose || false;
     this.transformFilePath = opts.transformFilePath || defaultTransformFilePath;
     this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
-    this.renderDirectory = opts.renderDirectory || "";
-    if (!path.isAbsolute(opts.renderDirectory)) {
-      const errorMessage = `Unable to create HtmlRenderPlugin. renderDirectory must be an absolute path. Recieved: ${
-        opts.renderDirectory
-      }`;
-      this.logError(errorMessage);
-      throw errorMessage;
-    }
+    this.renderDirectory = opts.renderDirectory || "dist";
     this.onRender = this.onRender.bind(this);
   }
   async onRender() {
@@ -71,6 +63,14 @@ module.exports = class HtmlRenderPlugin {
       const errorMessage = `Unable to find render compiler. Ensure a config exists with name 'render'.`;
       this.logError(errorMessage);
       throw new Error(errorMessage);
+    }
+
+    if (
+      this.renderCompiler.options.output &&
+      this.renderCompiler.options.output.path
+    ) {
+      this.renderDirectory =
+        this.renderDirectory || this.renderCompiler.options.output.path;
     }
     const hookOptions = { name: "HtmlRenderPlugin" };
     this.renderCompiler.hooks.emit.tap(hookOptions, compilation => {

@@ -5,6 +5,12 @@
   "version": "0.0.0-development",
   "main": "src/index.js",
   "license": "MIT",
+  "keywords": [
+    "html",
+    "static",
+    "plugin",
+    "webpack"
+  ],
   "scripts": {
     "commit": "git-cz",
     "lint.eslint": "eslint .",

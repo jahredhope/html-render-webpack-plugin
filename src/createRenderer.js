@@ -5,6 +5,7 @@ function fileExistsInCompilation(specifier, compilation) {
   const fileName = path.basename(specifier);
   return Boolean(compilation.assets[fileName]);
 }
+
 function getFileSourceFromCompilation(specifier, compilation) {
   const fileName = path.basename(specifier);
   const asset = compilation.assets[fileName];

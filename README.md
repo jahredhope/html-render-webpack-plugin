@@ -1,12 +1,35 @@
 # html-render-webpack-plugin
 
-webpack plugin for rendering static HTML in a multi-config webpack build.
+Plugin to create HTML files with JavaScript.
 
-`html-render-webpack-plugin` is applied to a webpack [MultiCompiler](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations) to enable rendering based on all resulting webpack outputs.
+- Supports [multiple configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations)
+- Supports [code-splitting](https://webpack.js.org/guides/code-splitting/) and [dynamic imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports)
 
-The render build's code is used to generate the HTML, often using values from other builds such as asset names.
+# Setup
+
+```bash
+$ npm install webpack html-render-webpack-plugin
+# OR
+$ yarn add webpack html-render-webpack-plugin
+```
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  ...,
+  plugins: [new HtmlRenderPlugin()]
+};
+```
+
+# Multiple configurations
+
+Apply `html-render-webpack-plugin` to your webpack [MultiCompiler](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations) to enable rendering based on all resulting webpack outputs.
+
+The code from the render build is used to generate the HTML, often using values from other builds such as asset names of created assets.
 
 For example, you may wish to add a script tag where the name includes a hash:
+
 **src/render.js**
 
 ```js
@@ -31,22 +54,13 @@ export default ({ assetsByChunkName }) => {
 
 See [the full example below](#example-client-assets).
 
-# Setup
+## Multiple configuration setup
 
-**Note:** Requires Node v10.12 or greater.
+Create your webpack build with [multiple webpack configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations).
 
-Install the plugin.
-
-```bash
-$ npm install webpack html-render-webpack-plugin
-# OR
-$ yarn add webpack html-render-webpack-plugin
-```
-
-Export [multiple webpack configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations).
+**webpack.config.js**
 
 ```js
-// webpack.config.js
 module.exports = [
   {
     name: "render",
@@ -72,11 +86,7 @@ Apply the plugin to your compiler.
 ```js
 const HtmlRenderPlugin = require("html-render-webpack-plugin");
 
-multiCompiler.apply(
-  new HtmlRenderPlugin({
-    renderDirectory: path.join(process.cwd(), "dist")
-  })
-);
+multiCompiler.apply(new HtmlRenderPlugin());
 ```
 
 Start the build
@@ -99,6 +109,12 @@ server.listen(8080, "localhost", () => {});
 See [examples](#examples) for more details.
 
 # Options
+
+## Option: renderDirectory _string_
+
+The location to create rendered files. Defaults to the rendered assets output.
+
+Useful when deploying HTML files seperate to other build assets.
 
 ## Option: routes _Array<object|string>_
 
@@ -184,11 +200,7 @@ const HtmlRenderPlugin = require("html-render-webpack-plugin");
 const compiler = webpack(config);
 
 // Apply the plugin directly to the MultiCompiler
-compiler.apply(
-  new HtmlRenderPlugin({
-    renderDirectory: path.join(process.cwd(), "dist")
-  })
-);
+compiler.apply(new HtmlRenderPlugin());
 
 compiler.run((error, stats) => {
   console.log("Build complete");
@@ -434,30 +446,3 @@ module.exports = ({ liveReload, mode }) => {
   ];
 };
 ```
-
-## Why two configurations? It's all just JavaScript
-
-For some builds you may be able to avoid needing two configurations. If that is the case you don't need this tool and can avoid the complexity.
-Here are some reasons I've needed to use two configurations:
-
-##### Complex loaders
-
-Some projects use webpack only to generate the client assets. For the render they then use tools such as babel directly.
-This can become a complex when the project has webpack loaders that affect the behaviour of the code such as [CSS Modules](https://github.com/css-modules/css-modules). This can result in differences between rendered HTML and client code.
-
-##### Async chunks
-
-webpack's `target` field helps webpack decide how to handle async chunks.
-For example:
-
-- A web build may try to create `<script />` tags to load in the new file.
-- A node build may try to `require()` the new file.
-
-Code compiled for one target may not work for in the other environment, especially when encountering async chunks.
-
-## Why not just use existing static generation tools?
-
-There are lots of other [great options for statically rendering your HTML](https://github.com/markdalgleish/static-site-generator-webpack-plugin) but they typically work on a single webpack build.
-
-However when rendering your HTML you may need access to information about all your assets.
-For example, when using content hash based file names you need to render with the node/render assets, but you need to know the names of the static assets generated.

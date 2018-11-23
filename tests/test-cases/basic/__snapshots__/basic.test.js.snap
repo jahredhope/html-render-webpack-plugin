@@ -46,8 +46,7 @@ Object {
 `;
 
 exports[`Render HTML should render a HTML file 1`] = `
-Object {
-  "index.html": "<html>
+"<html>
 <body>
   Rendered with:&nbsp;
   <code>[
@@ -56,8 +55,7 @@ Object {
     }
   ]</code>
 </body>
-</html>",
-}
+</html>"
 `;
 
 exports[`Render HTML should render a file per route 1`] = `
@@ -106,6 +104,21 @@ Object {
 </body>
 </html>",
   },
+}
+`;
+
+exports[`Render HTML should render in a custom directory 1`] = `
+Object {
+  "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"\\"
+    }
+  ]</code>
+</body>
+</html>",
 }
 `;
 
