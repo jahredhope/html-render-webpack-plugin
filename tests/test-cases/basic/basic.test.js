@@ -64,6 +64,7 @@ describe("Render HTML", () => {
       done();
     });
   });
+
   it("should render routes with extra information", async done => {
     const compiler = webpack(config);
 

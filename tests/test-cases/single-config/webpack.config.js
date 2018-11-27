@@ -12,7 +12,7 @@ module.exports = {
   name: "render",
   target: "node",
   mode: "production",
-  entry: { render: paths.renderEntry },
+  entry: paths.renderEntry,
   output: {
     libraryExport: "default",
     library: "static",

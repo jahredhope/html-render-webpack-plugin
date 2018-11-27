@@ -11,7 +11,7 @@ module.exports = [
     name: "client",
     target: "web",
     mode: "production",
-    entry: { client: paths.clientEntry },
+    entry: paths.clientEntry,
     output: {
       filename: "client-[name]-[contenthash].js"
     }
@@ -21,7 +21,7 @@ module.exports = [
     name: "render",
     target: "node",
     mode: "production",
-    entry: { render: paths.renderEntry },
+    entry: paths.renderEntry,
     output: {
       libraryExport: "default",
       library: "static",

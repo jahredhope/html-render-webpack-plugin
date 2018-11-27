@@ -2,23 +2,23 @@ const path = require("path");
 const chalk = require("chalk");
 const createRenderer = require("./createRenderer");
 
+const timeSince = startTime => `${(Date.now() - startTime) / 1000}s`;
+
 module.exports = async function renderHtml({
+  mapStatsToParams,
+  renderConcurrency,
   routes,
   renderEntry,
   renderDirectory,
   renderStats,
-  webpackStats,
   renderCompiler,
   renderCompilation,
-  mapStatsToParams,
+  trace,
   transformFilePath,
-  verbose,
-  log
+  webpackStats
 }) {
   const renderFile = renderStats.assetsByChunkName[renderEntry];
-  if (verbose) {
-    log("Render file:", { renderFile });
-  }
+  trace("Render file:", { renderFile });
   if (!renderFile) {
     throw new Error(
       `Unable to find renderEntry ${renderEntry} in assets ${Object.keys(
@@ -36,9 +36,7 @@ module.exports = async function renderHtml({
       `Unable to find render function. File ${renderFile}. Recieved ${typeof renderFunc}.`
     );
   }
-  if (verbose) {
-    log(`Renderer created`);
-  }
+  trace(`Renderer created`);
 
   async function emitFile(dir, content) {
     await new Promise((resolve, reject) =>
@@ -61,11 +59,10 @@ module.exports = async function renderHtml({
   }
 
   async function render(routeValue) {
+    const startRenderTime = Date.now();
     const routeData =
       typeof routeValue === "string" ? { route: routeValue } : routeValue;
-    if (verbose) {
-      log(`Starting render`, routeData);
-    }
+    trace(`Starting render`, routeData);
     if (typeof routeData.route !== "string") {
       throw new Error(
         `Missing route in ${JSON.stringify(
@@ -76,9 +73,7 @@ module.exports = async function renderHtml({
     const relativeFilePath = transformFilePath(routeData);
     const includesHtmlInFilePath = relativeFilePath.substr(-5) === ".html";
     if (!path.isAbsolute(renderDirectory)) {
-      console.log({ renderDirectory });
       renderDirectory = path.resolve(renderDirectory);
-      console.log({ renderDirectory });
     }
     const newFilePath = includesHtmlInFilePath
       ? path.join(renderDirectory, relativeFilePath)
@@ -111,9 +106,14 @@ module.exports = async function renderHtml({
     }
 
     await emitFile(newFilePath, renderResult);
-    if (verbose) {
-      log(`Successfully created asset ${newFilePath}`);
-    }
+    trace(
+      `Successfully created ${newFilePath} (${timeSince(startRenderTime)})`
+    );
   }
-  return Promise.all(routes.map(render));
+  if (renderConcurrency === "parallel") {
+    return Promise.all(routes.map(render));
+  }
+  for (const route of routes) {
+    await render(route);
+  }
 };

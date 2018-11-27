@@ -7,25 +7,39 @@ const returnEmptyObject = () => ({});
 const defaultTransformFilePath = ({ route }) => route;
 
 module.exports = class HtmlRenderPlugin {
-  constructor(opts = {}) {
-    this.clientBuilding = false;
-    this.renderBuilding = false;
-    this.log = (...args) =>
-      (opts.log || console.log)(chalk.blue("HtmlRenderPlugin:"), ...args);
-    this.logError = (...args) =>
-      (opts.log || console.log)(chalk.red("🚨 HtmlRenderPlugin:"), ...args);
-    this.renderEntry = opts.renderEntry || "render";
-    this.routes = opts.routes || [""];
-    this.verbose = opts.verbose || false;
-    this.transformFilePath = opts.transformFilePath || defaultTransformFilePath;
-    this.mapStatsToParams = opts.mapStatsToParams || returnEmptyObject;
-    this.renderDirectory = opts.renderDirectory || "dist";
+  constructor({
+    log = console.log,
+    verbose = false,
+    routes = [""],
+    mapStatsToParams = returnEmptyObject,
+    renderDirectory = "dist",
+    renderConcurrency = false,
+    transformFilePath = defaultTransformFilePath,
+    renderEntry = "main"
+  } = {}) {
+    this.log = log;
+    this.mapStatsToParams = mapStatsToParams;
+    this.renderDirectory = renderDirectory;
+    this.renderEntry = renderEntry;
+    this.routes = routes;
+    this.transformFilePath = transformFilePath;
+    this.verbose = verbose;
+    this.renderConcurrency = renderConcurrency;
+
     this.onRender = this.onRender.bind(this);
+    this.logError = this.logError.bind(this);
+    this.trace = this.trace.bind(this);
+  }
+  logError(...args) {
+    this.log(chalk.red("🚨 HtmlRenderPlugin:"), ...args);
+  }
+  trace(...args) {
+    if (this.verbose) {
+      this.log(chalk.blue("HtmlRenderPlugin:"), ...args);
+    }
   }
   async onRender() {
-    if (this.verbose) {
-      this.log(`Starting render`);
-    }
+    this.trace(`Starting render`);
 
     const renderStats = this.renderCompilation.getStats();
 
@@ -37,17 +51,17 @@ module.exports = class HtmlRenderPlugin {
 
     try {
       await renderHtml({
-        routes: this.routes,
+        mapStatsToParams: this.mapStatsToParams,
+        renderConcurrency: this.renderConcurrency,
         renderCompilation: this.renderCompilation,
-        webpackStats,
-        renderStats: renderStats.toJson(),
-        transformFilePath: this.transformFilePath,
         renderCompiler: this.renderCompiler,
         renderDirectory: this.renderDirectory,
         renderEntry: this.renderEntry,
-        mapStatsToParams: this.mapStatsToParams,
-        verbose: this.verbose,
-        log: this.log
+        renderStats: renderStats.toJson(),
+        routes: this.routes,
+        trace: this.trace,
+        transformFilePath: this.transformFilePath,
+        webpackStats
       });
     } catch (error) {
       this.logError("An error occured rendering HTML", error);
@@ -92,21 +106,17 @@ module.exports = class HtmlRenderPlugin {
       childCompiler.hooks.afterEmit.tapPromise(
         hookOptions,
         async compilation => {
-          if (this.verbose) {
-            this.log(`Compiler emitted assets for ${childCompiler.name}`);
-          }
           this.clientCompilation = compilation;
           if (compilersRunning > 0 || compilersToRun > 0) {
-            if (this.verbose) {
-              this.log(
-                `Assets emitted for ${
-                  childCompiler.name
-                }. Waiting for ${compilersRunning ||
-                  compilersToRun} other compilers`
-              );
-            }
+            this.trace(
+              `Assets emitted for ${
+                childCompiler.name
+              }. Waiting for ${compilersRunning ||
+                compilersToRun} other compilers`
+            );
             return;
           }
+          this.trace(`Assets emitted for ${childCompiler.name}`);
           return this.onRender();
         }
       );
