@@ -2,6 +2,8 @@ const path = require("path");
 const chalk = require("chalk");
 const createRenderer = require("./createRenderer");
 
+const timeSince = startTime => `${(Date.now() - startTime) / 1000}s`;
+
 module.exports = async function renderHtml({
   mapStatsToParams,
   parallelRender,
@@ -57,6 +59,7 @@ module.exports = async function renderHtml({
   }
 
   async function render(routeValue) {
+    const startRenderTime = Date.now();
     const routeData =
       typeof routeValue === "string" ? { route: routeValue } : routeValue;
     trace(`Starting render`, routeData);
@@ -103,7 +106,9 @@ module.exports = async function renderHtml({
     }
 
     await emitFile(newFilePath, renderResult);
-    trace(`Successfully created asset ${newFilePath}`);
+    trace(
+      `Successfully created ${newFilePath} (${timeSince(startRenderTime)})`
+    );
   }
   if (parallelRender) {
     return Promise.all(routes.map(render));

@@ -10,8 +10,7 @@ module.exports = class HtmlRenderPlugin {
   constructor({
     log = console.log,
     parallelRender = false,
-    silent = false,
-    verbose = false,
+    verbose = true,
     routes = [""],
     mapStatsToParams = returnEmptyObject,
     renderDirectory = "dist",
@@ -24,7 +23,6 @@ module.exports = class HtmlRenderPlugin {
     this.renderDirectory = renderDirectory;
     this.renderEntry = renderEntry;
     this.routes = routes;
-    this.silent = silent;
     this.transformFilePath = transformFilePath;
     this.verbose = verbose;
 
@@ -108,7 +106,6 @@ module.exports = class HtmlRenderPlugin {
       childCompiler.hooks.afterEmit.tapPromise(
         hookOptions,
         async compilation => {
-          this.trace(`Compiler emitted assets for ${childCompiler.name}`);
           this.clientCompilation = compilation;
           if (compilersRunning > 0 || compilersToRun > 0) {
             this.trace(
@@ -119,6 +116,7 @@ module.exports = class HtmlRenderPlugin {
             );
             return;
           }
+          this.trace(`Assets emitted for ${childCompiler.name}`);
           return this.onRender();
         }
       );

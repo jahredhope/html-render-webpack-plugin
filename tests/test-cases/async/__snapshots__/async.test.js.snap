@@ -14,3 +14,44 @@ Object {
 </html>",
 }
 `;
+
+exports[`Render asyncronously should render a multiple files at once 1`] = `
+Object {
+  "pageA": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"pageA\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "pageB": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"pageB\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "pageC": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"pageC\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+}
+`;

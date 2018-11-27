@@ -23,4 +23,25 @@ describe("Render asyncronously", () => {
       done();
     });
   });
+  it("should render a multiple files at once", async done => {
+    const compiler = webpack(config);
+
+    const memoryFs = new MemoryFS();
+    compiler.outputFileSystem = memoryFs;
+
+    compiler.apply(
+      new HtmlRenderPlugin({
+        parallelRender: true,
+        routes: ["pageA", "pageB", "pageC"],
+        renderDirectory
+      })
+    );
+
+    compiler.run(error => {
+      expect(error).toBe(null);
+      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      expect(contents).toMatchSnapshot();
+      done();
+    });
+  });
 });
