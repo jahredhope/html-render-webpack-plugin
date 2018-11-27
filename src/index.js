@@ -9,22 +9,22 @@ const defaultTransformFilePath = ({ route }) => route;
 module.exports = class HtmlRenderPlugin {
   constructor({
     log = console.log,
-    parallelRender = false,
-    verbose = true,
+    verbose = false,
     routes = [""],
     mapStatsToParams = returnEmptyObject,
     renderDirectory = "dist",
+    renderConcurrency = false,
     transformFilePath = defaultTransformFilePath,
     renderEntry = "main"
   } = {}) {
     this.log = log;
     this.mapStatsToParams = mapStatsToParams;
-    this.parallelRender = parallelRender;
     this.renderDirectory = renderDirectory;
     this.renderEntry = renderEntry;
     this.routes = routes;
     this.transformFilePath = transformFilePath;
     this.verbose = verbose;
+    this.renderConcurrency = renderConcurrency;
 
     this.onRender = this.onRender.bind(this);
     this.logError = this.logError.bind(this);
@@ -52,7 +52,7 @@ module.exports = class HtmlRenderPlugin {
     try {
       await renderHtml({
         mapStatsToParams: this.mapStatsToParams,
-        parallelRender: this.parallelRender,
+        renderConcurrency: this.renderConcurrency,
         renderCompilation: this.renderCompilation,
         renderCompiler: this.renderCompiler,
         renderDirectory: this.renderDirectory,

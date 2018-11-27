@@ -6,7 +6,7 @@ const timeSince = startTime => `${(Date.now() - startTime) / 1000}s`;
 
 module.exports = async function renderHtml({
   mapStatsToParams,
-  parallelRender,
+  renderConcurrency,
   routes,
   renderEntry,
   renderDirectory,
@@ -110,7 +110,7 @@ module.exports = async function renderHtml({
       `Successfully created ${newFilePath} (${timeSince(startRenderTime)})`
     );
   }
-  if (parallelRender) {
+  if (renderConcurrency === "parallel") {
     return Promise.all(routes.map(render));
   }
   for (const route of routes) {

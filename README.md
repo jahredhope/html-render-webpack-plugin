@@ -207,6 +207,18 @@ In this example, the resulting files will be
 
 - **en-au/about/us/index.html**
 
+## Option: renderConcurrency _string ("serial"|"parallel")_
+
+**default:** `"serial"`
+
+By default each file will be rendered one after the other, creating a simple sequential build log. When renders with significant asynchronous work you may want to have each render run in parallel.
+
+```
+new HtmlRenderPlugin({
+  renderConcurrency: 'parallel'
+});
+```
+
 # Examples
 
 ## Example: Basic
