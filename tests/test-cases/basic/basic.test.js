@@ -15,11 +15,31 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
+    compiler.apply(new HtmlRenderPlugin());
+
+    compiler.run(error => {
+      expect(error).toBe(null);
+      const contents = memoryFs.readFileSync(
+        path.join(process.cwd(), "dist", "index.html"),
+        "utf8"
+      );
+      expect(contents).toMatchSnapshot();
+      done();
+    });
+  });
+  it("should render in a custom directory", async done => {
+    const compiler = webpack(config);
+
+    const memoryFs = new MemoryFS();
+    compiler.outputFileSystem = memoryFs;
+
     compiler.apply(new HtmlRenderPlugin({ renderDirectory }));
 
     compiler.run(error => {
       expect(error).toBe(null);
-      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+      const contents = getDirContentsSync(renderDirectory, {
+        fs: memoryFs
+      });
       expect(contents).toMatchSnapshot();
       done();
     });
