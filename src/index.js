@@ -9,6 +9,7 @@ const defaultTransformFilePath = ({ route }) => route;
 module.exports = class HtmlRenderPlugin {
   constructor({
     log = console.log,
+    parallelRender = false,
     silent = false,
     verbose = false,
     routes = [""],
@@ -19,6 +20,7 @@ module.exports = class HtmlRenderPlugin {
   } = {}) {
     this.log = log;
     this.mapStatsToParams = mapStatsToParams;
+    this.parallelRender = parallelRender;
     this.renderDirectory = renderDirectory;
     this.renderEntry = renderEntry;
     this.routes = routes;
@@ -51,16 +53,17 @@ module.exports = class HtmlRenderPlugin {
 
     try {
       await renderHtml({
-        routes: this.routes,
+        mapStatsToParams: this.mapStatsToParams,
+        parallelRender: this.parallelRender,
         renderCompilation: this.renderCompilation,
-        webpackStats,
-        renderStats: renderStats.toJson(),
-        transformFilePath: this.transformFilePath,
         renderCompiler: this.renderCompiler,
         renderDirectory: this.renderDirectory,
         renderEntry: this.renderEntry,
-        mapStatsToParams: this.mapStatsToParams,
-        trace: this.trace
+        renderStats: renderStats.toJson(),
+        routes: this.routes,
+        trace: this.trace,
+        transformFilePath: this.transformFilePath,
+        webpackStats
       });
     } catch (error) {
       this.logError("An error occured rendering HTML", error);

@@ -4,6 +4,7 @@ const createRenderer = require("./createRenderer");
 
 module.exports = async function renderHtml({
   mapStatsToParams,
+  parallelRender,
   routes,
   renderEntry,
   renderDirectory,
@@ -104,5 +105,10 @@ module.exports = async function renderHtml({
     await emitFile(newFilePath, renderResult);
     trace(`Successfully created asset ${newFilePath}`);
   }
-  return Promise.all(routes.map(render));
+  if (parallelRender) {
+    return Promise.all(routes.map(render));
+  }
+  for (const route of routes) {
+    await render(route);
+  }
 };
