@@ -110,6 +110,28 @@ See [examples](#examples) for more details.
 
 # Options
 
+## Option: renderEntry _string_
+
+**default:** "main"
+
+The entry to use when rendering. Override when using [object syntax](https://webpack.js.org/concepts/entry-points/#object-syntax) in webpack entry.
+
+```js
+new HtmlRenderPlugin({
+  renderEntry: "myRender"
+});
+```
+
+**webpack.config.js**
+
+```
+{
+  entry: {
+    myRender: './src/myRender.js',
+  }
+}
+```
+
 ## Option: renderDirectory _string_
 
 The location to create rendered files. Defaults to the rendered assets output.
@@ -217,7 +239,7 @@ module.exports = [
     output: {
       filename: "client-[name]-[contenthash].js",
     }
-    entry: { client: path.resolve("src", "client.js") }
+    entry: path.resolve("src", "client.js")
   },
   {
     name: "render",
@@ -227,7 +249,7 @@ module.exports = [
       libraryTarget: "umd2",
       filename: "render-[name]-[contenthash].js",
     },
-    entry: { render: path.resolve("src", "render.js") },
+    entry: render: path.resolve("src", "render.js"),
   }),
 ]
 ```
@@ -284,7 +306,7 @@ module.exports = [
     output: {
       filename: "client-[name]-[contenthash].js",
     }
-    entry: { main: path.resolve("src", "client.js") }
+    entry: path.resolve("src", "client.js")
   },
   {
     name: "render",
@@ -294,7 +316,7 @@ module.exports = [
       libraryTarget: "umd2",
       filename: "render-[name]-[contenthash].js",
     },
-    entry: { render: path.resolve("src", "render.js") },
+    entry: path.resolve("src", "render.js"),
   }),
 ]
 ```
@@ -424,7 +446,7 @@ module.exports = ({ liveReload, mode }) => {
       },
       name: "client",
       target: "web",
-      entry: { client: clientEntry },
+      entry: clientEntry,
       plugins: [
         new ReactLoadablePlugin({
           filename: "react-loadable-manifest.json"
@@ -441,7 +463,7 @@ module.exports = ({ liveReload, mode }) => {
       },
       name: "render",
       target: "node",
-      entry: { render: routes.renderEntry }
+      entry: routes.renderEntry
     })
   ];
 };

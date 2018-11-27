@@ -6,13 +6,13 @@ Object {
   {
     \\"name\\": \\"client\\",
     \\"assets\\": {
-      \\"client\\": \\"client-client-daf2166db871ad045ea4.js\\"
+      \\"main\\": \\"client-main-daf2166db871ad045ea4.js\\"
     }
   },
   {
     \\"name\\": \\"render\\",
     \\"assets\\": {
-      \\"render\\": \\"render-render-e1ab80f2a54520bc3ec7.js\\"
+      \\"main\\": \\"render-main-e1ab80f2a54520bc3ec7.js\\"
     }
   }
 ]",
