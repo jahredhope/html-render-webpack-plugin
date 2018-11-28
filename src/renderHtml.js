@@ -21,9 +21,9 @@ module.exports = async function renderHtml({
   trace("Render file:", { renderFile });
   if (!renderFile) {
     throw new Error(
-      `Unable to find renderEntry ${renderEntry} in assets ${Object.keys(
+      `Unable to find renderEntry "${renderEntry}" in assets. Possible entries are: ${Object.keys(
         renderStats.assetsByChunkName
-      )}.`
+      ).join(", ")}.`
     );
   }
 
@@ -33,7 +33,7 @@ module.exports = async function renderHtml({
   });
   if (typeof renderFunc !== "function") {
     throw new Error(
-      `Unable to find render function. File ${renderFile}. Recieved ${typeof renderFunc}.`
+      `Unable to find render function. File "${renderFile}". Recieved ${typeof renderFunc}.`
     );
   }
   trace(`Renderer created`);

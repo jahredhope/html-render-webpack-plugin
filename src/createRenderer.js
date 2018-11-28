@@ -17,7 +17,7 @@ function evalutateFromSource(specifier, compilation) {
   try {
     source = getFileSourceFromCompilation(specifier, compilation);
   } catch (error) {
-    throw new Error(`Error reading ${specifier}. Error: ${error}`);
+    throw new Error(`Error reading "${specifier}". Error: ${error}`);
   }
   return evaluate(
     source,
