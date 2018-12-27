@@ -18,7 +18,7 @@ module.exports = async function renderHtml({
   webpackStats
 }) {
   const renderFile = renderStats.assetsByChunkName[renderEntry];
-  trace("Render file:", { renderFile });
+  trace("Render route:", { renderFile });
   if (!renderFile) {
     throw new Error(
       `Unable to find renderEntry "${renderEntry}" in assets. Possible entries are: ${Object.keys(
@@ -36,7 +36,6 @@ module.exports = async function renderHtml({
       `Unable to find render function. File "${renderFile}". Recieved ${typeof renderFunc}.`
     );
   }
-  trace(`Renderer created`);
 
   async function emitFile(dir, content) {
     await new Promise((resolve, reject) =>
@@ -67,7 +66,7 @@ module.exports = async function renderHtml({
       throw new Error(
         `Missing route in ${JSON.stringify(
           routeData
-        )}. Unable to render page without a path`
+        )}. Unable to render page without a route.`
       );
     }
     const relativeFilePath = transformFilePath(routeData);
@@ -90,9 +89,9 @@ module.exports = async function renderHtml({
       });
     } catch (error) {
       console.error(
-        `🚨 ${chalk.red("An error occured rending:")} ${chalk.blue(
+        `🚨 ${chalk.red(`An error occured rendering "`)} ${chalk.blue(
           renderFile
-        )}. See below error.`
+        )}". See below error.`
       );
       console.error(error);
       await emitFile(newFilePath, error.toString());
@@ -101,7 +100,7 @@ module.exports = async function renderHtml({
 
     if (typeof renderResult !== "string") {
       throw new Error(
-        `Render must return a string. Recieved ${typeof renderResult}.`
+        `Render must return a string. Recieved "${typeof renderResult}".`
       );
     }
 
