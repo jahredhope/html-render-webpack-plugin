@@ -17,37 +17,241 @@ Object {
 
 exports[`Render asyncronously should render a multiple files at once 1`] = `
 Object {
-  "pageA": Object {
+  "page0": Object {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"pageA\\"
+      \\"route\\": \\"page0\\"
     }
   ]</code>
 </body>
 </html>",
   },
-  "pageB": Object {
+  "page1": Object {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"pageB\\"
+      \\"route\\": \\"page1\\"
     }
   ]</code>
 </body>
 </html>",
   },
-  "pageC": Object {
+  "page10": Object {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"pageC\\"
+      \\"route\\": \\"page10\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page11": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page11\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page12": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page12\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page13": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page13\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page14": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page14\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page15": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page15\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page16": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page16\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page17": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page17\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page18": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page18\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page19": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page19\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page2": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page2\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page3": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page3\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page4": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page4\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page5": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page5\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page6": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page6\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page7": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page7\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page8": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page8\\"
+    }
+  ]</code>
+</body>
+</html>",
+  },
+  "page9": Object {
+    "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"page9\\"
     }
   ]</code>
 </body>

@@ -1,5 +1,4 @@
-export default async function exampleRender(...params) {
-  await new Promise(resolve => setTimeout(resolve, 300));
+export default function exampleRender(...params) {
   return `<html>
 <body>
   Rendered with:&nbsp;

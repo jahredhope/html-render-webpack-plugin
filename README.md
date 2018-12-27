@@ -18,7 +18,7 @@ $ yarn add webpack html-render-webpack-plugin
 ```js
 module.exports = {
   ...,
-  plugins: [new HtmlRenderPlugin()]
+  plugins: [new HtmlRenderPlugin().render()]
 };
 ```
 
@@ -46,9 +46,9 @@ export default ({ assetsByChunkName }) => {
 
 ```html
 <html>
-<body>
-  <script src="/main-daf2166db871ad045ea4.js"></script>
-</body>
+  <body>
+    <script src="/main-daf2166db871ad045ea4.js"></script>
+  </body>
 </html>
 ```
 
@@ -56,7 +56,35 @@ See [the full example below](#example-client-assets).
 
 ## Multiple configuration setup
 
-Create your webpack build with [multiple webpack configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations).
+Pass an instance of HtmlRenderPlugin to each configuration that should be available during render. Call `.render()` on the configuration that should be used to render.
+
+**webpack.config.js**
+
+```js
+const HtmlRenderPlugin = require("html-render-webpack-plugin");
+
+const htmlRenderPlugin = new HtmlRenderPlugin();
+module.exports = [
+  {
+    name: "render",
+    target: "node", // Creates assets that render HTML that runs well in node
+    plugins: [htmlRenderPlugin.render()]
+  },
+  {
+    name: "client",
+    target: "web", // Creates files that run on the browser
+    plugins: [htmlRenderPlugin]
+  }
+];
+```
+
+See [examples](#examples) for more details.
+
+### Alternative multiple configuration setup
+
+Instead of applying the plugin to each configuration you can apply the plugin to the parent [MultiCompiler](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations).
+
+This is not recommended and may eventually deprecated in future releases.
 
 **webpack.config.js**
 
@@ -86,7 +114,7 @@ Apply the plugin to your compiler.
 ```js
 const HtmlRenderPlugin = require("html-render-webpack-plugin");
 
-multiCompiler.apply(new HtmlRenderPlugin());
+new HtmlRenderPlugin().apply(multiCompiler);
 ```
 
 Start the build
@@ -106,8 +134,6 @@ const server = new DevServer(multiCompiler, {
 server.listen(8080, "localhost", () => {});
 ```
 
-See [examples](#examples) for more details.
-
 # Options
 
 ## Option: renderEntry _string_
@@ -117,19 +143,21 @@ See [examples](#examples) for more details.
 The entry to use when rendering. Override when using [object syntax](https://webpack.js.org/concepts/entry-points/#object-syntax) in webpack entry.
 
 ```js
-new HtmlRenderPlugin({
-  renderEntry: "myRender"
-});
 ```
 
 **webpack.config.js**
 
-```
-{
+```js
+module.exports = {
   entry: {
-    myRender: './src/myRender.js',
-  }
-}
+    myRender: "./src/myRender.js"
+  },
+  plugins: [
+    new HtmlRenderPlugin({
+      renderEntry: "myRender"
+    }).render()
+  ]
+};
 ```
 
 ## Option: renderDirectory _string_
@@ -221,80 +249,9 @@ new HtmlRenderPlugin({
 
 # Examples
 
-## Example: Basic
-
-**build.js**
-
-```js
-const path = require("path");
-const webpack = require("webpack");
-const config = require("./webpack.config");
-const HtmlRenderPlugin = require("html-render-webpack-plugin");
-
-const compiler = webpack(config);
-
-// Apply the plugin directly to the MultiCompiler
-compiler.apply(new HtmlRenderPlugin());
-
-compiler.run((error, stats) => {
-  console.log("Build complete");
-});
-```
-
-**webpack.config.js**
-
-```js
-module.exports = [
-  {
-    name: "client",
-    target: "web",
-    output: {
-      filename: "client-[name]-[contenthash].js",
-    }
-    entry: path.resolve("src", "client.js")
-  },
-  {
-    name: "render",
-    target: "node",
-    output: {
-      libraryExport: "default",
-      libraryTarget: "umd2",
-      filename: "render-[name]-[contenthash].js",
-    },
-    entry: render: path.resolve("src", "render.js"),
-  }),
-]
-```
-
 ## Example: Client assets
 
 An example of using `mapStatsToParams` to create `<script>` tags.
-
-**build.js**
-
-```js
-const path = require("path");
-const webpack = require("webpack");
-const config = require("./webpack.config");
-const HtmlRenderPlugin = require("html-render-webpack-plugin");
-
-const compiler = webpack(config);
-
-// Apply the plugin directly to the MultiCompiler
-compiler.apply(
-  new HtmlRenderPlugin({
-    mapStatsToParams: ({ webpackStats }) => ({
-      clientStats: webpackStats
-        .toJson()
-        .children.find(({ name }) => name === "client")
-    })
-  })
-);
-
-compiler.run((error, stats) => {
-  console.log("Build complete");
-});
-```
 
 **src/render.js**
 
@@ -311,14 +268,25 @@ export default ({ clientStats }) => {
 **webpack.config.js**
 
 ```js
+const path = require("path");
+
+const htmlRenderPlugin = new HtmlRenderPlugin({
+  mapStatsToParams: ({ webpackStats }) => ({
+    clientStats: webpackStats
+      .toJson()
+      .children.find(({ name }) => name === "client")
+  })
+});
+
 module.exports = [
   {
     name: "client",
     target: "web",
     output: {
-      filename: "client-[name]-[contenthash].js",
-    }
-    entry: path.resolve("src", "client.js")
+      filename: "client-[name]-[contenthash].js"
+    },
+    entry: path.resolve("src", "client.js"),
+    plugins: [htmlRenderPlugin]
   },
   {
     name: "render",
@@ -326,157 +294,10 @@ module.exports = [
     output: {
       libraryExport: "default",
       libraryTarget: "umd2",
-      filename: "render-[name]-[contenthash].js",
+      filename: "render-[name]-[contenthash].js"
     },
     entry: path.resolve("src", "render.js"),
-  }),
-]
-```
-
-## Example: Live reload
-
-**dev-server.js**
-
-```js
-const DevServer = require("webpack-dev-server");
-const getCompiler = require("./getCompiler");
-const compiler = getCompiler({ liveReload: true, mode: "development" });
-
-const server = new DevServer(compiler, {
-  compress: true
-});
-server.listen(8080, "localhost", function() {});
-```
-
-**getCompiler.js**
-
-```js
-const fs = require("fs");
-const path = require("path");
-const webpack = require("webpack");
-const getConfig = require("./webpack.config");
-const RenderStaticPlugin = require("html-render-webpack-plugin");
-
-module.exports = function getCompiler({ liveReload, mode }) {
-  const compiler = webpack(getConfig({ liveReload, mode }));
-
-  const cwd = process.cwd();
-  const distDirectory = path.join(cwd, "dist");
-
-  const routes = ["", "b", "a", "c", "about", "home", "contact/us"];
-  compiler.apply(
-    new RenderStaticPlugin({
-      routes,
-      mapStatsToParams: ({ webpackStats }) => {
-        const clientStats = webpackStats
-          .toJson()
-          .children.find(({ name }) => name === "client");
-        const fileSystem = compiler.compilers[0].outputFileSystem.readFileSync
-          ? compiler.compilers[0].outputFileSystem
-          : fs;
-        return {
-          clientStats,
-          reactLoadableManifest: JSON.parse(
-            fileSystem.readFileSync(
-              path.join(clientStats.outputPath, "react-loadable-manifest.json"),
-              "utf8"
-            )
-          )
-        };
-      },
-      renderDirectory: distDirectory,
-      fs,
-      verbose: true
-    })
-  );
-
-  return compiler;
-};
-```
-
-**webpack.config.js**
-
-```js
-const webpack = require("webpack");
-const merge = require("webpack-merge");
-const path = require("path");
-const {
-  ReactLoadablePlugin
-} = require("@jahredhope/react-loadable-webpack-plugin");
-
-const cwd = process.cwd();
-const srcPath = path.resolve(cwd, "./src");
-const routes = {
-  renderEntry: path.resolve(srcPath, "render.js"),
-  clientEntry: path.resolve(srcPath, "client.js")
-};
-
-module.exports = ({ liveReload, mode }) => {
-  const domain = "http://localhost:8080";
-  const liveReloadEntry = `${require.resolve(
-    "webpack-dev-server/client/"
-  )}?${domain}`;
-
-  const common = {
-    mode,
-    output: {
-      publicPath: "/"
-    },
-    module: {
-      rules: [
-        {
-          test: /\.m?js$/,
-          exclude: /(node_modules)/,
-          use: {
-            loader: "babel-loader"
-          }
-        }
-      ]
-    }
-  };
-  const clientEntry = liveReload
-    ? [liveReloadEntry, routes.clientEntry]
-    : routes.clientEntry;
-  return [
-    merge(common, {
-      output: {
-        filename: "client-[name]-[contenthash].js"
-      },
-      optimization: {
-        runtimeChunk: {
-          name: "manifest"
-        },
-        splitChunks: {
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-              name: "vendor",
-              chunks: "all"
-            }
-          }
-        }
-      },
-      name: "client",
-      target: "web",
-      entry: clientEntry,
-      plugins: [
-        new ReactLoadablePlugin({
-          filename: "react-loadable-manifest.json"
-        }),
-        new webpack.HashedModuleIdsPlugin()
-      ]
-    }),
-    merge(common, {
-      output: {
-        libraryExport: "default",
-        library: "static",
-        libraryTarget: "umd2",
-        filename: "render-[name]-[contenthash].js"
-      },
-      name: "render",
-      target: "node",
-      entry: routes.renderEntry
-    })
-  ];
-};
+    plugins: [htmlRenderPlugin.render()]
+  }
+];
 ```

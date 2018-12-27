@@ -6,7 +6,7 @@ const config = require("./webpack.config");
 const HtmlRenderPlugin = require("../../../src");
 const getDirContentsSync = require("../../utils/getDirContentsSync");
 
-describe("Render HTML", () => {
+describe("Plugin applied to MultiCompiler", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
 
   it("should render a HTML file", async done => {
@@ -15,7 +15,7 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.apply(new HtmlRenderPlugin());
+    new HtmlRenderPlugin().apply(compiler);
 
     compiler.run(error => {
       expect(error).toBe(null);
@@ -33,7 +33,7 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.apply(new HtmlRenderPlugin({ renderDirectory }));
+    new HtmlRenderPlugin({ renderDirectory }).apply(compiler);
 
     compiler.run(error => {
       expect(error).toBe(null);
@@ -50,12 +50,10 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.apply(
-      new HtmlRenderPlugin({
-        routes: ["", "pageA", "pageB", "error.html"],
-        renderDirectory
-      })
-    );
+    new HtmlRenderPlugin({
+      routes: ["", "pageA", "pageB", "error.html"],
+      renderDirectory
+    }).apply(compiler);
 
     compiler.run(error => {
       expect(error).toBe(null);
@@ -71,19 +69,17 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.apply(
-      new HtmlRenderPlugin({
-        routes: [
-          { route: "production", language: "en-us", environment: "production" },
-          {
-            route: "development",
-            language: "en-us",
-            environment: "development"
-          }
-        ],
-        renderDirectory
-      })
-    );
+    new HtmlRenderPlugin({
+      routes: [
+        { route: "production", language: "en-us", environment: "production" },
+        {
+          route: "development",
+          language: "en-us",
+          environment: "development"
+        }
+      ],
+      renderDirectory
+    }).apply(compiler);
 
     compiler.run(error => {
       expect(error).toBe(null);
@@ -98,21 +94,19 @@ describe("Render HTML", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.apply(
-      new HtmlRenderPlugin({
-        transformFilePath: ({ route, language, environment }) =>
-          `/${environment}/${language}/${route}`,
-        routes: [
-          { route: "about/us", language: "en-us", environment: "production" },
-          {
-            route: "about/us",
-            language: "en-au",
-            environment: "development"
-          }
-        ],
-        renderDirectory
-      })
-    );
+    new HtmlRenderPlugin({
+      transformFilePath: ({ route, language, environment }) =>
+        `/${environment}/${language}/${route}`,
+      routes: [
+        { route: "about/us", language: "en-us", environment: "production" },
+        {
+          route: "about/us",
+          language: "en-au",
+          environment: "development"
+        }
+      ],
+      renderDirectory
+    }).apply(compiler);
 
     compiler.run(error => {
       expect(error).toBe(null);

@@ -3,7 +3,6 @@ const webpack = require("webpack");
 const path = require("path");
 
 const config = require("./webpack.config");
-const HtmlRenderPlugin = require("../../../src");
 const getDirContentsSync = require("../../utils/getDirContentsSync");
 
 describe("Render WebpackStats", () => {
@@ -14,15 +13,6 @@ describe("Render WebpackStats", () => {
 
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
-
-    compiler.apply(
-      new HtmlRenderPlugin({
-        renderDirectory,
-        mapStatsToParams: ({ webpackStats }) => ({
-          webpackStats
-        })
-      })
-    );
 
     compiler.run(error => {
       if (error) {
