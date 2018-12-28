@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Render HTML should allow custom file paths 1`] = `
+exports[`Use legacy apply should allow custom file paths 1`] = `
 Object {
   "development": Object {
     "en-au": Object {
@@ -45,7 +45,7 @@ Object {
 }
 `;
 
-exports[`Render HTML should render a HTML file 1`] = `
+exports[`Use legacy apply should render a HTML file 1`] = `
 "<html>
 <body>
   Rendered with:&nbsp;
@@ -58,7 +58,7 @@ exports[`Render HTML should render a HTML file 1`] = `
 </html>"
 `;
 
-exports[`Render HTML should render a file per route 1`] = `
+exports[`Use legacy apply should render a file per route 1`] = `
 Object {
   "error.html": "<html>
 <body>
@@ -107,7 +107,7 @@ Object {
 }
 `;
 
-exports[`Render HTML should render in a custom directory 1`] = `
+exports[`Use legacy apply should render in a custom directory 1`] = `
 Object {
   "index.html": "<html>
 <body>
@@ -122,7 +122,7 @@ Object {
 }
 `;
 
-exports[`Render HTML should render routes with extra information 1`] = `
+exports[`Use legacy apply should render routes with extra information 1`] = `
 Object {
   "development": Object {
     "index.html": "<html>

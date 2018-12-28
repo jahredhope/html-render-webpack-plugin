@@ -17,15 +17,16 @@ module.exports = async function renderHtml({
   transformFilePath,
   webpackStats
 }) {
-  const renderFile = renderStats.assetsByChunkName[renderEntry];
-  trace("Render route:", { renderFile });
-  if (!renderFile) {
+  const asset = renderStats.assetsByChunkName[renderEntry];
+  if (!asset) {
     throw new Error(
       `Unable to find renderEntry "${renderEntry}" in assets. Possible entries are: ${Object.keys(
         renderStats.assetsByChunkName
       ).join(", ")}.`
     );
   }
+  const renderFile = typeof asset === "string" ? asset : asset.name;
+  trace("Render route:", { renderFile });
 
   const renderFunc = createRenderer({
     renderCompilation,
@@ -91,11 +92,9 @@ module.exports = async function renderHtml({
       console.error(
         `🚨 ${chalk.red(`An error occured rendering "`)} ${chalk.blue(
           renderFile
-        )}". See below error.`
+        )}". Exiting render.`
       );
-      console.error(error);
-      await emitFile(newFilePath, error.toString());
-      return;
+      throw error;
     }
 
     if (typeof renderResult !== "string") {

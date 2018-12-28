@@ -1,0 +1,56 @@
+{
+  "title": "HTMLRenderOptionsArgument",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "verbose": {
+      "description": "If true, use console to log progress.",
+      "type": "boolean"
+    },
+    "routes": {
+      "description": "List of routes to render. A file is created for each route.",
+
+      "type": "array",
+      "items": {
+        "description": "A rule condition",
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "route": {
+                "description": "The path to generate",
+                "type": "string"
+              }
+            }
+          },
+          { "type": "string" }
+        ]
+      }
+    },
+    "mapStatsToParams": {
+      "description": "Used to pass additional values to each render.",
+      "instanceof": "Function"
+    },
+    "renderDirectory": {
+      "description": "The directory to render files to.",
+      "type": "string"
+    },
+    "renderConcurrency": {
+      "description": "Whether to render serial or parallel",
+      "type": "string"
+    },
+    "transformFilePath": {
+      "description": "Used to build the file path from the route.",
+      "instanceof": "Function"
+    },
+    "renderEntry": {
+      "description": "Which webpack entry should be used to render.",
+      "type": "string"
+    },
+    "compilerToRenderWith": {
+      "description": "Used to automatically select a configuration to render from.",
+      "type": "string"
+    }
+  }
+}

@@ -6,7 +6,7 @@ const paths = {
   clientEntry: path.resolve(srcPath, "client.js")
 };
 
-module.exports = plugin => [
+module.exports = [
   {
     name: "client",
     target: "web",
@@ -14,8 +14,7 @@ module.exports = plugin => [
     entry: paths.clientEntry,
     output: {
       filename: "client-[name]-[contenthash].js"
-    },
-    plugins: [plugin]
+    }
   },
   {
     dependencies: ["client"],
@@ -28,7 +27,6 @@ module.exports = plugin => [
       library: "static",
       libraryTarget: "umd2",
       filename: "render-[name]-[contenthash].js"
-    },
-    plugins: [plugin.render()]
+    }
   }
 ];
