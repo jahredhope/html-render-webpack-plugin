@@ -1,8 +1,9 @@
-const renderHtml = require("./renderHtml");
 const chalk = require("chalk");
-
 const validateOptions = require("schema-utils");
+
 const schema = require("./schemas/HtmlRenderWebpackPlugin.json");
+const RenderError = require("./RenderError");
+const renderHtml = require("./renderHtml");
 
 const MultiStats = require("webpack/lib/MultiStats");
 
@@ -84,7 +85,7 @@ module.exports = class HtmlRenderPlugin {
       });
     } catch (error) {
       this.logError("An error occured rendering HTML", error);
-      throw error;
+      currentCompilation.errors.push(new RenderError(error));
     }
   }
   applyRenderPlugin(compiler) {
