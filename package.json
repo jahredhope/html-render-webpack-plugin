@@ -34,7 +34,7 @@
     "prettier": "1.15.2",
     "semantic-release": "15.12.1",
     "webpack": "4.28.2",
-    "webpack-merge": "4.1.5"
+    "webpack-merge": "4.2.1"
   },
   "dependencies": {
     "chalk": "^2.4.1",
