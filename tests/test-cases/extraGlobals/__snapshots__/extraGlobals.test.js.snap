@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`with extra globals in scope should render a HTML file 1`] = `
+Object {
+  "a": Object {
+    "index.html": "<html>
+<body>
+  anExtraGlobalValue: An Extra Global Value
+</body>
+</html>",
+  },
+}
+`;

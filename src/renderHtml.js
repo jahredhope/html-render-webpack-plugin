@@ -5,6 +5,7 @@ const createRenderer = require("./createRenderer");
 const timeSince = startTime => `${(Date.now() - startTime) / 1000}s`;
 
 module.exports = async function renderHtml({
+  extraGlobals,
   mapStatsToParams,
   renderConcurrency,
   routes,
@@ -30,7 +31,8 @@ module.exports = async function renderHtml({
 
   const renderFunc = createRenderer({
     renderCompilation,
-    fileName: renderFile
+    fileName: renderFile,
+    extraGlobals
   });
   if (typeof renderFunc !== "function") {
     throw new Error(

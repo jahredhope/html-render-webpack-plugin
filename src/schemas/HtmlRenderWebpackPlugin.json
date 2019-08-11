@@ -51,6 +51,10 @@
     "compilerToRenderWith": {
       "description": "Used to automatically select a configuration to render from.",
       "type": "string"
+    },
+    "extraGlobals": {
+      "description": "Extra values to pass to the global scope.",
+      "type": "object"
     }
   }
 }
