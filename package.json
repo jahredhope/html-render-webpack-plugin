@@ -26,19 +26,19 @@
     "url": "https://github.com/jahredhope/html-render-webpack-plugin.git"
   },
   "devDependencies": {
-    "babel-eslint": "10.0.1",
-    "commitizen": "3.0.4",
-    "cz-conventional-changelog": "2.1.0",
-    "eslint": "5.9.0",
-    "jest": "24.5.0",
-    "prettier": "1.15.2",
-    "semantic-release": "15.12.1",
-    "webpack": "4.28.2",
-    "webpack-merge": "4.1.5"
+    "babel-eslint": "10.0.2",
+    "commitizen": "4.0.3",
+    "cz-conventional-changelog": "3.0.2",
+    "eslint": "6.1.0",
+    "jest": "24.8.0",
+    "prettier": "1.18.2",
+    "semantic-release": "15.13.19",
+    "webpack": "4.39.1",
+    "webpack-merge": "4.2.1"
   },
   "dependencies": {
-    "chalk": "^2.4.1",
-    "eval": "^0.1.2"
+    "chalk": "^2.4.2",
+    "eval": "^0.1.4"
   },
   "config": {
     "commitizen": {

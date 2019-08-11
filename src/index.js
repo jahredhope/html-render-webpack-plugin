@@ -14,6 +14,7 @@ module.exports = class HtmlRenderPlugin {
   constructor(options = {}) {
     validateOptions(schema, options, "HTML Render Webpack Plugin");
 
+    this.extraGlobals = options.extraGlobals || {};
     this.mapStatsToParams = options.mapStatsToParams || returnEmptyObject;
     this.renderDirectory = options.renderDirectory || "dist";
     this.renderEntry = options.renderEntry || "main";
@@ -71,6 +72,7 @@ module.exports = class HtmlRenderPlugin {
 
     try {
       await renderHtml({
+        extraGlobals: this.extraGlobals,
         mapStatsToParams: this.mapStatsToParams,
         renderConcurrency: this.renderConcurrency,
         renderCompilation: this.renderCompilation,
@@ -127,9 +129,7 @@ module.exports = class HtmlRenderPlugin {
         this.compilersComplete++;
         if (this.compilersRunning > 0) {
           this.trace(
-            `Assets emitted for ${compilerName}. Waiting for ${
-              this.compilersRunning
-            } other currently running compilers`
+            `Assets emitted for ${compilerName}. Waiting for ${this.compilersRunning} other currently running compilers`
           );
           return;
         }
@@ -143,11 +143,7 @@ module.exports = class HtmlRenderPlugin {
           return;
         }
         this.trace(
-          `Assets emitted for ${compilerName}. compilersComplete ${
-            this.compilersComplete
-          }. No. Compilers: ${this.compilers.length}. Compilers running: ${
-            this.compilersRunning
-          }.`
+          `Assets emitted for ${compilerName}. compilersComplete ${this.compilersComplete}. No. Compilers: ${this.compilers.length}. Compilers running: ${this.compilersRunning}.`
         );
         return this.onRender(compilation);
       }

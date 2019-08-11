@@ -12,7 +12,7 @@ function getFileSourceFromCompilation(specifier, compilation) {
   return asset.source();
 }
 
-function evalutateFromSource(specifier, compilation) {
+function evalutateFromSource(specifier, compilation, extraGlobals) {
   let source;
   try {
     source = getFileSourceFromCompilation(specifier, compilation);
@@ -22,21 +22,29 @@ function evalutateFromSource(specifier, compilation) {
   return evaluate(
     source,
     /* filename: */ specifier,
-    /* scope: */ { require: createLinker(specifier, compilation), console },
+    /* scope: */ {
+      require: createLinker(specifier, compilation, extraGlobals),
+      console,
+      ...extraGlobals
+    },
     /* includeGlobals: */ true
   );
 }
 
-function createLinker(parentModulePath, compilation) {
+function createLinker(parentModulePath, compilation, extraGlobals) {
   return function linker(specifier) {
     const absPath = path.join(path.dirname(parentModulePath), specifier);
     if (!fileExistsInCompilation(specifier, compilation)) {
       return require(specifier);
     }
-    return evalutateFromSource(absPath, compilation);
+    return evalutateFromSource(absPath, compilation, extraGlobals);
   };
 }
 
-module.exports = function createRenderer({ fileName, renderCompilation }) {
-  return evalutateFromSource(fileName, renderCompilation);
+module.exports = function createRenderer({
+  fileName,
+  renderCompilation,
+  extraGlobals
+}) {
+  return evalutateFromSource(fileName, renderCompilation, extraGlobals);
 };
