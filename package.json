@@ -31,7 +31,7 @@
     "cz-conventional-changelog": "3.0.2",
     "eslint": "6.1.0",
     "jest": "24.8.0",
-    "prettier": "1.18.2",
+    "prettier": "1.19.1",
     "semantic-release": "15.13.19",
     "webpack": "4.39.1",
     "webpack-merge": "4.2.1"
