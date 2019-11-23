@@ -9,7 +9,10 @@ const paths = {
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 const plugin = new HtmlRenderPlugin({
-  routes: [{ route: "/a/", extra: "a" }, { route: "/b/", extra: "b" }],
+  routes: [
+    { route: "/a/", extra: "a" },
+    { route: "/b/", extra: "b" }
+  ],
   renderDirectory
 });
 
