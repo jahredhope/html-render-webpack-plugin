@@ -1,18 +1,57 @@
-const chalk = require("chalk");
-const validateOptions = require("schema-utils");
+import chalk from "chalk";
+import validateOptions from "schema-utils";
 
-const schema = require("./schemas/HtmlRenderWebpackPlugin.json");
-const RenderError = require("./RenderError");
-const renderHtml = require("./renderHtml");
+import schema from "./schemas/HtmlRenderWebpackPlugin.json";
+import RenderError from "./RenderError";
+import renderHtml from "./renderHtml";
 
-const MultiStats = require("webpack/lib/MultiStats");
-
+import MultiStats from "webpack/lib/MultiStats";
+import {
+  ExtraGlobals,
+  MapStatsToParams,
+  Route,
+  TransformPath,
+  RenderConcurrency,
+  RouteObj
+} from "./common-types";
+import { Compiler, compilation, MultiCompiler } from "webpack";
 const returnEmptyObject = () => ({});
-const defaultTransformFilePath = ({ route }) => route;
+const defaultTransformFilePath: TransformPath = ({ route }: RouteObj) => route;
 
-module.exports = class HtmlRenderPlugin {
-  constructor(options = {}) {
-    validateOptions(schema, options, "HTML Render Webpack Plugin");
+interface Options {
+  verbose?: boolean;
+  routes?: Route[];
+  mapStatsToParams?: MapStatsToParams;
+  renderDirectory?: string;
+  renderConcurrency?: RenderConcurrency;
+  transformFilePath?: TransformPath;
+  renderEntry?: string;
+  compilerToRenderWith?: string;
+  extraGlobals?: ExtraGlobals;
+}
+
+export = class HtmlRenderPlugin {
+  extraGlobals: ExtraGlobals;
+  mapStatsToParams: MapStatsToParams;
+  renderDirectory: string;
+  renderEntry: string;
+  routes: Route[];
+
+  compilersComplete: number;
+  compilersRunning: number;
+  compilers: Compiler[];
+  compilerToRenderWith?: string;
+  compilations: compilation.Compilation[];
+  defaultHookOptions = "HtmlRenderPlugin";
+  transformFilePath: TransformPath;
+  renderConcurrency: RenderConcurrency;
+  verbose: boolean;
+
+  renderCompiler?: Compiler;
+  renderCompilation?: compilation.Compilation;
+
+  constructor(options: Options) {
+    validateOptions(schema, options || {}, "HTML Render Webpack Plugin");
 
     this.extraGlobals = options.extraGlobals || {};
     this.mapStatsToParams = options.mapStatsToParams || returnEmptyObject;
@@ -29,7 +68,6 @@ module.exports = class HtmlRenderPlugin {
     this.compilersRunning = 0;
     this.compilers = [];
     this.compilations = [];
-    this.defaultHookOptions = { name: "HtmlRenderPlugin" };
 
     this.onRender = this.onRender.bind(this);
     this.logError = this.logError.bind(this);
@@ -37,15 +75,15 @@ module.exports = class HtmlRenderPlugin {
     this.apply = this.apply.bind(this);
     this.render = this.render.bind(this);
   }
-  logError(...args) {
+  logError(...args: any[]) {
     console.log(chalk.red("🚨 HtmlRenderPlugin:"), ...args);
   }
-  trace(...args) {
+  trace(...args: any[]) {
     if (this.verbose) {
       console.log(chalk.blue("HtmlRenderPlugin:"), ...args);
     }
   }
-  async onRender(currentCompilation) {
+  async onRender(currentCompilation: compilation.Compilation) {
     this.trace(`Starting render`);
 
     if (!this.renderCompiler) {
@@ -60,8 +98,7 @@ module.exports = class HtmlRenderPlugin {
     }
 
     const renderStats = this.renderCompilation.getStats();
-
-    const webpackStats =
+    const webpackStats: any =
       this.compilations.length > 1
         ? new MultiStats(
             this.compilations.map(compilation => {
@@ -76,7 +113,6 @@ module.exports = class HtmlRenderPlugin {
         mapStatsToParams: this.mapStatsToParams,
         renderConcurrency: this.renderConcurrency,
         renderCompilation: this.renderCompilation,
-        renderCompiler: this.renderCompiler,
         renderDirectory: this.renderDirectory,
         renderEntry: this.renderEntry,
         renderStats: renderStats.toJson(),
@@ -90,7 +126,7 @@ module.exports = class HtmlRenderPlugin {
       currentCompilation.errors.push(new RenderError(error));
     }
   }
-  applyRenderPlugin(compiler) {
+  applyRenderPlugin(compiler: Compiler) {
     this.trace("Applying render plugin");
     this.renderCompiler = compiler;
 
@@ -105,7 +141,7 @@ module.exports = class HtmlRenderPlugin {
       this.renderCompilation = compilation;
     });
   }
-  applyCompiler(compiler, options = {}) {
+  applyCompiler(compiler: Compiler, options: any = {}) {
     this.compilers.push(compiler);
     const compilerName = compiler.name || compiler.options.name;
     this.trace(`Recieved compiler: ${compilerName}`);
@@ -117,15 +153,18 @@ module.exports = class HtmlRenderPlugin {
       this.defaultHookOptions,
       () => this.compilersRunning++
     );
-    compiler.hooks.emit.tap(this.defaultHookOptions, compilation => {
-      const index = this.compilers.indexOf(compilation.compiler);
-      this.compilations[index] = compilation;
-      this.compilersRunning--;
-    });
+    compiler.hooks.emit.tap(
+      this.defaultHookOptions,
+      (compilation: compilation.Compilation) => {
+        const index = this.compilers.indexOf(compilation.compiler);
+        this.compilations[index] = compilation;
+        this.compilersRunning--;
+      }
+    );
 
     compiler.hooks.afterEmit.tapPromise(
       this.defaultHookOptions,
-      async compilation => {
+      async (compilation: compilation.Compilation) => {
         this.compilersComplete++;
         if (this.compilersRunning > 0) {
           this.trace(
@@ -155,9 +194,8 @@ module.exports = class HtmlRenderPlugin {
       this.applyRenderPlugin(compiler);
     }
   }
-  apply(compiler, options = {}) {
-    const isMultiCompiler = Boolean(compiler.compilers);
-    if (isMultiCompiler) {
+  apply(compiler: MultiCompiler | Compiler, options: any = {}) {
+    if ("compilers" in compiler) {
       this.trace("Adding MultiCompiler");
       compiler.compilers.forEach(compiler => {
         const compilerName = compiler.name || compiler.options.name;
@@ -173,6 +211,6 @@ module.exports = class HtmlRenderPlugin {
     }
   }
   render() {
-    return compiler => this.apply(compiler, { render: true });
+    return (compiler: Compiler) => this.apply(compiler, { render: true });
   }
 };

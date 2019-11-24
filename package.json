@@ -3,7 +3,7 @@
   "description": "webpack plugin for rendering static HTML in a multi-config webpack build",
   "author": "Jahred Hope <jahredhope@gmail.com>",
   "version": "0.0.0-development",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "keywords": [
     "html",
@@ -12,11 +12,13 @@
     "webpack"
   ],
   "scripts": {
+    "build": "tsc",
     "commit": "git-cz",
     "lint.eslint": "eslint .",
     "lint.prettier": "prettier --list-different \"**/*.js\"",
     "lint": "npm run lint.eslint && npm run lint.prettier",
     "jest": "jest",
+    "prepublish": "npm run build",
     "test": "npm run lint && npm run jest",
     "format": "prettier --write \"**/*.js\"",
     "release": "semantic-release"
@@ -26,13 +28,21 @@
     "url": "https://github.com/jahredhope/html-render-webpack-plugin.git"
   },
   "devDependencies": {
-    "babel-eslint": "10.0.3",
+    "@types/jest": "^24.0.23",
+    "@types/memory-fs": "^0.3.2",
+    "@types/schema-utils": "^2.4.0",
+    "@types/webpack": "^4.41.0",
+    "@typescript-eslint/eslint-plugin": "^2.8.0",
+    "@typescript-eslint/parser": "^2.8.0",
     "commitizen": "4.0.3",
     "cz-conventional-changelog": "3.0.2",
     "eslint": "6.7.0",
     "jest": "24.9.0",
+    "memory-fs": "^0.5.0",
     "prettier": "1.19.1",
     "semantic-release": "15.13.31",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.7.2",
     "webpack": "4.41.2",
     "webpack-merge": "4.2.2"
   },

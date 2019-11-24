@@ -1,10 +1,32 @@
-const path = require("path");
-const chalk = require("chalk");
-const createRenderer = require("./createRenderer");
+import path from "path";
+import chalk from "chalk";
+import createRenderer from "./createRenderer";
+import {
+  ExtraGlobals,
+  RenderConcurrency,
+  Trace,
+  Route,
+  MapStatsToParams
+} from "common-types";
+import { Stats, compilation } from "webpack";
 
-const timeSince = startTime => `${(Date.now() - startTime) / 1000}s`;
+const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
 
-module.exports = async function renderHtml({
+interface Params {
+  extraGlobals: ExtraGlobals;
+  mapStatsToParams: MapStatsToParams;
+  renderConcurrency: RenderConcurrency;
+  routes: any;
+  renderEntry: string;
+  renderDirectory: string;
+  renderStats: Stats.ToJsonOutput;
+  renderCompilation: compilation.Compilation;
+  trace: Trace;
+  transformFilePath: (route: Route) => string;
+  webpackStats: Stats;
+}
+
+export default async function renderHtml({
   extraGlobals,
   mapStatsToParams,
   renderConcurrency,
@@ -12,17 +34,16 @@ module.exports = async function renderHtml({
   renderEntry,
   renderDirectory,
   renderStats,
-  renderCompiler,
   renderCompilation,
   trace,
   transformFilePath,
   webpackStats
-}) {
-  const asset = renderStats.assetsByChunkName[renderEntry];
+}: Params) {
+  const asset = renderStats.assetsByChunkName![renderEntry];
   if (!asset) {
     throw new Error(
       `Unable to find renderEntry "${renderEntry}" in assets. Possible entries are: ${Object.keys(
-        renderStats.assetsByChunkName
+        renderStats.assetsByChunkName!
       ).join(", ")}.`
     );
   }
@@ -31,7 +52,7 @@ module.exports = async function renderHtml({
 
   const renderFunc = createRenderer({
     renderCompilation,
-    fileName: renderFile,
+    fileName: renderFile.toString(),
     extraGlobals
   });
   if (typeof renderFunc !== "function") {
@@ -40,27 +61,34 @@ module.exports = async function renderHtml({
     );
   }
 
-  async function emitFile(dir, content) {
+  async function emitFile(dir: string, content: string) {
     await new Promise((resolve, reject) =>
-      renderCompiler.outputFileSystem.mkdirp(path.dirname(dir), error => {
-        if (error) {
-          reject(error);
+      renderCompilation.compiler.outputFileSystem.mkdirp(
+        path.dirname(dir),
+        (error?: Error | null) => {
+          if (error) {
+            reject(error);
+          }
+          resolve();
         }
-        resolve();
-      })
+      )
     );
     return new Promise((resolve, reject) =>
-      renderCompiler.outputFileSystem.writeFile(dir, content, error => {
-        if (error) {
-          reject(error);
-        }
+      renderCompilation.compiler.outputFileSystem.writeFile(
+        dir,
+        content,
+        error => {
+          if (error) {
+            reject(error);
+          }
 
-        resolve();
-      })
+          resolve();
+        }
+      )
     );
   }
 
-  async function render(routeValue) {
+  async function render(routeValue: Route) {
     const startRenderTime = Date.now();
     const routeData =
       typeof routeValue === "string" ? { route: routeValue } : routeValue;
@@ -116,4 +144,5 @@ module.exports = async function renderHtml({
   for (const route of routes) {
     await render(route);
   }
-};
+  return Promise.resolve();
+}

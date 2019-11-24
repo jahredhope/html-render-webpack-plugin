@@ -1,18 +1,32 @@
-const path = require("path");
-const evaluate = require("eval");
+import path from "path";
+// @ts-ignore: No types available
+import evaluate from "eval";
+import { compilation } from "webpack";
 
-function fileExistsInCompilation(specifier, compilation) {
+import { Specifier, ExtraGlobals } from "./common-types";
+
+function fileExistsInCompilation(
+  specifier: Specifier,
+  compilation: compilation.Compilation
+) {
   const fileName = path.basename(specifier);
   return Boolean(compilation.assets[fileName]);
 }
 
-function getFileSourceFromCompilation(specifier, compilation) {
+function getFileSourceFromCompilation(
+  specifier: Specifier,
+  compilation: compilation.Compilation
+) {
   const fileName = path.basename(specifier);
   const asset = compilation.assets[fileName];
   return asset.source();
 }
 
-function evalutateFromSource(specifier, compilation, extraGlobals) {
+function evalutateFromSource(
+  specifier: Specifier,
+  compilation: compilation.Compilation,
+  extraGlobals: ExtraGlobals
+) {
   let source;
   try {
     source = getFileSourceFromCompilation(specifier, compilation);
@@ -31,8 +45,12 @@ function evalutateFromSource(specifier, compilation, extraGlobals) {
   );
 }
 
-function createLinker(parentModulePath, compilation, extraGlobals) {
-  return function linker(specifier) {
+function createLinker(
+  parentModulePath: Specifier,
+  compilation: compilation.Compilation,
+  extraGlobals: ExtraGlobals
+) {
+  return function linker(specifier: Specifier) {
     const absPath = path.join(path.dirname(parentModulePath), specifier);
     if (!fileExistsInCompilation(specifier, compilation)) {
       return require(specifier);
@@ -41,10 +59,14 @@ function createLinker(parentModulePath, compilation, extraGlobals) {
   };
 }
 
-module.exports = function createRenderer({
+export default function createRenderer({
   fileName,
   renderCompilation,
   extraGlobals
+}: {
+  fileName: string;
+  renderCompilation: compilation.Compilation;
+  extraGlobals: ExtraGlobals;
 }) {
   return evalutateFromSource(fileName, renderCompilation, extraGlobals);
-};
+}
