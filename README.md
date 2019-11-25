@@ -270,7 +270,7 @@ export default ({ clientStats }) => {
 ```js
 const path = require("path");
 
-const htmlRenderPlugin = new HtmlRenderPlugin({
+const { htmlRenderPlugin, htmlRenderClientPlugin } = createHtmlRenderPlugin({
   mapStatsToParams: ({ webpackStats }) => ({
     clientStats: webpackStats
       .toJson()
@@ -286,7 +286,7 @@ module.exports = [
       filename: "client-[name]-[contenthash].js"
     },
     entry: path.resolve("src", "client.js"),
-    plugins: [htmlRenderPlugin]
+    plugins: [htmlRenderClientPlugin]
   },
   {
     name: "render",
@@ -297,7 +297,7 @@ module.exports = [
       filename: "render-[name]-[contenthash].js"
     },
     entry: path.resolve("src", "render.js"),
-    plugins: [htmlRenderPlugin.render()]
+    plugins: [htmlRenderPlugin]
   }
 ];
 ```

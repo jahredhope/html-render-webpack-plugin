@@ -17,7 +17,6 @@ module.exports = [
     }
   },
   {
-    dependencies: ["client"],
     name: "render",
     target: "node",
     mode: "production",

@@ -1,216 +1,263 @@
-import chalk from "chalk";
 import validateOptions from "schema-utils";
 
 import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
-import renderHtml from "./renderHtml";
-
+import renderRoutes from "./renderRoutes";
+import { log, logError } from "./logging";
 import MultiStats from "webpack/lib/MultiStats";
+import createDevServer from "./createDevServer";
 import {
+  BaseRoute,
   ExtraGlobals,
   MapStatsToParams,
-  Route,
-  TransformPath,
   RenderConcurrency,
-  RouteObj
+  Renderer,
+  Render,
+  RouteInput,
+  OnRendererReady,
+  TransformExpressPath,
+  TransformPath
 } from "./common-types";
-import { Compiler, compilation, MultiCompiler } from "webpack";
-const returnEmptyObject = () => ({});
-const defaultTransformFilePath: TransformPath = ({ route }: RouteObj) => route;
+import { Compiler, compilation } from "webpack";
+import getSourceFromCompilation from "./getSourceFromCompilation";
+import createRenderer from "./createRenderer";
 
-interface Options {
-  verbose?: boolean;
-  routes?: Route[];
+const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
+const returnEmptyObject = () => ({});
+const defaultTransform: TransformPath = <Route extends BaseRoute>(
+  route: Route
+) => route.route;
+
+interface Options<Route extends BaseRoute = BaseRoute> {
+  useDevServer?: boolean;
+  routes?: RouteInput<Route>[];
   mapStatsToParams?: MapStatsToParams;
   renderDirectory?: string;
   renderConcurrency?: RenderConcurrency;
-  transformFilePath?: TransformPath;
+  transformFilePath?: TransformPath<Route>;
+  transformExpressPath?: TransformExpressPath<Route>;
   renderEntry?: string;
-  compilerToRenderWith?: string;
   extraGlobals?: ExtraGlobals;
 }
 
-export = class HtmlRenderPlugin {
-  extraGlobals: ExtraGlobals;
-  mapStatsToParams: MapStatsToParams;
-  renderDirectory: string;
-  renderEntry: string;
-  routes: Route[];
+interface CompilationStatus {
+  compilation: compilation.Compilation | null;
+  isReady: boolean;
+}
 
-  compilersComplete: number;
-  compilersRunning: number;
-  compilers: Compiler[];
-  compilerToRenderWith?: string;
-  compilations: compilation.Compilation[];
-  defaultHookOptions = "HtmlRenderPlugin";
-  transformFilePath: TransformPath;
-  renderConcurrency: RenderConcurrency;
-  verbose: boolean;
+export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
+  constructor(options: Options<Route> = {}) {
+    const emitAssets = true;
 
-  renderCompiler?: Compiler;
-  renderCompilation?: compilation.Compilation;
-
-  constructor(options: Options) {
     validateOptions(schema, options || {}, "HTML Render Webpack Plugin");
 
-    this.extraGlobals = options.extraGlobals || {};
-    this.mapStatsToParams = options.mapStatsToParams || returnEmptyObject;
-    this.renderDirectory = options.renderDirectory || "dist";
-    this.renderEntry = options.renderEntry || "main";
-    this.routes = options.routes || [""];
-    this.transformFilePath =
-      options.transformFilePath || defaultTransformFilePath;
-    this.verbose = options.verbose || false;
-    this.renderConcurrency = options.renderConcurrency || "serial";
-    this.compilerToRenderWith = options.compilerToRenderWith;
+    const pluginName = "HtmlRenderPlugin";
 
-    this.compilersComplete = 0;
-    this.compilersRunning = 0;
-    this.compilers = [];
-    this.compilations = [];
+    const {
+      useDevServer = false,
+      extraGlobals = {},
+      mapStatsToParams = returnEmptyObject,
+      renderEntry = "main",
+      transformFilePath = defaultTransform,
+      transformExpressPath = defaultTransform,
+      renderConcurrency = "serial"
+    } = options;
 
-    this.onRender = this.onRender.bind(this);
-    this.logError = this.logError.bind(this);
-    this.trace = this.trace.bind(this);
-    this.apply = this.apply.bind(this);
-    this.render = this.render.bind(this);
-  }
-  logError(...args: any[]) {
-    console.log(chalk.red("🚨 HtmlRenderPlugin:"), ...args);
-  }
-  trace(...args: any[]) {
-    if (this.verbose) {
-      console.log(chalk.blue("HtmlRenderPlugin:"), ...args);
-    }
-  }
-  async onRender(currentCompilation: compilation.Compilation) {
-    this.trace(`Starting render`);
-
-    if (!this.renderCompiler) {
-      const errorMessage = `Unable to find render compiler. Add \`.render()\` to any one configuration.`;
-      this.logError(errorMessage);
-      throw new Error(errorMessage);
-    }
-    if (!this.renderCompilation) {
-      const errorMessage = `Unable to find render compilation. Something may have gone wrong during render build.`;
-      this.logError(errorMessage);
-      throw new Error(errorMessage);
-    }
-
-    const renderStats = this.renderCompilation.getStats();
-    const webpackStats: any =
-      this.compilations.length > 1
-        ? new MultiStats(
-            this.compilations.map(compilation => {
-              return compilation.getStats();
-            })
-          )
-        : currentCompilation.getStats();
-
-    try {
-      await renderHtml({
-        extraGlobals: this.extraGlobals,
-        mapStatsToParams: this.mapStatsToParams,
-        renderConcurrency: this.renderConcurrency,
-        renderCompilation: this.renderCompilation,
-        renderDirectory: this.renderDirectory,
-        renderEntry: this.renderEntry,
-        renderStats: renderStats.toJson(),
-        routes: this.routes,
-        trace: this.trace,
-        transformFilePath: this.transformFilePath,
-        webpackStats
-      });
-    } catch (error) {
-      this.logError("An error occured rendering HTML", error);
-      currentCompilation.errors.push(new RenderError(error));
-    }
-  }
-  applyRenderPlugin(compiler: Compiler) {
-    this.trace("Applying render plugin");
-    this.renderCompiler = compiler;
-
-    if (
-      this.renderCompiler.options.output &&
-      this.renderCompiler.options.output.path
-    ) {
-      this.renderDirectory =
-        this.renderDirectory || this.renderCompiler.options.output.path;
-    }
-    this.renderCompiler.hooks.emit.tap(this.defaultHookOptions, compilation => {
-      this.renderCompilation = compilation;
-    });
-  }
-  applyCompiler(compiler: Compiler, options: any = {}) {
-    this.compilers.push(compiler);
-    const compilerName = compiler.name || compiler.options.name;
-    this.trace(`Recieved compiler: ${compilerName}`);
-
-    compiler.hooks.run.tap(this.defaultHookOptions, () => {
-      this.compilersRunning++;
-    });
-    compiler.hooks.watchRun.tap(
-      this.defaultHookOptions,
-      () => this.compilersRunning++
+    const routes: Route[] = (options.routes || [""]).map(route =>
+      typeof route === "string" ? ({ route } as Route) : route
     );
-    compiler.hooks.emit.tap(
-      this.defaultHookOptions,
-      (compilation: compilation.Compilation) => {
-        const index = this.compilers.indexOf(compilation.compiler);
-        this.compilations[index] = compilation;
-        this.compilersRunning--;
+
+    const renderDirectory = options.renderDirectory || "dist";
+
+    const clientCompilations: CompilationStatus[] = [];
+    let rendererCompilation: CompilationStatus;
+
+    let renderer: Renderer;
+
+    const isBuildReady = () =>
+      rendererCompilation &&
+      rendererCompilation.isReady &&
+      clientCompilations.every(compilationStatus => compilationStatus.isReady);
+    const isRendererReady = () => isBuildReady() && renderer;
+
+    const render: Render<Route> = async (route: Route) => {
+      const startRenderTime = Date.now();
+      log(`Starting render`, route);
+      const webpackStats = getClientStats();
+      const renderParams = {
+        ...route,
+        ...mapStatsToParams({
+          ...route,
+          webpackStats
+        })
+      };
+      const result = renderer(renderParams);
+      log(
+        `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`
+      );
+      return result;
+    };
+
+    const onRenderAll = async (currentCompilation: compilation.Compilation) => {
+      log(`Starting routes render`);
+
+      if (!rendererCompilation.compilation) {
+        const errorMessage = `Unable to find render compilation. Something may have gone wrong during render build.`;
+        logError(errorMessage);
+        throw new Error(errorMessage);
       }
-    );
 
-    compiler.hooks.afterEmit.tapPromise(
-      this.defaultHookOptions,
-      async (compilation: compilation.Compilation) => {
-        this.compilersComplete++;
-        if (this.compilersRunning > 0) {
-          this.trace(
-            `Assets emitted for ${compilerName}. Waiting for ${this.compilersRunning} other currently running compilers`
-          );
-          return;
-        }
-        if (this.compilersComplete < this.compilers.length) {
-          this.trace(
-            `Assets emitted for ${compilerName}. Waiting for ${this.compilers
-              .length -
-              this
-                .compilersComplete} other compilers to finish their first build.`
-          );
-          return;
-        }
-        this.trace(
-          `Assets emitted for ${compilerName}. compilersComplete ${this.compilersComplete}. No. Compilers: ${this.compilers.length}. Compilers running: ${this.compilersRunning}.`
-        );
-        return this.onRender(compilation);
-      }
-    );
-    if (
-      options.render ||
-      (this.compilerToRenderWith && compilerName === this.compilerToRenderWith)
-    ) {
-      this.applyRenderPlugin(compiler);
-    }
-  }
-  apply(compiler: MultiCompiler | Compiler, options: any = {}) {
-    if ("compilers" in compiler) {
-      this.trace("Adding MultiCompiler");
-      compiler.compilers.forEach(compiler => {
-        const compilerName = compiler.name || compiler.options.name;
-        const compilerToRenderWith = this.compilerToRenderWith || "render";
-        this.applyCompiler(compiler, {
-          ...options,
-          render: compilerToRenderWith === compilerName
+      try {
+        await renderRoutes({
+          render,
+          renderConcurrency,
+          renderCompilation: rendererCompilation.compilation,
+          renderDirectory,
+          renderEntry,
+          routes,
+          transformFilePath
         });
+      } catch (error) {
+        logError("An error occured rendering HTML", error);
+        currentCompilation.errors.push(new RenderError(error));
+      }
+      log(`Ending routes render`);
+    };
+
+    const getRenderEntry = (compilation: compilation.Compilation) => {
+      const renderStats = compilation.getStats().toJson();
+
+      const asset = renderStats.assetsByChunkName![renderEntry];
+      if (!asset) {
+        throw new Error(
+          `Unable to find renderEntry "${renderEntry}" in assets. Possible entries are: ${Object.keys(
+            renderStats.assetsByChunkName!
+          ).join(", ")}.`
+        );
+      }
+
+      const renderFile = typeof asset === "string" ? asset : asset.name;
+      return renderFile.toString();
+    };
+
+    const renderCallbacks: any[] = [];
+
+    const getClientStats = () =>
+      clientCompilations.length === 1
+        ? clientCompilations[0].compilation!.getStats()
+        : new MultiStats(
+            clientCompilations
+              .map(compilationStatus => compilationStatus.compilation)
+              .filter(Boolean)
+              .map(compilation => compilation!.getStats())
+          );
+
+    const flushQueuedRenders = () => {
+      if (isRendererReady() && renderCallbacks.length > 0) {
+        renderCallbacks.shift()(renderer, getClientStats());
+        flushQueuedRenders();
+      }
+    };
+
+    const onRendererReady: OnRendererReady<Route> = cb => {
+      if (isRendererReady()) {
+        cb(render);
+      } else {
+        renderCallbacks.push(cb);
+      }
+    };
+
+    const createRendererIfReady = async (
+      currentCompilation: compilation.Compilation
+    ) => {
+      if (!isBuildReady()) {
+        return;
+      }
+      const renderCompilation = rendererCompilation.compilation!;
+      const renderEntry = getRenderEntry(renderCompilation);
+      log("Render route:", { renderEntry });
+      const source = getSourceFromCompilation(renderCompilation);
+      renderer = createRenderer({
+        source,
+        fileName: renderEntry,
+        extraGlobals
       });
-    } else {
-      this.trace("Adding Compiler");
-      this.applyCompiler(compiler, options);
+
+      if (typeof renderer !== "function") {
+        console.log({ renderer });
+        throw new Error(
+          `Unable to find render function. File "${renderEntry}". Recieved ${typeof renderer}.`
+        );
+      }
+      flushQueuedRenders();
+      if (emitAssets) {
+        await onRenderAll(currentCompilation);
+      }
+    };
+
+    const apply = (compiler: Compiler, isRenderer: boolean) => {
+      const compilerName = compiler.name || compiler.options.name;
+
+      const compilationStatus: CompilationStatus = {
+        compilation: null,
+        isReady: false
+      };
+
+      if (isRenderer) {
+        log(`Recieved render compiler: ${compilerName}`);
+      } else {
+        log(`Recieved compiler: ${compilerName}`);
+      }
+
+      if (isRenderer) {
+        if (rendererCompilation) {
+          throw new Error("Error. Unable to apply a second renderer");
+        }
+        rendererCompilation = compilationStatus;
+      } else {
+        clientCompilations.push(compilationStatus);
+      }
+
+      compiler.hooks.watchRun.tap(pluginName, () => {
+        log(`Build started for for ${compilerName}.`);
+        compilationStatus.isReady = false;
+      });
+
+      compiler.hooks.afterEmit.tapPromise(pluginName, async compilation => {
+        log(`Assets emitted for ${compilerName}.`);
+        compilationStatus.compilation = compilation;
+        compilationStatus.isReady = true;
+        await createRendererIfReady(compilation);
+      });
+    };
+    this.collectStats = (compiler: Compiler) => apply(compiler, false);
+    this.render = (compiler?: Compiler) => {
+      // Support legacy behaviour of calling '.render()' until next breaking change
+      if (!compiler) {
+        console.warn(
+          "Warning. Calling render nolonger required. Change htmlRenderPlugin.render() to htmlRenderPlugin.render"
+        );
+        return (compiler: Compiler) => apply(compiler, true);
+      }
+      return apply(compiler, true);
+    };
+    this.apply = (compiler: Compiler) => {
+      console.warn(
+        "Warning. Attempted to apply directly to webpack. Use htmlRenderPlugin.collectStats instead."
+      );
+      this.collectStats(compiler);
+    };
+    if (useDevServer) {
+      this.devServerRouter = createDevServer<Route>({
+        transformExpressPath,
+        onRendererReady,
+        getClientStats,
+        routes
+      });
     }
   }
-  render() {
-    return (compiler: Compiler) => this.apply(compiler, { render: true });
-  }
+  collectStats: (compiler: Compiler) => void;
+  render: (compiler: Compiler) => void;
+  apply: (compiler: Compiler) => void;
+  devServerRouter: any;
 };

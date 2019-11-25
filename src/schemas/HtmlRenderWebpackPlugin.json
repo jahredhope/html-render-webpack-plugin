@@ -3,8 +3,8 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "verbose": {
-      "description": "If true, use console to log progress.",
+    "useDevServer": {
+      "description": "If true, return an Express Router to render routes.",
       "type": "boolean"
     },
     "routes": {
@@ -46,10 +46,6 @@
     },
     "renderEntry": {
       "description": "Which webpack entry should be used to render.",
-      "type": "string"
-    },
-    "compilerToRenderWith": {
-      "description": "Used to automatically select a configuration to render from.",
       "type": "string"
     },
     "extraGlobals": {

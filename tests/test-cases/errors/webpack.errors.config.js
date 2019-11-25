@@ -9,9 +9,9 @@ const htmlRenderPlugin = new HtmlRenderPlugin({ renderDirectory });
 
 module.exports = [
   merge(defaultConfig[0], {
-    plugins: [htmlRenderPlugin]
+    plugins: [htmlRenderPlugin.collectStats]
   }),
   merge(defaultConfig[1], {
-    plugins: [htmlRenderPlugin.render()]
+    plugins: [htmlRenderPlugin.render]
   })
 ];

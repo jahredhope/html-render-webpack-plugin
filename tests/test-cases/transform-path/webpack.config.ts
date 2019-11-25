@@ -1,4 +1,6 @@
-const path = require("path");
+import path from "path";
+import { Configuration } from "webpack";
+import HtmlRenderPlugin from "../../../src";
 
 const srcPath = path.resolve(__dirname, "./src");
 const paths = {
@@ -6,7 +8,7 @@ const paths = {
   clientEntry: path.resolve(srcPath, "client.js")
 };
 
-module.exports = [
+export default (htmlRenderPlugin: HtmlRenderPlugin): Configuration[] => [
   {
     name: "client",
     target: "web",
@@ -14,10 +16,10 @@ module.exports = [
     entry: paths.clientEntry,
     output: {
       filename: "client-[name]-[contenthash].js"
-    }
+    },
+    plugins: [htmlRenderPlugin.collectStats]
   },
   {
-    dependencies: ["client"],
     name: "render",
     target: "node",
     mode: "production",
@@ -25,8 +27,9 @@ module.exports = [
     output: {
       libraryExport: "default",
       library: "static",
-      libraryTarget: "umd2",
+      libraryTarget: "umd",
       filename: "render-[name]-[contenthash].js"
-    }
+    },
+    plugins: [htmlRenderPlugin.render]
   }
 ];
