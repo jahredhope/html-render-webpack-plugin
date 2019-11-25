@@ -6,8 +6,9 @@ import getDirContentsSync from "../../utils/getDirContentsSync";
 
 import getConfig from "./webpack.config";
 import HtmlRenderPlugin from "../../../src";
+import { BaseRoute } from "../../../src/common-types";
 
-interface Route {
+interface Route extends BaseRoute {
   route: string;
   site: string;
   language: string;
@@ -30,6 +31,7 @@ describe("transformFilePath", () => {
   it("should allow multiple routes with the same path", async done => {
     const renderDirectory = path.join(process.cwd(), "dist", "render");
     const htmlRenderPlugin = new HtmlRenderPlugin<Route>({
+      mapStatsToParams: () => ({}),
       routes,
       renderDirectory,
       transformFilePath: route =>

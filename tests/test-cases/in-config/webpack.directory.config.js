@@ -3,18 +3,18 @@ const merge = require("webpack-merge");
 const defaultConfig = require("./webpack.default.config");
 const HtmlRenderPlugin = require("../../../src");
 
-console.log("HtmlRenderPlugin", HtmlRenderPlugin);
-console.log("HtmlRenderPlugin default", HtmlRenderPlugin.default);
-
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 
-const htmlRenderPlugin = new HtmlRenderPlugin({ renderDirectory });
+const htmlRenderPlugin = new HtmlRenderPlugin({
+  mapStatsToParams: () => ({}),
+  renderDirectory
+});
 
 module.exports = [
   merge(defaultConfig[0], {
-    plugins: [htmlRenderPlugin.collectStats]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin]
   }),
   merge(defaultConfig[1], {
-    plugins: [htmlRenderPlugin.render]
+    plugins: [htmlRenderPlugin.rendererPlugin]
   })
 ];

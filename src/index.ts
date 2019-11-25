@@ -17,7 +17,8 @@ import {
   OnRendererReady,
   TransformExpressPath,
   TransformPath,
-  WebpackStats
+  WebpackStats,
+  GetRouteFromRequest
 } from "./common-types";
 import { Compiler, compilation } from "webpack";
 import getSourceFromCompilation from "./getSourceFromCompilation";
@@ -32,6 +33,8 @@ const defaultTransform: TransformPath = <Route extends BaseRoute>(
 ) => route.route;
 
 interface Options<Route extends BaseRoute = BaseRoute> {
+  skipAssets?: boolean;
+  getRouteFromRequest?: GetRouteFromRequest<Route>;
   routes?: RouteInput<Route>[];
   mapStatsToParams?: MapStatsToParams;
   renderDirectory?: string;
@@ -49,16 +52,16 @@ interface CompilationStatus {
 
 export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
   constructor(options: Options<Route> = {}) {
-    const emitAssets = true;
-
     validateOptions(schema, options || {}, "HTML Render Webpack Plugin");
 
     const pluginName = "HtmlRenderPlugin";
 
     const {
       extraGlobals = {},
+      skipAssets = false,
       mapStatsToParams = defaultMapStats,
       renderEntry = "main",
+      getRouteFromRequest,
       transformFilePath = defaultTransform,
       transformExpressPath = defaultTransform,
       renderConcurrency = "serial"
@@ -81,6 +84,14 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       clientCompilations.every(compilationStatus => compilationStatus.isReady);
     const isRendererReady = () => isBuildReady() && renderer;
 
+    const renderQueue: Array<() => void> = [];
+    const flushRenderQueue = async () => {
+      if (isRendererReady() && renderQueue.length > 0) {
+        await renderQueue.shift()!();
+        flushRenderQueue();
+      }
+    };
+
     const render: Render<Route> = async (route: Route) => {
       const startRenderTime = Date.now();
       log(`Starting render`, route);
@@ -92,11 +103,17 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
           webpackStats
         })
       };
-      const result = renderer(renderParams);
-      log(
-        `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`
-      );
-      return result;
+      try {
+        const result = renderer(renderParams);
+
+        log(
+          `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`
+        );
+        return result;
+      } catch (error) {
+        error.webpackStats = webpackStats;
+        throw error;
+      }
     };
 
     const onRenderAll = async (currentCompilation: compilation.Compilation) => {
@@ -185,13 +202,13 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       });
 
       if (typeof renderer !== "function") {
-        console.log({ renderer });
         throw new Error(
-          `Unable to find render function. File "${renderEntry}". Recieved ${typeof renderer}.`
+          `Unable to find render function. File "${renderEntry}". Received ${typeof renderer}.`
         );
       }
       flushQueuedRenders();
-      if (emitAssets) {
+      flushRenderQueue();
+      if (!skipAssets) {
         await onRenderAll(currentCompilation);
       }
     };
@@ -205,9 +222,9 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       };
 
       if (isRenderer) {
-        log(`Recieved render compiler: ${compilerName}`);
+        log(`Received render compiler: ${compilerName}`);
       } else {
-        log(`Recieved compiler: ${compilerName}`);
+        log(`Received compiler: ${compilerName}`);
       }
 
       if (isRenderer) {
@@ -231,8 +248,8 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         await createRendererIfReady(compilation);
       });
     };
-    this.collectStats = (compiler: Compiler) => apply(compiler, false);
-    this.render = (compiler?: Compiler) => {
+    this.statsCollectorPlugin = (compiler: Compiler) => apply(compiler, false);
+    this.rendererPlugin = (compiler?: Compiler) => {
       // Support legacy behaviour of calling '.render()' until next breaking change
       if (!compiler) {
         console.warn(
@@ -244,20 +261,41 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     };
     this.apply = (compiler: Compiler) => {
       console.warn(
-        "Warning. Attempted to apply directly to webpack. Use htmlRenderPlugin.collectStats instead."
+        "Warning. Attempted to apply directly to webpack. Use htmlRenderPlugin.statsCollectorPlugin instead."
       );
-      this.collectStats(compiler);
+      this.statsCollectorPlugin(compiler);
     };
+    this.render = () => this.rendererPlugin;
     this.createDevRouter = () =>
       createDevRouter<Route>({
         transformExpressPath,
+        getRouteFromRequest,
         onRendererReady,
         getClientStats,
         routes
       });
+
+    this.renderWhenReady = (route: Route) =>
+      new Promise((resolve, reject) => {
+        const onRender = () => {
+          log("Rendering renderWhenReady onRender");
+          try {
+            resolve(render(route));
+          } catch (error) {
+            reject(error);
+          }
+        };
+        if (isRendererReady()) {
+          onRender();
+        } else {
+          renderQueue.push(onRender);
+        }
+      });
   }
-  collectStats: (compiler: Compiler) => void;
-  render: (compiler: Compiler) => void;
+  renderWhenReady: (route: Route) => Promise<string>;
+  statsCollectorPlugin: (compiler: Compiler) => void;
+  rendererPlugin: (compiler: Compiler) => void;
+  render: () => (compiler: Compiler) => void;
   apply: (compiler: Compiler) => void;
   createDevRouter: () => Router;
 };

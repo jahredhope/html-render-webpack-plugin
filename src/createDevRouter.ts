@@ -1,16 +1,18 @@
-import express, { Request, Response } from "express";
-import { log } from "./logging";
+import express, { Request, Response, NextFunction } from "express";
+import { log, logError } from "./logging";
 import exceptionFormatter from "exception-formatter";
 import {
   OnRendererReady,
   BaseRoute,
   WebpackStats,
-  TransformExpressPath
+  TransformExpressPath,
+  GetRouteFromRequest
 } from "common-types";
 import { Stats } from "webpack";
 
 interface Params<Route> {
   routes: Route[];
+  getRouteFromRequest?: GetRouteFromRequest<Route>;
   onRendererReady: OnRendererReady<Route>;
   transformExpressPath: TransformExpressPath<Route>;
   getClientStats: () => WebpackStats;
@@ -18,6 +20,7 @@ interface Params<Route> {
 
 export = <Route extends BaseRoute>({
   routes,
+  getRouteFromRequest,
   onRendererReady,
   transformExpressPath,
   getClientStats
@@ -45,11 +48,33 @@ export = <Route extends BaseRoute>({
 
   const devServerRouter = express.Router();
 
+  const routesByExpressPath: Record<string, Route> = {};
+
+  // Deduplicate paths to avoid duplicated processing in Express
   routes.forEach(route => {
+    const expressPath = transformExpressPath(route);
+    if (expressPath) {
+      routesByExpressPath[expressPath] = route;
+    }
+  });
+
+  Object.entries(routesByExpressPath).forEach(([expressPath, defaultRoute]) => {
     devServerRouter.get(
-      transformExpressPath(route),
-      async (req: Request, res: Response) => {
+      expressPath,
+      async (req: Request, res: Response, next: NextFunction) => {
         onRendererReady(async render => {
+          const route = getRouteFromRequest
+            ? getRouteFromRequest(req, routes)
+            : defaultRoute;
+          if (!route) {
+            next();
+          }
+          if (!routes.includes(route)) {
+            const errorMessage =
+              "Returned route was not an existing route. Ensure return value from getRouteFromRequest is route";
+            logError(errorMessage);
+            throw new Error(errorMessage);
+          }
           log(`Static render for ${route} from ${req.path}`);
           try {
             res.send(await render(route));

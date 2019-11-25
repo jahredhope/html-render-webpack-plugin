@@ -19,5 +19,10 @@ module.exports = {
     libraryTarget: "umd2",
     filename: "render-[name]-[contenthash].js"
   },
-  plugins: [new HtmlRenderPlugin({ renderDirectory }).render()]
+  plugins: [
+    new HtmlRenderPlugin({
+      mapStatsToParams: () => ({}),
+      renderDirectory
+    }).render()
+  ]
 };

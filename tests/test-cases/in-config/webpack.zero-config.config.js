@@ -2,13 +2,13 @@ const merge = require("webpack-merge");
 const defaultConfig = require("./webpack.default.config");
 const HtmlRenderPlugin = require("../../../src");
 
-const htmlRenderPlugin = new HtmlRenderPlugin();
+const htmlRenderPlugin = new HtmlRenderPlugin({ mapStatsToParams: () => ({}) });
 
 module.exports = [
   merge(defaultConfig[0], {
-    plugins: [htmlRenderPlugin.collectStats]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin]
   }),
   merge(defaultConfig[1], {
-    plugins: [htmlRenderPlugin.render]
+    plugins: [htmlRenderPlugin.rendererPlugin]
   })
 ];

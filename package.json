@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc --declaration",
     "commit": "git-cz",
-    "lint.eslint": "eslint **/*.ts",
+    "lint.eslint": "eslint src/**/*.ts",
     "lint.prettier": "prettier --list-different \"**/*.js\"",
     "lint": "npm run lint.eslint && npm run lint.prettier",
     "jest": "jest",

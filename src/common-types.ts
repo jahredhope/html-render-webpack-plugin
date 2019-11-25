@@ -1,5 +1,6 @@
 import { Stats } from "webpack";
 import MultiStats from "webpack/lib/MultiStats";
+import { Request } from "express";
 
 export type WebpackStats = Stats | MultiStats;
 export type BaseRoute = { route: string };
@@ -22,3 +23,7 @@ export type MapStatsToParams = ({
 }) => object;
 export type TransformPath<Route = BaseRoute> = (route: Route) => string;
 export type TransformExpressPath<Route = BaseRoute> = (route: Route) => string;
+export type GetRouteFromRequest<Route> = (
+  req: Request,
+  routes: Route[]
+) => Route;

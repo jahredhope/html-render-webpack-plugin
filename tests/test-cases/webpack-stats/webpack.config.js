@@ -9,10 +9,7 @@ const paths = {
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 
 const htmlRenderPlugin = new HtmlRenderPlugin({
-  renderDirectory,
-  mapStatsToParams: ({ webpackStats }) => ({
-    webpackStats
-  })
+  renderDirectory
 });
 
 module.exports = [
@@ -24,7 +21,7 @@ module.exports = [
     output: {
       filename: "client-[name]-[contenthash].js"
     },
-    plugins: [htmlRenderPlugin.collectStats]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin]
   },
   {
     name: "render",
@@ -37,6 +34,6 @@ module.exports = [
       libraryTarget: "umd2",
       filename: "render-[name]-[contenthash].js"
     },
-    plugins: [htmlRenderPlugin.render]
+    plugins: [htmlRenderPlugin.rendererPlugin]
   }
 ];

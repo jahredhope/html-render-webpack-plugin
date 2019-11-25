@@ -24,6 +24,10 @@
         ]
       }
     },
+    "skipAssets": {
+      "description": "If true, skip creating assets after a build. Often used in conjuction with createDevRouter.",
+      "type": "boolean"
+    },
     "mapStatsToParams": {
       "description": "Used to pass additional values to each render.",
       "instanceof": "Function"
@@ -38,6 +42,14 @@
     },
     "transformFilePath": {
       "description": "Used to build the file path from the route.",
+      "instanceof": "Function"
+    },
+    "transformExpressPath": {
+      "description": "Used to build the express route for the dev server.",
+      "instanceof": "Function"
+    },
+    "getRouteFromRequest": {
+      "description": "Used on the dev server to identify a route for a request.",
       "instanceof": "Function"
     },
     "renderEntry": {
