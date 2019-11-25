@@ -1,18 +1,9 @@
 import HtmlRenderPlugin from "../../../src";
 
 describe("dev-server", () => {
-  it("should not return a dev server", async () => {
-    const htmlRenderPlugin = new HtmlRenderPlugin({
-      useDevServer: false
-    });
+  it("should create a dev server", async () => {
+    const htmlRenderPlugin = new HtmlRenderPlugin();
 
-    expect(htmlRenderPlugin.devServerRouter).toBeUndefined();
-  });
-  it("should return a dev server when configured", async () => {
-    const htmlRenderPlugin = new HtmlRenderPlugin({
-      useDevServer: true
-    });
-
-    expect(htmlRenderPlugin.devServerRouter).toEqual(expect.any(Function));
+    expect(htmlRenderPlugin.createDevRouter()).toEqual(expect.any(Function));
   });
 });

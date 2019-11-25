@@ -12,7 +12,7 @@
     "webpack"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --declaration",
     "commit": "git-cz",
     "lint.eslint": "eslint **/*.ts",
     "lint.prettier": "prettier --list-different \"**/*.js\"",

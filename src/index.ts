@@ -5,7 +5,7 @@ import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
 import { log, logError } from "./logging";
 import MultiStats from "webpack/lib/MultiStats";
-import createDevServer from "./createDevServer";
+import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
   ExtraGlobals,
@@ -16,20 +16,22 @@ import {
   RouteInput,
   OnRendererReady,
   TransformExpressPath,
-  TransformPath
+  TransformPath,
+  WebpackStats
 } from "./common-types";
 import { Compiler, compilation } from "webpack";
 import getSourceFromCompilation from "./getSourceFromCompilation";
 import createRenderer from "./createRenderer";
+import { Router } from "express";
 
 const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
-const returnEmptyObject = () => ({});
+const defaultMapStats = ({ webpackStats }: { webpackStats: WebpackStats }) =>
+  webpackStats ? { webpackStats: webpackStats.toJson() } : {};
 const defaultTransform: TransformPath = <Route extends BaseRoute>(
   route: Route
 ) => route.route;
 
 interface Options<Route extends BaseRoute = BaseRoute> {
-  useDevServer?: boolean;
   routes?: RouteInput<Route>[];
   mapStatsToParams?: MapStatsToParams;
   renderDirectory?: string;
@@ -54,9 +56,8 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     const pluginName = "HtmlRenderPlugin";
 
     const {
-      useDevServer = false,
       extraGlobals = {},
-      mapStatsToParams = returnEmptyObject,
+      mapStatsToParams = defaultMapStats,
       renderEntry = "main",
       transformFilePath = defaultTransform,
       transformExpressPath = defaultTransform,
@@ -247,17 +248,16 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       );
       this.collectStats(compiler);
     };
-    if (useDevServer) {
-      this.devServerRouter = createDevServer<Route>({
+    this.createDevRouter = () =>
+      createDevRouter<Route>({
         transformExpressPath,
         onRendererReady,
         getClientStats,
         routes
       });
-    }
   }
   collectStats: (compiler: Compiler) => void;
   render: (compiler: Compiler) => void;
   apply: (compiler: Compiler) => void;
-  devServerRouter: any;
+  createDevRouter: () => Router;
 };

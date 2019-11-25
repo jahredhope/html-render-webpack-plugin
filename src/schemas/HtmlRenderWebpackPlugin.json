@@ -3,10 +3,6 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "useDevServer": {
-      "description": "If true, return an Express Router to render routes.",
-      "type": "boolean"
-    },
     "routes": {
       "description": "List of routes to render. A file is created for each route.",
 

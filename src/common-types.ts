@@ -13,7 +13,7 @@ export type SourceModules = Record<string, string>;
 export type RouteInput<Route = BaseRoute> = Route | string;
 export type Trace = (...values: any[]) => void;
 export type Specifier = string;
-export type ExtraGlobals = Record<string, string>;
+export type ExtraGlobals = object;
 export type RenderConcurrency = "parallel" | "serial";
 export type MapStatsToParams = ({
   webpackStats
