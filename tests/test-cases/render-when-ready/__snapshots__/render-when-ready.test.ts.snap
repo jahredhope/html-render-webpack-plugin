@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Render asyncronously should render a HTML once resolved 1`] = `
+"<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/new\\",
+      \\"language\\": \\"en-us\\"
+    }
+  ]</code>
+</body>
+</html>"
+`;

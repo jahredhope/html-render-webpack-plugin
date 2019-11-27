@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Use legacy api should render a HTML file 1`] = `
+"<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/\\",
+      \\"extra\\": \\"extra-value\\",
+      \\"assets\\": {
+        \\"main\\": \\"client-main-97b069c18a91450b740e.js\\"
+      }
+    }
+  ]</code>
+</body>
+</html>"
+`;

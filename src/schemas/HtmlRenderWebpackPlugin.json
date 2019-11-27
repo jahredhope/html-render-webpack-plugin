@@ -3,10 +3,6 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "verbose": {
-      "description": "If true, use console to log progress.",
-      "type": "boolean"
-    },
     "routes": {
       "description": "List of routes to render. A file is created for each route.",
 
@@ -28,6 +24,10 @@
         ]
       }
     },
+    "skipAssets": {
+      "description": "If true, skip creating assets after a build. Often used in conjuction with createDevRouter.",
+      "type": "boolean"
+    },
     "mapStatsToParams": {
       "description": "Used to pass additional values to each render.",
       "instanceof": "Function"
@@ -44,12 +44,16 @@
       "description": "Used to build the file path from the route.",
       "instanceof": "Function"
     },
+    "transformExpressPath": {
+      "description": "Used to build the express route for the dev server.",
+      "instanceof": "Function"
+    },
+    "getRouteFromRequest": {
+      "description": "Used on the dev server to identify a route for a request.",
+      "instanceof": "Function"
+    },
     "renderEntry": {
       "description": "Which webpack entry should be used to render.",
-      "type": "string"
-    },
-    "compilerToRenderWith": {
-      "description": "Used to automatically select a configuration to render from.",
       "type": "string"
     },
     "extraGlobals": {

@@ -10,7 +10,11 @@ describe("Render asyncronously", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
 
   it("should render a HTML once resolved", async done => {
-    const compiler = webpack(config(new HtmlRenderPlugin({ renderDirectory })));
+    const compiler = webpack(
+      config(
+        new HtmlRenderPlugin({ mapStatsToParams: () => ({}), renderDirectory })
+      )
+    );
 
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
@@ -26,6 +30,7 @@ describe("Render asyncronously", () => {
     const compiler = webpack(
       config(
         new HtmlRenderPlugin({
+          mapStatsToParams: () => ({}),
           renderConcurrency: "parallel",
           routes: new Array(20).fill(null).map((_, i) => `page${i}`),
           renderDirectory

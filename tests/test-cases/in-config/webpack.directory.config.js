@@ -5,13 +5,16 @@ const HtmlRenderPlugin = require("../../../src");
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 
-const htmlRenderPlugin = new HtmlRenderPlugin({ renderDirectory });
+const htmlRenderPlugin = new HtmlRenderPlugin({
+  mapStatsToParams: () => ({}),
+  renderDirectory
+});
 
 module.exports = [
   merge(defaultConfig[0], {
-    plugins: [htmlRenderPlugin]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin]
   }),
   merge(defaultConfig[1], {
-    plugins: [htmlRenderPlugin.render()]
+    plugins: [htmlRenderPlugin.rendererPlugin]
   })
 ];

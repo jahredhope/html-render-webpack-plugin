@@ -9,6 +9,7 @@ const HtmlRenderPlugin = require("../../../src");
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 const plugin = new HtmlRenderPlugin({
+  mapStatsToParams: () => ({}),
   routes: [{ route: "/a/", extra: "a" }],
   renderDirectory,
   extraGlobals: {

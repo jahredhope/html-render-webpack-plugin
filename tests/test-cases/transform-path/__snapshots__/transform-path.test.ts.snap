@@ -1,0 +1,262 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`transformFilePath should allow multiple routes with the same path 1`] = `
+Object {
+  "global": Object {
+    "en-au": Object {
+      "book": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/book\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-au\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "books": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/books\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-au\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-au\\"
+    }
+  ]</code>
+</body>
+</html>",
+    },
+    "en-gb": Object {
+      "book": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/book\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-gb\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "books": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/books\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-gb\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-gb\\"
+    }
+  ]</code>
+</body>
+</html>",
+    },
+    "en-us": Object {
+      "book": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/book\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-us\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "books": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/books\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-us\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/\\",
+      \\"site\\": \\"global\\",
+      \\"language\\": \\"en-us\\"
+    }
+  ]</code>
+</body>
+</html>",
+    },
+  },
+  "us": Object {
+    "en-au": Object {
+      "book": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/book\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-au\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "books": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/books\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-au\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-au\\"
+    }
+  ]</code>
+</body>
+</html>",
+    },
+    "en-gb": Object {
+      "book": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/book\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-gb\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "books": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/books\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-gb\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-gb\\"
+    }
+  ]</code>
+</body>
+</html>",
+    },
+    "en-us": Object {
+      "book": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/book\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-us\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "books": Object {
+        "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/books\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-us\\"
+    }
+  ]</code>
+</body>
+</html>",
+      },
+      "index.html": "<html>
+<body>
+  Rendered with:&nbsp;
+  <code>[
+    {
+      \\"route\\": \\"/\\",
+      \\"site\\": \\"us\\",
+      \\"language\\": \\"en-us\\"
+    }
+  ]</code>
+</body>
+</html>",
+    },
+  },
+}
+`;

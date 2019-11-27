@@ -7,14 +7,16 @@ const paths = {
   clientEntry: path.resolve(srcPath, "client.js")
 };
 
-const renderDirectory = path.join(process.cwd(), "dist", "render");
-const plugin = new HtmlRenderPlugin({
-  mapStatsToParams: () => ({}),
+const htmlRenderPlugin = new HtmlRenderPlugin({
   routes: [
-    { route: "/a/", extra: "a" },
-    { route: "/b/", extra: "b" }
+    {
+      route: "/",
+      extra: "extra-value"
+    }
   ],
-  renderDirectory
+  mapStatsToParams: ({ webpackStats }) => ({
+    assets: webpackStats.toJson().assetsByChunkName
+  })
 });
 
 module.exports = [
@@ -26,7 +28,7 @@ module.exports = [
     output: {
       filename: "client-[name]-[contenthash].js"
     },
-    plugins: [plugin]
+    plugins: [htmlRenderPlugin]
   },
   {
     dependencies: ["client"],
@@ -40,6 +42,6 @@ module.exports = [
       libraryTarget: "umd2",
       filename: "render-[name]-[contenthash].js"
     },
-    plugins: [plugin.render()]
+    plugins: [htmlRenderPlugin.render()]
   }
 ];

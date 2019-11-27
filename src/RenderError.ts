@@ -1,5 +1,5 @@
-module.exports = class RenderError extends Error {
-  constructor(error) {
+export default class RenderError extends Error {
+  constructor(error: Error) {
     super(
       `html-render-webpack-plugin: An error occured during render: \n${error}`
     );
@@ -8,4 +8,4 @@ module.exports = class RenderError extends Error {
 
     Error.captureStackTrace(this, this.constructor);
   }
-};
+}
