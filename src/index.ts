@@ -154,8 +154,15 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         );
       }
 
-      const renderFile = typeof asset === "string" ? asset : asset.name;
-      return renderFile.toString();
+      let renderFile: any = asset;
+      if (Array.isArray(renderFile)) {
+        renderFile = renderFile[0];
+      }
+      if (renderFile && typeof renderFile === "object") {
+        renderFile = renderFile.name;
+      }
+
+      return renderFile as string;
     };
 
     const renderCallbacks: any[] = [];
