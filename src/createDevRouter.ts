@@ -31,9 +31,9 @@ export = <Route extends BaseRoute>({
     webpackStats: Stats.ToJsonOutput
   ) => {
     let devServerScripts: string[] = [];
-    if ("entrypoints" in webpackStats) {
+    if ("entrypoints" in webpackStats && webpackStats.entrypoints) {
       try {
-        const devServerAssets = webpackStats.entrypoints!.main.assets;
+        const devServerAssets = webpackStats.entrypoints.main.assets;
 
         devServerScripts = devServerAssets.map(
           asset => `<script src="${webpackStats.publicPath}${asset}"></script>`
