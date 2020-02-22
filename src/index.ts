@@ -20,7 +20,7 @@ import {
   WebpackStats,
   GetRouteFromRequest
 } from "./common-types";
-import { Compiler, compilation } from "webpack";
+import { Compiler, compilation, Stats } from "webpack";
 import getSourceFromCompilation from "./getSourceFromCompilation";
 import createRenderer from "./createRenderer";
 import { Router } from "express";
@@ -77,6 +77,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     let rendererCompilation: CompilationStatus;
 
     let renderer: Renderer;
+    let lastClientStats: MultiStats | Stats | null = null;
 
     const isBuildReady = () =>
       rendererCompilation &&
@@ -167,15 +168,23 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
 
     const renderCallbacks: any[] = [];
 
-    const getClientStats = () =>
-      clientCompilations.length === 1
-        ? clientCompilations[0].compilation!.getStats()
-        : new MultiStats(
-            clientCompilations
-              .map(compilationStatus => compilationStatus.compilation)
-              .filter(Boolean)
-              .map(compilation => compilation!.getStats())
-          );
+    const getClientStats = () => {
+      if (lastClientStats) {
+        return lastClientStats;
+      }
+      const clientStats =
+        clientCompilations.length === 1
+          ? clientCompilations[0].compilation!.getStats()
+          : new MultiStats(
+              clientCompilations
+                .map(compilationStatus => compilationStatus.compilation)
+                .filter(Boolean)
+                .map(compilation => compilation!.getStats())
+            );
+
+      lastClientStats = clientStats;
+      return clientStats;
+    };
 
     const flushQueuedRenders = () => {
       if (isRendererReady() && renderCallbacks.length > 0) {
@@ -251,6 +260,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       compiler.hooks.afterEmit.tapPromise(pluginName, async compilation => {
         log(`Assets emitted for ${compilerName}.`);
         compilationStatus.compilation = compilation;
+        lastClientStats = null;
         compilationStatus.isReady = true;
         await createRendererIfReady(compilation);
       });
