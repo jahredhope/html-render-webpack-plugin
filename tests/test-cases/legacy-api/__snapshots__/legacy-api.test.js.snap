@@ -9,7 +9,7 @@ exports[`Use legacy api should render a HTML file 1`] = `
       \\"route\\": \\"/\\",
       \\"extra\\": \\"extra-value\\",
       \\"assets\\": {
-        \\"main\\": \\"client-main-2f67e5fd97ca13885a90.js\\"
+        \\"main\\": \\"client-main-358f8b4a1d3c00f7f7e5.js\\"
       }
     }
   ]</code>
