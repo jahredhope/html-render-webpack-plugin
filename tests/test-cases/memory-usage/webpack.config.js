@@ -5,7 +5,7 @@ const memoize = require("memoizee");
 const srcPath = path.resolve(__dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
-  clientEntry: path.resolve(srcPath, "client.js")
+  clientEntry: path.resolve(srcPath, "client.js"),
 };
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 
@@ -13,14 +13,14 @@ const routes = new Array(20000)
   .fill(undefined)
   .map((v, i) => ({ route: `route-${i}`, seed: i }));
 
-const getStats = memoize(stats => stats.toJson());
+const getStats = memoize((stats) => stats.toJson());
 
 const htmlRenderPlugin = new HtmlRenderPlugin({
   mapStatsToParams: ({ webpackStats }) => {
     return webpackStats ? { webpackStats: getStats(webpackStats) } : {};
   },
   renderDirectory,
-  routes
+  routes,
 });
 
 module.exports = [
@@ -30,9 +30,9 @@ module.exports = [
     mode: "production",
     entry: paths.clientEntry,
     output: {
-      filename: "client-[name]-[contenthash].js"
+      filename: "client-[name]-[contenthash].js",
     },
-    plugins: [htmlRenderPlugin.statsCollectorPlugin]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin],
   },
   {
     name: "render",
@@ -43,8 +43,8 @@ module.exports = [
       libraryExport: "default",
       library: "static",
       libraryTarget: "umd2",
-      filename: "render-[name]-[contenthash].js"
+      filename: "render-[name]-[contenthash].js",
     },
-    plugins: [htmlRenderPlugin.rendererPlugin]
-  }
+    plugins: [htmlRenderPlugin.rendererPlugin],
+  },
 ];

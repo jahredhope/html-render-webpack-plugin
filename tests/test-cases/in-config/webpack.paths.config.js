@@ -14,17 +14,17 @@ const htmlRenderPlugin = new HtmlRenderPlugin({
     {
       route: "about/us",
       language: "en-au",
-      environment: "development"
-    }
+      environment: "development",
+    },
   ],
-  renderDirectory
+  renderDirectory,
 });
 
 module.exports = [
   merge(defaultConfig[0], {
-    plugins: [htmlRenderPlugin.statsCollectorPlugin]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin],
   }),
   merge(defaultConfig[1], {
-    plugins: [htmlRenderPlugin.rendererPlugin]
-  })
+    plugins: [htmlRenderPlugin.rendererPlugin],
+  }),
 ];

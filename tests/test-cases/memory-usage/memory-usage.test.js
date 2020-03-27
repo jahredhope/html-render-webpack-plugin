@@ -8,7 +8,7 @@ function getCurrentMemoryUsage() {
 }
 
 describe("Render multiple times without increasing heap memory", () => {
-  it("should not leak memory when memoizing webpackStats", async done => {
+  it("should not leak memory when memoizing webpackStats", async (done) => {
     jest.setTimeout(15 * 1000);
     const compiler = webpack(config);
     const initialMemoryUsage = getCurrentMemoryUsage();
@@ -16,7 +16,7 @@ describe("Render multiple times without increasing heap memory", () => {
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run(error => {
+    compiler.run((error) => {
       if (error) {
         throw error;
       }

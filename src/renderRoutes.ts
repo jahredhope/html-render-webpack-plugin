@@ -20,7 +20,7 @@ export default async function renderRoutes<Route>({
   routes,
   renderDirectory,
   renderCompilation,
-  transformFilePath
+  transformFilePath,
 }: Params<Route>) {
   log(`Starting render of ${routes.length} routes`);
   async function emitFile(dir: string, content: string) {
@@ -40,7 +40,7 @@ export default async function renderRoutes<Route>({
       renderCompilation.compiler.outputFileSystem.writeFile(
         dir,
         content,
-        error => {
+        (error) => {
           if (error) {
             reject(error);
           }

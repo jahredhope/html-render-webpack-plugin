@@ -17,7 +17,7 @@ export type Specifier = string;
 export type ExtraGlobals = object;
 export type RenderConcurrency = "parallel" | "serial";
 export type MapStatsToParams = ({
-  webpackStats
+  webpackStats,
 }: {
   webpackStats: WebpackStats;
 }) => object;

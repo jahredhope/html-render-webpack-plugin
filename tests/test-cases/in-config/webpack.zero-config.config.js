@@ -6,9 +6,9 @@ const htmlRenderPlugin = new HtmlRenderPlugin({ mapStatsToParams: () => ({}) });
 
 module.exports = [
   merge(defaultConfig[0], {
-    plugins: [htmlRenderPlugin.statsCollectorPlugin]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin],
   }),
   merge(defaultConfig[1], {
-    plugins: [htmlRenderPlugin.rendererPlugin]
-  })
+    plugins: [htmlRenderPlugin.rendererPlugin],
+  }),
 ];

@@ -11,17 +11,17 @@ describe("Render asyncronously", () => {
     language: string;
   }
 
-  it("should render a HTML once resolved", async done => {
+  it("should render a HTML once resolved", async (done) => {
     const routes: Route[] = [{ route: "/", language: "en-au" }];
     const htmlRenderPlugin = new HtmlRenderPlugin<Route>({
       mapStatsToParams: () => ({}),
       skipAssets: true,
-      routes
+      routes,
     });
 
     const promise = htmlRenderPlugin.renderWhenReady({
       route: "/new",
-      language: "en-us"
+      language: "en-us",
     });
 
     const compiler = webpack(config(htmlRenderPlugin));

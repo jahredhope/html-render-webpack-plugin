@@ -2,7 +2,7 @@ const MemoryFS = require("memory-fs");
 const webpack = require("webpack");
 
 describe("Render HTML from in-config Plugin", () => {
-  it("should render a HTML file", async done => {
+  it("should render a HTML file", async (done) => {
     const compiler = webpack(require("./webpack.errors.config"));
 
     const memoryFs = new MemoryFS();
