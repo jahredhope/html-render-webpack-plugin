@@ -4,7 +4,7 @@ const HtmlRenderPlugin = require("../../../src");
 const srcPath = path.resolve(__dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
-  clientEntry: path.resolve(srcPath, "client.js")
+  clientEntry: path.resolve(srcPath, "client.js"),
 };
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
@@ -12,9 +12,9 @@ const plugin = new HtmlRenderPlugin({
   mapStatsToParams: () => ({}),
   routes: [
     { route: "/a/", extra: "a" },
-    { route: "/b/", extra: "b" }
+    { route: "/b/", extra: "b" },
   ],
-  renderDirectory
+  renderDirectory,
 });
 
 module.exports = [
@@ -24,9 +24,9 @@ module.exports = [
     mode: "production",
     entry: paths.clientEntry,
     output: {
-      filename: "client-[name]-[contenthash].js"
+      filename: "client-[name]-[contenthash].js",
     },
-    plugins: [plugin]
+    plugins: [plugin],
   },
   {
     dependencies: ["client"],
@@ -38,8 +38,8 @@ module.exports = [
       libraryExport: "default",
       library: "static",
       libraryTarget: "umd2",
-      filename: "render-[name]-[contenthash].js"
+      filename: "render-[name]-[contenthash].js",
     },
-    plugins: [plugin.render()]
-  }
+    plugins: [plugin.render()],
+  },
 ];

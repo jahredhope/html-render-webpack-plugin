@@ -28,7 +28,7 @@ function evalutateFromSource(
       console,
       process,
       ...(extraGlobals || {}),
-      require: createLinker(specifier, sourceModules, extraGlobals)
+      require: createLinker(specifier, sourceModules, extraGlobals),
     },
     /* includeGlobals: */ true
   );

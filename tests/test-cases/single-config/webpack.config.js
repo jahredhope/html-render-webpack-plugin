@@ -5,7 +5,7 @@ const renderDirectory = path.join(process.cwd(), "dist", "render");
 const srcPath = path.resolve(__dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
-  clientEntry: path.resolve(srcPath, "client.js")
+  clientEntry: path.resolve(srcPath, "client.js"),
 };
 
 module.exports = {
@@ -17,12 +17,12 @@ module.exports = {
     libraryExport: "default",
     library: "static",
     libraryTarget: "umd2",
-    filename: "render-[name]-[contenthash].js"
+    filename: "render-[name]-[contenthash].js",
   },
   plugins: [
     new HtmlRenderPlugin({
       mapStatsToParams: () => ({}),
-      renderDirectory
-    }).render()
-  ]
+      renderDirectory,
+    }).render(),
+  ],
 };

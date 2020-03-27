@@ -6,7 +6,7 @@ import {
   BaseRoute,
   WebpackStats,
   TransformExpressPath,
-  GetRouteFromRequest
+  GetRouteFromRequest,
 } from "common-types";
 import { Stats } from "webpack";
 
@@ -23,7 +23,7 @@ export = <Route extends BaseRoute>({
   getRouteFromRequest,
   onRendererReady,
   transformExpressPath,
-  getClientStats
+  getClientStats,
 }: Params<Route>) => {
   log("Create dev server");
   const formatErrorResponse = (
@@ -36,7 +36,8 @@ export = <Route extends BaseRoute>({
         const devServerAssets = webpackStats.entrypoints.main.assets;
 
         devServerScripts = devServerAssets.map(
-          asset => `<script src="${webpackStats.publicPath}${asset}"></script>`
+          (asset) =>
+            `<script src="${webpackStats.publicPath}${asset}"></script>`
         );
       } catch (err) {
         console.error("Unable to load Dev Server Scripts. Error: ", err);
@@ -51,7 +52,7 @@ export = <Route extends BaseRoute>({
   const routesByExpressPath: Record<string, Route> = {};
 
   // Deduplicate paths to avoid duplicated processing in Express
-  routes.forEach(route => {
+  routes.forEach((route) => {
     const expressPath = transformExpressPath(route);
     if (expressPath) {
       routesByExpressPath[expressPath] = route;
@@ -62,7 +63,7 @@ export = <Route extends BaseRoute>({
     devServerRouter.get(
       expressPath,
       async (req: Request, res: Response, next: NextFunction) => {
-        onRendererReady(async render => {
+        onRendererReady(async (render) => {
           const route = getRouteFromRequest
             ? getRouteFromRequest(req, routes)
             : defaultRoute;
@@ -84,7 +85,7 @@ export = <Route extends BaseRoute>({
                 exceptionFormatter(error, {
                   format: "html",
                   inlineStyle: true,
-                  basepath: "webpack://static/./"
+                  basepath: "webpack://static/./",
                 }),
                 getClientStats().toJson()
               )

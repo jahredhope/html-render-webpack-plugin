@@ -18,7 +18,7 @@ import {
   TransformExpressPath,
   TransformPath,
   WebpackStats,
-  GetRouteFromRequest
+  GetRouteFromRequest,
 } from "./common-types";
 import { Compiler, compilation, Stats } from "webpack";
 import getSourceFromCompilation from "./getSourceFromCompilation";
@@ -64,10 +64,10 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       getRouteFromRequest,
       transformFilePath = defaultTransform,
       transformExpressPath = defaultTransform,
-      renderConcurrency = "serial"
+      renderConcurrency = "serial",
     } = options;
 
-    const routes: Route[] = (options.routes || [""]).map(route =>
+    const routes: Route[] = (options.routes || [""]).map((route) =>
       typeof route === "string" ? ({ route } as Route) : route
     );
 
@@ -82,7 +82,9 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     const isBuildReady = () =>
       rendererCompilation &&
       rendererCompilation.isReady &&
-      clientCompilations.every(compilationStatus => compilationStatus.isReady);
+      clientCompilations.every(
+        (compilationStatus) => compilationStatus.isReady
+      );
     const isRendererReady = () => isBuildReady() && renderer;
 
     const renderQueue: Array<() => void> = [];
@@ -101,11 +103,11 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         ...route,
         ...mapStatsToParams({
           ...route,
-          webpackStats
-        })
+          webpackStats,
+        }),
       };
       try {
-        const result = renderer(renderParams);
+        const result = await renderer(renderParams);
 
         log(
           `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`
@@ -134,7 +136,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
           renderDirectory,
           renderEntry,
           routes,
-          transformFilePath
+          transformFilePath,
         });
       } catch (error) {
         logError("An error occured rendering HTML", error);
@@ -177,9 +179,9 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
           ? clientCompilations[0].compilation!.getStats()
           : new MultiStats(
               clientCompilations
-                .map(compilationStatus => compilationStatus.compilation)
+                .map((compilationStatus) => compilationStatus.compilation)
                 .filter(Boolean)
-                .map(compilation => compilation!.getStats())
+                .map((compilation) => compilation!.getStats())
             );
 
       lastClientStats = clientStats;
@@ -193,7 +195,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       }
     };
 
-    const onRendererReady: OnRendererReady<Route> = cb => {
+    const onRendererReady: OnRendererReady<Route> = (cb) => {
       if (isRendererReady()) {
         cb(render);
       } else {
@@ -214,7 +216,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       renderer = createRenderer({
         source,
         fileName: renderEntry,
-        extraGlobals
+        extraGlobals,
       });
 
       if (typeof renderer !== "function") {
@@ -234,7 +236,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
 
       const compilationStatus: CompilationStatus = {
         compilation: null,
-        isReady: false
+        isReady: false,
       };
 
       if (isRenderer) {
@@ -257,7 +259,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         compilationStatus.isReady = false;
       });
 
-      compiler.hooks.afterEmit.tapPromise(pluginName, async compilation => {
+      compiler.hooks.afterEmit.tapPromise(pluginName, async (compilation) => {
         log(`Assets emitted for ${compilerName}.`);
         compilationStatus.compilation = compilation;
         lastClientStats = null;
@@ -289,7 +291,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         getRouteFromRequest,
         onRendererReady,
         getClientStats,
-        routes
+        routes,
       });
 
     this.renderWhenReady = (route: Route) =>

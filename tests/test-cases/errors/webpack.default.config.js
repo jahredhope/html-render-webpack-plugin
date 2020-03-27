@@ -3,7 +3,7 @@ const path = require("path");
 const srcPath = path.resolve(__dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
-  clientEntry: path.resolve(srcPath, "client.js")
+  clientEntry: path.resolve(srcPath, "client.js"),
 };
 
 module.exports = [
@@ -13,8 +13,8 @@ module.exports = [
     mode: "production",
     entry: paths.clientEntry,
     output: {
-      filename: "client-[name]-[contenthash].js"
-    }
+      filename: "client-[name]-[contenthash].js",
+    },
   },
   {
     name: "render",
@@ -25,7 +25,7 @@ module.exports = [
       libraryExport: "default",
       library: "static",
       libraryTarget: "umd2",
-      filename: "render-[name]-[contenthash].js"
-    }
-  }
+      filename: "render-[name]-[contenthash].js",
+    },
+  },
 ];

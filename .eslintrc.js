@@ -7,18 +7,18 @@ module.exports = {
       files: ["**/*.js"],
       rules: {
         "@typescript-eslint/no-var-requires": "off",
-        "@typescript-eslint/explicit-function-return-type": "off"
-      }
-    }
+        "@typescript-eslint/explicit-function-return-type": "off",
+      },
+    },
   ],
   parserOptions: {
     ecmaVersion: 2018,
-    sourceType: "module"
+    sourceType: "module",
   },
   env: {
     es6: true,
     jest: true,
-    node: true
+    node: true,
   },
   rules: {
     "@typescript-eslint/ban-ts-ignore": "warn",
@@ -27,6 +27,6 @@ module.exports = {
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "no-console": "off",
-    "no-inner-declarations": "off"
-  }
+    "no-inner-declarations": "off",
+  },
 };

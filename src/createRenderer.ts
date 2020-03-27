@@ -4,7 +4,7 @@ import { SourceModules, ExtraGlobals } from "common-types";
 export = function createRenderer({
   fileName,
   source,
-  extraGlobals
+  extraGlobals,
 }: {
   fileName: string;
   source: SourceModules;

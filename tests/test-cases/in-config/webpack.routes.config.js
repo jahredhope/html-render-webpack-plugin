@@ -8,14 +8,14 @@ const renderDirectory = path.join(process.cwd(), "dist", "render");
 const htmlRenderPlugin = new HtmlRenderPlugin({
   mapStatsToParams: () => ({}),
   renderDirectory,
-  routes: ["", "pageA", "pageB", "error.html"]
+  routes: ["", "pageA", "pageB", "error.html"],
 });
 
 module.exports = [
   merge(defaultConfig[0], {
-    plugins: [htmlRenderPlugin.statsCollectorPlugin]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin],
   }),
   merge(defaultConfig[1], {
-    plugins: [htmlRenderPlugin.rendererPlugin]
-  })
+    plugins: [htmlRenderPlugin.rendererPlugin],
+  }),
 ];

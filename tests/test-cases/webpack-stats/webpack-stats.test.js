@@ -8,13 +8,13 @@ const getDirContentsSync = require("../../utils/getDirContentsSync");
 describe("Render WebpackStats", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
 
-  it("should render a with asset names", async done => {
+  it("should render a with asset names", async (done) => {
     const compiler = webpack(config);
 
     const memoryFs = new MemoryFS();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run(error => {
+    compiler.run((error) => {
       if (error) {
         throw error;
       }

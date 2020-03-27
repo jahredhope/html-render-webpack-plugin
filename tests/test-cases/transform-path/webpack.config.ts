@@ -5,7 +5,7 @@ import HtmlRenderPlugin from "../../../src";
 const srcPath = path.resolve(__dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
-  clientEntry: path.resolve(srcPath, "client.js")
+  clientEntry: path.resolve(srcPath, "client.js"),
 };
 
 export default (htmlRenderPlugin: HtmlRenderPlugin<any>): Configuration[] => [
@@ -15,9 +15,9 @@ export default (htmlRenderPlugin: HtmlRenderPlugin<any>): Configuration[] => [
     mode: "production",
     entry: paths.clientEntry,
     output: {
-      filename: "client-[name]-[contenthash].js"
+      filename: "client-[name]-[contenthash].js",
     },
-    plugins: [htmlRenderPlugin.statsCollectorPlugin]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin],
   },
   {
     name: "render",
@@ -28,8 +28,8 @@ export default (htmlRenderPlugin: HtmlRenderPlugin<any>): Configuration[] => [
       libraryExport: "default",
       library: "static",
       libraryTarget: "umd",
-      filename: "render-[name]-[contenthash].js"
+      filename: "render-[name]-[contenthash].js",
     },
-    plugins: [htmlRenderPlugin.rendererPlugin]
-  }
+    plugins: [htmlRenderPlugin.rendererPlugin],
+  },
 ];
