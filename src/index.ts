@@ -107,7 +107,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         }),
       };
       try {
-        const result = renderer(renderParams);
+        const result = await renderer(renderParams);
 
         log(
           `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`
