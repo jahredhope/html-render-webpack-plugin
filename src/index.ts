@@ -264,7 +264,11 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         compilationStatus.compilation = compilation;
         lastClientStats = null;
         compilationStatus.isReady = true;
-        await createRendererIfReady(compilation);
+        try {
+          await createRendererIfReady(compilation);
+        } catch (error) {
+          compilation.errors.push(error);
+        }
       });
     };
     this.statsCollectorPlugin = (compiler: Compiler) => apply(compiler, false);
