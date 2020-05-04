@@ -1,5 +1,7 @@
 # html-render-webpack-plugin
 
+[![npm](https://img.shields.io/npm/v/html-render-webpack-plugin.svg)](https://www.npmjs.com/package/html-render-webpack-plugin)
+
 Plugin to create HTML files with JavaScript.
 
 - Supports [multiple configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations)
