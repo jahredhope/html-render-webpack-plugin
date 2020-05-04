@@ -1,5 +1,5 @@
 import { compilation } from "webpack";
-import { SourceModules } from "common-types";
+import { SourceModules } from "./common-types";
 
 export = function getSourceFromCompilation(comp: compilation.Compilation) {
   const files: SourceModules = {};

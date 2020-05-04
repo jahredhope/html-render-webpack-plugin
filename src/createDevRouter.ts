@@ -7,7 +7,7 @@ import {
   WebpackStats,
   TransformExpressPath,
   GetRouteFromRequest,
-} from "common-types";
+} from "./common-types";
 import { Stats } from "webpack";
 
 interface Params<Route> {
