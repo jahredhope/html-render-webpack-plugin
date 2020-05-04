@@ -1,6 +1,6 @@
 import path from "path";
 import chalk from "chalk";
-import { RenderConcurrency, TransformPath, Render } from "common-types";
+import { RenderConcurrency, TransformPath, Render } from "./common-types";
 import { compilation } from "webpack";
 import { log } from "./logging";
 

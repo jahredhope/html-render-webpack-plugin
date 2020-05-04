@@ -1,6 +1,6 @@
 import path from "path";
 import evaluate from "eval";
-import { SourceModules, ExtraGlobals } from "common-types";
+import { SourceModules, ExtraGlobals } from "./common-types";
 
 import { log } from "./logging";
 

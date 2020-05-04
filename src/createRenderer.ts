@@ -1,5 +1,5 @@
 import evalutateFromSource from "./evalutateFromSource";
-import { SourceModules, ExtraGlobals } from "common-types";
+import { SourceModules, ExtraGlobals } from "./common-types";
 
 export = function createRenderer({
   fileName,
