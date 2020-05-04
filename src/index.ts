@@ -85,7 +85,7 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       clientCompilations.every(
         (compilationStatus) => compilationStatus.isReady
       );
-    const isRendererReady = () => isBuildReady() && renderer;
+    const isRendererReady = () => isBuildReady() && Boolean(renderer);
 
     const renderQueue: Array<() => void> = [];
     const flushRenderQueue = async () => {

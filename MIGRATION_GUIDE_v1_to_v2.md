@@ -11,7 +11,7 @@ To recreate the previous behaviour pass the stats collector to render config
 ```js
 plugins: [
   htmlRenderPlugin.statsCollectorPlugin,
-  htmlRenderPlugin.rendererPlugin
+  htmlRenderPlugin.rendererPlugin,
 ];
 ```
 

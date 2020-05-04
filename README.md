@@ -56,7 +56,7 @@ See [the full example below](#example-client-assets).
 
 Add `htmlRenderPlugin.statsCollectorPlugin` to the plugins of all configurations you want to get stats for.
 
-Add `htmlRenderPlugin.render` to the plugin of the configuration you want to use to render html.
+Add `htmlRenderPlugin.rendererPlugin` to the plugin of the configuration you want to use to render html.
 
 HtmlRenderPlugin will then pass the [Webpack Stats](https://webpack.js.org/api/stats/) for those builds into your render function.
 
@@ -70,13 +70,13 @@ module.exports = [
   {
     name: "render",
     target: "node", // Creates assets that render HTML that runs well in node
-    plugins: [htmlRenderPlugin.rendererPlugin]
+    plugins: [htmlRenderPlugin.rendererPlugin],
   },
   {
     name: "client",
     target: "web", // Creates files that run on the browser
-    plugins: [htmlRenderPlugin.statsCollectorPlugin]
-  }
+    plugins: [htmlRenderPlugin.statsCollectorPlugin],
+  },
 ];
 ```
 
@@ -95,13 +95,13 @@ The [webpack entry](https://webpack.js.org/concepts/entry-points/) to use when r
 ```js
 module.exports = {
   entry: {
-    myRender: "./src/myRender.js"
+    myRender: "./src/myRender.js",
   },
   plugins: [
     new HtmlRenderPlugin({
-      renderEntry: "myRender"
-    }).render
-  ]
+      renderEntry: "myRender",
+    }).render,
+  ],
 };
 ```
 
@@ -128,20 +128,20 @@ A route can be an object, containing a `route` parameter.
 const routes = [
   {
     route: "en-us/contact",
-    language: "en-us"
+    language: "en-us",
   },
   {
     route: "en-us/about",
-    language: "en-us"
+    language: "en-us",
   },
   {
     route: "en-au/contact",
-    language: "en-au"
+    language: "en-au",
   },
   {
     route: "/en-au/about",
-    language: "en-au"
-  }
+    language: "en-au",
+  },
 ];
 ```
 
@@ -217,14 +217,18 @@ Using the [Webpack Dev Server Node API](https://github.com/webpack/webpack-dev-s
 ```js
 const htmlRenderPlugin = new HtmlRenderPlugin({
   routes,
-  skipAssets: true
+  skipAssets: true,
 });
 
 const compiler = webpack(config);
 
-const webpackDevServer = new WebpackDevServer(compiler);
+const webpackDevServer = new WebpackDevServer(compiler, {
+  before: (app) => {
+    app.use(htmlRenderPlugin.createDevRouter());
+  },
+});
 
-webpackDevServer.use(htmlRenderPlugin.createDevRouter());
+webpackDevServer.listen("8081");
 ```
 
 **Note:** Ensure that you use the same htmlRenderPlugin created for your webpack configuration as you use for your dev server.
@@ -272,8 +276,8 @@ const path = require("path");
 
 const { htmlRenderPlugin, htmlRenderClientPlugin } = createHtmlRenderPlugin({
   mapStatsToParams: ({ webpackStats }) => ({
-    mainChunk: webpackStats.toJson().assetsByChunkName.main
-  })
+    mainChunk: webpackStats.toJson().assetsByChunkName.main,
+  }),
 });
 
 module.exports = [
@@ -281,10 +285,10 @@ module.exports = [
     name: "client",
     target: "web",
     output: {
-      filename: "client-[name]-[contenthash].js"
+      filename: "client-[name]-[contenthash].js",
     },
     entry: path.resolve("src", "client.js"),
-    plugins: [htmlRenderPlugin.statsCollectorPlugin]
+    plugins: [htmlRenderPlugin.statsCollectorPlugin],
   },
   {
     name: "render",
@@ -292,11 +296,11 @@ module.exports = [
     output: {
       libraryExport: "default",
       libraryTarget: "umd2",
-      filename: "render-[name]-[contenthash].js"
+      filename: "render-[name]-[contenthash].js",
     },
     entry: path.resolve("src", "render.js"),
-    plugins: [htmlRenderPlugin.rendererPlugin]
-  }
+    plugins: [htmlRenderPlugin.rendererPlugin],
+  },
 ];
 ```
 
