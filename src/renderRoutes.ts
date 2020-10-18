@@ -1,7 +1,7 @@
 import path from "path";
 import chalk from "chalk";
 import { RenderConcurrency, TransformPath, Render } from "./common-types";
-import { compilation } from "webpack";
+import { Compilation } from "webpack";
 import { log } from "./logging";
 
 interface Params<Route> {
@@ -10,7 +10,7 @@ interface Params<Route> {
   routes: Route[];
   renderEntry: string;
   renderDirectory: string;
-  renderCompilation: compilation.Compilation;
+  renderCompilation: Compilation;
   transformFilePath: TransformPath<Route>;
 }
 
@@ -26,8 +26,10 @@ export default async function renderRoutes<Route>({
   async function emitFile(dir: string, content: string) {
     log("Emitting file to", dir);
     await new Promise((resolve, reject) =>
-      renderCompilation.compiler.outputFileSystem.mkdirp(
+      renderCompilation.compiler.outputFileSystem.mkdir(
         path.dirname(dir),
+        { recursive: true },
+        // @ts-expect-error This function is incorrectly typed. A filesystem mkDir does take an options object
         (error?: Error | null) => {
           if (error) {
             reject(error);

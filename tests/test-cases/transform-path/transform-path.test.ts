@@ -1,4 +1,4 @@
-import MemoryFS from "memory-fs";
+import { Volume } from "memfs";
 import webpack from "webpack";
 import path from "path";
 // @ts-ignore: Not yet typed
@@ -40,12 +40,13 @@ describe("transformFilePath", () => {
     const config = getConfig(htmlRenderPlugin);
     const compiler = webpack(config);
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = Volume.fromJSON({});
     // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run((error) => {
+    compiler.run((error, stats) => {
       expect(error).toBe(null);
+      expect(stats?.hasErrors()).toBe(false);
       // @ts-ignore: Ignore fs/memoryFs conflicts
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();

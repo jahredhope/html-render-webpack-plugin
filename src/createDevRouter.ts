@@ -8,7 +8,6 @@ import {
   TransformExpressPath,
   GetRouteFromRequest,
 } from "./common-types";
-import { Stats } from "webpack";
 
 interface Params<Route> {
   routes: Route[];
@@ -28,7 +27,7 @@ export = <Route extends BaseRoute>({
   log("Create dev server");
   const formatErrorResponse = (
     error: string,
-    webpackStats: Stats.ToJsonOutput
+    webpackStats: Record<string, any>
   ) => {
     let devServerScripts: string[] = [];
     if ("entrypoints" in webpackStats && webpackStats.entrypoints) {
@@ -36,7 +35,7 @@ export = <Route extends BaseRoute>({
         const devServerAssets = webpackStats.entrypoints.main.assets;
 
         devServerScripts = devServerAssets.map(
-          (asset) =>
+          (asset: string) =>
             `<script src="${webpackStats.publicPath}${asset}"></script>`
         );
       } catch (err) {

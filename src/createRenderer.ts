@@ -1,20 +1,22 @@
-import evalutateFromSource from "./evalutateFromSource";
-import { SourceModules, ExtraGlobals } from "./common-types";
+import evalutateFromFileSystem from "./evalutateFromFileSystem";
+import { FileSystem, ExtraGlobals } from "./common-types";
 
 export = function createRenderer({
   fileName,
-  source,
+  fileSystem,
+  rootDir,
   extraGlobals,
 }: {
   fileName: string;
-  source: SourceModules;
+  fileSystem: FileSystem;
   extraGlobals: ExtraGlobals;
+  rootDir: string;
 }) {
   if (!fileName) {
     throw new Error("Missing filename");
   }
-  if (!source) {
+  if (!fileSystem) {
     throw new Error("Missing source");
   }
-  return evalutateFromSource(fileName, source, extraGlobals);
+  return evalutateFromFileSystem(fileName, fileSystem, rootDir, extraGlobals);
 };

@@ -1,4 +1,4 @@
-import MemoryFS from "memory-fs";
+import { Volume } from "memfs";
 import webpack from "webpack";
 
 import config from "./webpack.config";
@@ -27,7 +27,7 @@ describe("renderWhenReady", () => {
 
     const compiler = webpack(config(htmlRenderPlugin));
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = Volume.fromJSON({});
     // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
     compiler.outputFileSystem = memoryFs;
 
@@ -53,7 +53,7 @@ describe("renderWhenReady", () => {
 
     const compiler = webpack(config(htmlRenderPlugin));
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = Volume.fromJSON({});
     // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
     compiler.outputFileSystem = memoryFs;
 

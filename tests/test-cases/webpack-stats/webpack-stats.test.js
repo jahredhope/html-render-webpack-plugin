@@ -1,4 +1,4 @@
-const MemoryFS = require("memory-fs");
+const { Volume } = require("memfs");
 const webpack = require("webpack");
 const path = require("path");
 
@@ -11,13 +11,15 @@ describe("Render WebpackStats", () => {
   it("should render a with asset names", async (done) => {
     const compiler = webpack(config);
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = Volume.fromJSON({});
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run((error) => {
+    compiler.run((error, stats) => {
       if (error) {
         throw error;
       }
+
+      expect(stats.hasErrors()).toBe(false);
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();
       done();

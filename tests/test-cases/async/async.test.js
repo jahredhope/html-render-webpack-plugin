@@ -1,4 +1,4 @@
-const MemoryFS = require("memory-fs");
+const { Volume } = require("memfs");
 const webpack = require("webpack");
 const path = require("path");
 
@@ -16,10 +16,13 @@ describe("Render asyncronously", () => {
       )
     );
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = Volume.fromJSON({});
+
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run(() => {
+    compiler.run((error, stats) => {
+      expect(error).toBe(null);
+      expect(stats.hasErrors()).toBe(false);
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();
       done();
@@ -38,10 +41,11 @@ describe("Render asyncronously", () => {
       )
     );
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = Volume.fromJSON({});
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run((error) => {
+    compiler.run((error, stats) => {
+      expect(stats.hasErrors()).toBe(false);
       expect(error).toBe(null);
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();
