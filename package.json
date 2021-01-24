@@ -36,7 +36,7 @@
     "@types/jest": "^25.2.1",
     "@types/memory-fs": "^0.3.2",
     "@types/schema-utils": "^2.4.0",
-    "@types/webpack": "^4.41.12",
+    "@types/webpack": "4.41.26",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
     "commitizen": "4.0.5",
@@ -53,7 +53,7 @@
     "ts-jest": "^25.4.0",
     "ts-node": "^8.10.1",
     "typescript": "^3.8.3",
-    "webpack": "4.43.0",
+    "webpack": "4.46.0",
     "webpack-merge": "4.2.2"
   },
   "dependencies": {
