@@ -1,4 +1,4 @@
-import evalutateFromFileSystem from "./evalutateFromFileSystem";
+import evaluateFromFileSystem from "./evaluateFromFileSystem";
 import { FileSystem, ExtraGlobals } from "./common-types";
 
 export = function createRenderer({
@@ -18,5 +18,8 @@ export = function createRenderer({
   if (!fileSystem) {
     throw new Error("Missing source");
   }
-  return evalutateFromFileSystem(fileName, fileSystem, rootDir, extraGlobals);
+  if (!rootDir || typeof rootDir !== "string") {
+    throw new Error(`Recieved rootDir as ${typeof rootDir}`);
+  }
+  return evaluateFromFileSystem(fileName, fileSystem, rootDir, extraGlobals);
 };

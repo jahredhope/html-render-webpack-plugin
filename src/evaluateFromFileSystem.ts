@@ -10,16 +10,22 @@ function getFromSourceModules(
   rootDir: string
 ) {
   const sourceModuleSpecifier = specifier.replace(/^\.\//, "");
+  if (!fsModule.existsSync(path.resolve(rootDir, sourceModuleSpecifier))) {
+    log(
+      `Unable to find file specifier ${sourceModuleSpecifier}. Root: ${rootDir}.`
+    );
+    return undefined;
+  }
   return fsModule.readFileSync(path.resolve(rootDir, sourceModuleSpecifier));
 }
 
-function evalutateFromFileSystem(
+function evaluateFromFileSystem(
   specifier: string,
   fsModule: FileSystem,
   rootDir: string,
   extraGlobals: ExtraGlobals
 ) {
-  log("Evaluating source for", specifier);
+  log("Evaluating source for", specifier, ". Root", rootDir);
   let source;
   try {
     source = getFromSourceModules(specifier, fsModule, rootDir);
@@ -53,8 +59,8 @@ function createLinker(
       return require(specifier);
     }
     log(`Linking ${parentModulePath} to asset ${specifier}`);
-    return evalutateFromFileSystem(absPath, fsModule, rootDir, extraGlobals);
+    return evaluateFromFileSystem(absPath, fsModule, rootDir, extraGlobals);
   };
 }
 
-export = evalutateFromFileSystem;
+export = evaluateFromFileSystem;

@@ -111,7 +111,7 @@ module.exports = {
 
 The location to create rendered files. Defaults to the rendered assets output.
 
-Useful when deploying HTML files seperate to other build assets.
+Useful when deploying HTML files separate to other build assets.
 
 ## Option: routes _Array<object|string>_
 
