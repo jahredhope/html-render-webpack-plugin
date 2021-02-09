@@ -25,12 +25,14 @@ function evaluateFromFileSystem(
   rootDir: string,
   extraGlobals: ExtraGlobals
 ) {
-  log("Evaluating source for", specifier, ". Root", rootDir);
+  log(
+    `Evaluating source for ${specifier}". From root directory: "${rootDir}".`
+  );
   let source;
   try {
     source = getFromSourceModules(specifier, fsModule, rootDir);
   } catch (error) {
-    throw new Error(`An (S) Error reading "${specifier}". Error: ${error}`);
+    throw new Error(`An error reading "${specifier}". Error: ${error}`);
   }
   return evaluate(
     source,
