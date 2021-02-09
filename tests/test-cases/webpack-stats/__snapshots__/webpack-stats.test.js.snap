@@ -3,8 +3,11 @@
 exports[`Render WebpackStats should render a with asset names 1`] = `
 Object {
   "index.html": "{
+  \\"name\\": \\"client\\",
   \\"assets\\": {
-    \\"main\\": \\"client-main-6c850010dbab14126df7.js\\"
+    \\"main\\": [
+      \\"client-main-2e89222a666cbba273f0.js\\"
+    ]
   }
 }",
 }

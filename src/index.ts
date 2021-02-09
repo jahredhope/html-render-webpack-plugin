@@ -141,7 +141,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
           transformFilePath,
         });
       } catch (error) {
-        logError("An error occured rendering HTML", error);
+        logError("An error occurred rendering HTML", error);
         // @ts-expect-error Allow passing errors to compilation
         currentCompilation.errors.push(new RenderError(error));
       }
@@ -214,11 +214,6 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       const renderEntry = getRenderEntry(renderCompilation);
       log("Render route:", { renderEntry });
 
-      // const source = getSourceFromCompilation(
-      //   renderCompilation,
-      //   renderCompilation.compiler.outputFileSystem as FileSystem
-      // );
-      log("got source");
       const rootDir = renderCompilation.compiler.outputPath;
       renderer = createRenderer({
         fileSystem: renderCompilation.compiler.outputFileSystem as FileSystem,
@@ -226,7 +221,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         rootDir,
         extraGlobals,
       });
-      log("created renderer");
+      log("Created renderer");
 
       if (typeof renderer !== "function") {
         log(
@@ -290,7 +285,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       // Support legacy behaviour of calling '.render()' until next breaking change
       if (!compiler) {
         console.warn(
-          "Warning. Calling render nolonger required. Change htmlRenderPlugin.render() to htmlRenderPlugin.render"
+          "Warning. Calling render no longer required. Change htmlRenderPlugin.render() to htmlRenderPlugin.render"
         );
         return (compiler: Compiler) => apply(compiler, true);
       }

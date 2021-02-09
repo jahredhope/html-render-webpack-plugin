@@ -1,6 +1,5 @@
 const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
-const path = require("path");
 
 describe("Errors when rendering", () => {
   it("should create an error in the compiler", async (done) => {
