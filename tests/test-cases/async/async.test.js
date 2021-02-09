@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const path = require("path");
 
 const config = require("./webpack.config");
-const HtmlRenderPlugin = require("../../../src");
+const HtmlRenderPlugin = require("../../../src").default;
 const getDirContentsSync = require("../../utils/getDirContentsSync");
 
 describe("Render asyncronously", () => {
@@ -29,7 +29,7 @@ describe("Render asyncronously", () => {
     });
   });
   it("should render a multiple files at once", async (done) => {
-    jest.setTimeout(1000);
+    jest.setTimeout(2000);
     const compiler = webpack(
       config(
         new HtmlRenderPlugin({

@@ -50,7 +50,7 @@ interface CompilationStatus {
   isReady: boolean;
 }
 
-export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
+export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
   constructor(options: Options<Route> = {}) {
     validateOptions(schema as any, options || {}, {
       name: "HTML Render Webpack Plugin",
@@ -335,4 +335,4 @@ export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
   render: () => (compiler: Compiler) => void;
   apply: (compiler: Compiler) => void;
   createDevRouter: () => Router;
-};
+}

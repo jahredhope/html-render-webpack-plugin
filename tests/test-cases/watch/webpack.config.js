@@ -1,5 +1,5 @@
 const path = require("path");
-const HtmlRenderPlugin = require("../../../src");
+const HtmlRenderPlugin = require("../../../src").default;
 
 const srcPath = path.resolve(__dirname, "./src");
 const paths = {

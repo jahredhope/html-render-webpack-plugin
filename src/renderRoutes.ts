@@ -25,7 +25,7 @@ export default async function renderRoutes<Route>({
   log(`Starting render of ${routes.length} routes`);
   async function emitFile(dir: string, content: string) {
     log("Emitting file to", dir);
-    await new Promise((resolve, reject) =>
+    await new Promise<void>((resolve, reject) =>
       renderCompilation.compiler.outputFileSystem.mkdir(
         path.dirname(dir),
         { recursive: true },
@@ -38,7 +38,7 @@ export default async function renderRoutes<Route>({
         }
       )
     );
-    return new Promise((resolve, reject) =>
+    return new Promise<void>((resolve, reject) =>
       renderCompilation.compiler.outputFileSystem.writeFile(
         dir,
         content,
