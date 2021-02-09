@@ -32,6 +32,14 @@ export default async function renderRoutes<Route>({
         // @ts-expect-error This function is incorrectly typed. A filesystem mkDir does take an options object
         (error?: Error | null) => {
           if (error) {
+            // @ts-expect-error Looking for code property that shouldn't exist
+            if (error.code === "EEXIST") {
+              log(
+                "Ignoring error when creating folder. Older mock fs systems ignore recursive flag."
+              );
+              resolve();
+              return;
+            }
             reject(error);
           }
           resolve();
