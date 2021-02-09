@@ -1,4 +1,4 @@
-const { Volume } = require("memfs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
 const path = require("path");
 
@@ -6,7 +6,7 @@ const config = require("./webpack.config");
 const HtmlRenderPlugin = require("../../../src").default;
 const getDirContentsSync = require("../../utils/getDirContentsSync");
 
-describe("Render asyncronously", () => {
+describe("Render asynchronously", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
 
   it("should render a HTML once resolved", async (done) => {
@@ -16,8 +16,7 @@ describe("Render asyncronously", () => {
       )
     );
 
-    const memoryFs = Volume.fromJSON({});
-
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error, stats) => {
@@ -41,7 +40,7 @@ describe("Render asyncronously", () => {
       )
     );
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error, stats) => {

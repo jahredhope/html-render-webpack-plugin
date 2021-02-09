@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Render asyncronously should render a HTML once resolved 1`] = `
+exports[`Render asynchronously should render a HTML once resolved 1`] = `
 Object {
   "index.html": "<html>
 <body>
@@ -15,7 +15,7 @@ Object {
 }
 `;
 
-exports[`Render asyncronously should render a multiple files at once 1`] = `
+exports[`Render asynchronously should render a multiple files at once 1`] = `
 Object {
   "page0": Object {
     "index.html": "<html>

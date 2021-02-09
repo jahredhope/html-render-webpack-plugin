@@ -1,9 +1,9 @@
-import { Volume } from "memfs";
 import webpack from "webpack";
 
 import config from "./webpack.config";
 import HtmlRenderPlugin from "../../../src";
 import { BaseRoute } from "../../../src/common-types";
+import { createInMemoryFileSystem } from "../../utils/memory-fs";
 
 describe("renderWhenReady", () => {
   interface Route extends BaseRoute {
@@ -27,7 +27,7 @@ describe("renderWhenReady", () => {
 
     const compiler = webpack(config(htmlRenderPlugin));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
     compiler.outputFileSystem = memoryFs;
 
@@ -53,7 +53,7 @@ describe("renderWhenReady", () => {
 
     const compiler = webpack(config(htmlRenderPlugin));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
     compiler.outputFileSystem = memoryFs;
 

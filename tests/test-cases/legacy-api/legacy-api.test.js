@@ -1,4 +1,4 @@
-const { Volume } = require("memfs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
 const path = require("path");
 
@@ -8,7 +8,7 @@ describe("Use legacy api", () => {
   it("should render a HTML file", async (done) => {
     const compiler = webpack(config);
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error) => {

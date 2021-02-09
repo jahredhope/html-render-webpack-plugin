@@ -1,4 +1,4 @@
-const { Volume } = require("memfs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
 
 const config = require("./webpack.config");
@@ -13,7 +13,7 @@ describe("Render multiple times without increasing heap memory", () => {
     const compiler = webpack(config);
     const initialMemoryUsage = getCurrentMemoryUsageInMB();
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error, stats) => {

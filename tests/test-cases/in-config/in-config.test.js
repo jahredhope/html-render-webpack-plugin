@@ -1,4 +1,4 @@
-const { Volume } = require("memfs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
 const path = require("path");
 
@@ -10,7 +10,7 @@ describe("Render HTML from in-config Plugin", () => {
   it("should render a HTML file", async (done) => {
     const compiler = webpack(require("./webpack.zero-config.config"));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error) => {
@@ -26,7 +26,7 @@ describe("Render HTML from in-config Plugin", () => {
   it("should render in a custom directory", async (done) => {
     const compiler = webpack(require("./webpack.directory.config.js"));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error) => {
@@ -41,7 +41,7 @@ describe("Render HTML from in-config Plugin", () => {
   it("should render a file per route", async (done) => {
     const compiler = webpack(require("./webpack.routes.config.js"));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error) => {
@@ -55,7 +55,7 @@ describe("Render HTML from in-config Plugin", () => {
   it("should render routes with extra information", async (done) => {
     const compiler = webpack(require("./webpack.route-info.config.js"));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error) => {
@@ -68,7 +68,7 @@ describe("Render HTML from in-config Plugin", () => {
   it("should allow custom file paths", async (done) => {
     const compiler = webpack(require("./webpack.paths.config.js"));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error) => {

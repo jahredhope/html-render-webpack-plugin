@@ -1,11 +1,12 @@
-const { Volume } = require("memfs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
+const path = require("path");
 
-describe("Render HTML from in-config Plugin", () => {
-  it("should render a HTML file", async (done) => {
+describe("Errors when rendering", () => {
+  it("should create an error in the compiler", async (done) => {
     const compiler = webpack(require("./webpack.errors.config"));
 
-    const memoryFs = Volume.fromJSON({});
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error, result) => {
