@@ -5,7 +5,7 @@ const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
 };
 
-const HtmlRenderPlugin = require("../../../src");
+const HtmlRenderPlugin = require("../../../src").default;
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 const plugin = new HtmlRenderPlugin({

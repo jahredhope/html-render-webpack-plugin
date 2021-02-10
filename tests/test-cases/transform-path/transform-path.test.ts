@@ -1,4 +1,3 @@
-import MemoryFS from "memory-fs";
 import webpack from "webpack";
 import path from "path";
 // @ts-ignore: Not yet typed
@@ -7,6 +6,7 @@ import getDirContentsSync from "../../utils/getDirContentsSync";
 import getConfig from "./webpack.config";
 import HtmlRenderPlugin from "../../../src";
 import { BaseRoute } from "../../../src/common-types";
+import { createInMemoryFileSystem } from "../../utils/memory-fs";
 
 interface Route extends BaseRoute {
   route: string;
@@ -40,12 +40,13 @@ describe("transformFilePath", () => {
     const config = getConfig(htmlRenderPlugin);
     const compiler = webpack(config);
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = createInMemoryFileSystem();
     // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run((error) => {
+    compiler.run((error, stats) => {
       expect(error).toBe(null);
+      expect(stats?.hasErrors()).toBe(false);
       // @ts-ignore: Ignore fs/memoryFs conflicts
       const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
       expect(contents).toMatchSnapshot();

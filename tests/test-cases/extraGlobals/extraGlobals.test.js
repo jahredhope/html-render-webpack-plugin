@@ -1,4 +1,4 @@
-const MemoryFS = require("memory-fs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
 const path = require("path");
 
@@ -11,7 +11,7 @@ describe("with extra globals in scope", () => {
   it("should render a HTML file", async (done) => {
     const compiler = webpack(config);
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error) => {

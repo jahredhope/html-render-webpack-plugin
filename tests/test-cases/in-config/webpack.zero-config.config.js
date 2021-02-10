@@ -1,6 +1,6 @@
-const merge = require("webpack-merge");
+const { merge } = require("webpack-merge");
 const defaultConfig = require("./webpack.default.config");
-const HtmlRenderPlugin = require("../../../src");
+const HtmlRenderPlugin = require("../../../src").default;
 
 const htmlRenderPlugin = new HtmlRenderPlugin({ mapStatsToParams: () => ({}) });
 

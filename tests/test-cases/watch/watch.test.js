@@ -1,4 +1,4 @@
-const MemoryFS = require("memory-fs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
 const path = require("path");
 
@@ -10,7 +10,7 @@ describe("Watch", () => {
   it("should render a HTML on initial watch build", async (done) => {
     const compiler = webpack(config);
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     const watching = compiler.watch({}, (error) => {

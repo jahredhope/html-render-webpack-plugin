@@ -1,7 +1,12 @@
 import path from "path";
 import chalk from "chalk";
-import { RenderConcurrency, TransformPath, Render } from "./common-types";
-import { compilation } from "webpack";
+import {
+  RenderConcurrency,
+  TransformPath,
+  Render,
+  FileSystem,
+} from "./common-types";
+import { Compilation } from "webpack";
 import { log } from "./logging";
 
 interface Params<Route> {
@@ -10,8 +15,42 @@ interface Params<Route> {
   routes: Route[];
   renderEntry: string;
   renderDirectory: string;
-  renderCompilation: compilation.Compilation;
+  renderCompilation: Compilation;
   transformFilePath: TransformPath<Route>;
+}
+
+function safeMkdir(fileSystem: FileSystem, dir: string) {
+  // @ts-expect-error Allow looking for invalid field mkdirp
+  if (fileSystem.mkdirp) {
+    log("Found mkdirp method on fileSystem. Assuming older mock fs system.");
+    return new Promise<void>((resolve, reject) => {
+      // @ts-expect-error Allow calling for invalid field mkdirp
+      return fileSystem.mkdirp(dir, (error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+  return new Promise<void>((resolve, reject) => {
+    fileSystem.mkdir(dir, { recursive: true }, (error?: Error | null) => {
+      if (error) {
+        // @ts-expect-error Looking for code property that shouldn't exist
+        if (error.code === "EEXIST") {
+          log(
+            "Ignoring error when creating folder. Folder already existed. Assuming older mock fs systems."
+          );
+          resolve();
+          return;
+        }
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
 }
 
 export default async function renderRoutes<Route>({
@@ -25,18 +64,11 @@ export default async function renderRoutes<Route>({
   log(`Starting render of ${routes.length} routes`);
   async function emitFile(dir: string, content: string) {
     log("Emitting file to", dir);
-    await new Promise((resolve, reject) =>
-      renderCompilation.compiler.outputFileSystem.mkdirp(
-        path.dirname(dir),
-        (error?: Error | null) => {
-          if (error) {
-            reject(error);
-          }
-          resolve();
-        }
-      )
+    await safeMkdir(
+      renderCompilation.compiler.outputFileSystem as FileSystem,
+      path.dirname(dir)
     );
-    return new Promise((resolve, reject) =>
+    return new Promise<void>((resolve, reject) =>
       renderCompilation.compiler.outputFileSystem.writeFile(
         dir,
         content,
@@ -66,7 +98,7 @@ export default async function renderRoutes<Route>({
       renderResult = await performRender(route);
     } catch (error) {
       console.error(
-        `🚨 ${chalk.red(`An error occured rendering "`)}". Exiting render.`
+        `🚨 ${chalk.red(`An error occurred rendering "`)}". Exiting render.`
       );
       throw error;
     }

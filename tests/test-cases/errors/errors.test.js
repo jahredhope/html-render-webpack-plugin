@@ -1,11 +1,11 @@
-const MemoryFS = require("memory-fs");
+const { createInMemoryFileSystem } = require("../../utils/memory-fs");
 const webpack = require("webpack");
 
-describe("Render HTML from in-config Plugin", () => {
-  it("should render a HTML file", async (done) => {
+describe("Errors when rendering", () => {
+  it("should create an error in the compiler", async (done) => {
     const compiler = webpack(require("./webpack.errors.config"));
 
-    const memoryFs = new MemoryFS();
+    const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
     compiler.run((error, result) => {
@@ -13,7 +13,11 @@ describe("Render HTML from in-config Plugin", () => {
       expect(error).toBe(null);
       // Errors show up in compilation
       expect(result.toJson({ all: false, errors: true }).errors).toEqual(
-        expect.arrayContaining([expect.stringContaining("Example error")])
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.stringContaining("Example error"),
+          }),
+        ])
       );
       done();
     });
