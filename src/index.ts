@@ -331,3 +331,5 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
   apply: (compiler: Compiler) => void;
   createDevRouter: () => Router;
 }
+
+export { HtmlRenderPlugin };

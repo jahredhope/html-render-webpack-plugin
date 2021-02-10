@@ -65,7 +65,7 @@ HtmlRenderPlugin will then pass the [Webpack Stats](https://webpack.js.org/api/s
 **webpack.config.js**
 
 ```js
-const HtmlRenderPlugin = require("html-render-webpack-plugin");
+const { HtmlRenderPlugin } = require("html-render-webpack-plugin");
 
 const htmlRenderPlugin = new HtmlRenderPlugin();
 module.exports = [
