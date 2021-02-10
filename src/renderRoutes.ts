@@ -1,6 +1,11 @@
 import path from "path";
 import chalk from "chalk";
-import { RenderConcurrency, TransformPath, Render } from "./common-types";
+import {
+  RenderConcurrency,
+  TransformPath,
+  Render,
+  FileSystem,
+} from "./common-types";
 import { Compilation } from "webpack";
 import { log } from "./logging";
 
@@ -14,6 +19,40 @@ interface Params<Route> {
   transformFilePath: TransformPath<Route>;
 }
 
+function safeMkdir(fileSystem: FileSystem, dir: string) {
+  // @ts-expect-error Allow looking for invalid field mkdirp
+  if (fileSystem.mkdirp) {
+    log("Found mkdirp method on fileSystem. Assuming older mock fs system.");
+    return new Promise<void>((resolve, reject) => {
+      // @ts-expect-error Allow calling for invalid field mkdirp
+      return fileSystem.mkdirp(dir, (error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+  return new Promise<void>((resolve, reject) => {
+    fileSystem.mkdir(dir, { recursive: true }, (error?: Error | null) => {
+      if (error) {
+        // @ts-expect-error Looking for code property that shouldn't exist
+        if (error.code === "EEXIST") {
+          log(
+            "Ignoring error when creating folder. Folder already existed. Assuming older mock fs systems."
+          );
+          resolve();
+          return;
+        }
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 export default async function renderRoutes<Route>({
   render: performRender,
   renderConcurrency,
@@ -25,26 +64,9 @@ export default async function renderRoutes<Route>({
   log(`Starting render of ${routes.length} routes`);
   async function emitFile(dir: string, content: string) {
     log("Emitting file to", dir);
-    await new Promise<void>((resolve, reject) =>
-      renderCompilation.compiler.outputFileSystem.mkdir(
-        path.dirname(dir),
-        { recursive: true },
-        // @ts-expect-error This function is incorrectly typed. A filesystem mkDir does take an options object
-        (error?: Error | null) => {
-          if (error) {
-            // @ts-expect-error Looking for code property that shouldn't exist
-            if (error.code === "EEXIST") {
-              log(
-                "Ignoring error when creating folder. Older mock fs systems ignore recursive flag."
-              );
-              resolve();
-              return;
-            }
-            reject(error);
-          }
-          resolve();
-        }
-      )
+    await safeMkdir(
+      renderCompilation.compiler.outputFileSystem as FileSystem,
+      path.dirname(dir)
     );
     return new Promise<void>((resolve, reject) =>
       renderCompilation.compiler.outputFileSystem.writeFile(
