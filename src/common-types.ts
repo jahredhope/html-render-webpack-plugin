@@ -1,8 +1,6 @@
 import { Stats } from "webpack";
 import { Request } from "express";
 
-// No current type definition for MultiStats. Ignore and hope nothing breaks.
-// export type WebpackStats = Stats | MultiStats;
 export type WebpackStats = Stats;
 export type BaseRoute = { route: string };
 export type Render<Route = BaseRoute> = (route: Route) => Promise<string>;
