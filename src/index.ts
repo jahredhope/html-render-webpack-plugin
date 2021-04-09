@@ -1,4 +1,4 @@
-import validateOptions from "schema-utils";
+import { validate } from "schema-utils";
 
 import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
@@ -52,7 +52,7 @@ interface CompilationStatus {
 
 export = class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
   constructor(options: Options<Route> = {}) {
-    validateOptions(schema, options || {}, "HTML Render Webpack Plugin");
+    validate(schema, options || {}, "HTML Render Webpack Plugin");
 
     const pluginName = "HtmlRenderPlugin";
 

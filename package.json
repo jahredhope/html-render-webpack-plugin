@@ -35,7 +35,6 @@
     "@types/express": "^4.17.6",
     "@types/jest": "^25.2.1",
     "@types/memory-fs": "^0.3.2",
-    "@types/schema-utils": "^2.4.0",
     "@types/webpack": "^4.41.12",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
@@ -58,8 +57,10 @@
   },
   "dependencies": {
     "chalk": "^4.0.0",
+    "debug": "^4.3.1",
     "eval": "^0.1.4",
-    "exception-formatter": "^2.1.2"
+    "exception-formatter": "^2.1.2",
+    "schema-utils": "^3.0.0"
   },
   "config": {
     "commitizen": {
