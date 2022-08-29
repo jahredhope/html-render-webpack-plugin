@@ -58,7 +58,9 @@ function createLinker(
     const absPath = path.join(path.dirname(parentModulePath), specifier);
     if (!getFromSourceModules(specifier, fsModule, rootDir)) {
       log(`Using external require for ${specifier} from ${parentModulePath}`);
-      return require(specifier);
+      const resolvedPath = require.resolve(specifier, { paths: [rootDir] });
+      log(`Resolved ${specifier} as external package to ${resolvedPath}`);
+      return require(resolvedPath);
     }
     log(`Linking ${parentModulePath} to asset ${specifier}`);
     return evaluateFromFileSystem(absPath, fsModule, rootDir, extraGlobals);
