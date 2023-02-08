@@ -279,7 +279,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         compilationStatus.isReady = true;
         try {
           await createRendererIfReady(compilation);
-        } catch (error) {
+        } catch (error: any) {
           compilation.errors.push(error);
         }
       });
