@@ -98,7 +98,9 @@ export default async function renderRoutes<Route>({
       renderResult = await performRender(route);
     } catch (error) {
       console.error(
-        `🚨 ${chalk.red(`An error occurred rendering "`)}". Exiting render.`
+        `🚨 ${chalk.red(
+          `An error occurred rendering ${JSON.stringify(route)}`
+        )}. Exiting render.`
       );
       throw error;
     }

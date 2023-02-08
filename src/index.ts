@@ -116,6 +116,8 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         );
         return result;
       } catch (error) {
+        log(`Error rendering ${route.route}`);
+        error.route = route.route;
         error.webpackStats = webpackStats;
         throw error;
       }
