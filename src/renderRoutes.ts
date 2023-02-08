@@ -5,6 +5,7 @@ import {
   TransformPath,
   Render,
   FileSystem,
+  BaseRoute,
 } from "./common-types";
 import { Compilation } from "webpack";
 import { log } from "./logging";
@@ -53,7 +54,7 @@ function safeMkdir(fileSystem: FileSystem, dir: string) {
   });
 }
 
-export default async function renderRoutes<Route>({
+export default async function renderRoutes<Route extends BaseRoute>({
   render: performRender,
   renderConcurrency,
   routes,
@@ -98,7 +99,9 @@ export default async function renderRoutes<Route>({
       renderResult = await performRender(route);
     } catch (error) {
       console.error(
-        `🚨 ${chalk.red(`An error occurred rendering "`)}". Exiting render.`
+        `🚨 ${chalk.red(
+          `An error occurred rendering route: "${route.route}"`
+        )}. Exiting render.`
       );
       throw error;
     }

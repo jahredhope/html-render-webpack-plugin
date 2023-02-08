@@ -115,8 +115,12 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
           `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`
         );
         return result;
-      } catch (error) {
-        error.webpackStats = webpackStats;
+      } catch (error: any) {
+        log(`Error rendering ${route.route}`);
+        if (error) {
+          error.route = route.route;
+          error.webpackStats = webpackStats;
+        }
         throw error;
       }
     };

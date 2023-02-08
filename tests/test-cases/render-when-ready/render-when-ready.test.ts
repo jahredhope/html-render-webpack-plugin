@@ -59,7 +59,10 @@ describe("renderWhenReady", () => {
 
     compiler.run(async () => {
       await expect(promise).rejects.toEqual(
-        expect.objectContaining({ webpackStats: expect.any(Object) })
+        expect.objectContaining({
+          route: "/new",
+          webpackStats: expect.any(Object),
+        })
       );
       done();
     });
