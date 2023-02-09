@@ -9,14 +9,11 @@ jobs:
     name: Release
     runs-on: ubuntu-18.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          fetch-depth: 0
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
+          node-version-file: ".nvmrc"
+          cache: "yarn"
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Release
