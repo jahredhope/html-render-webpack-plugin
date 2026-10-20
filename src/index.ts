@@ -4,7 +4,6 @@ import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
 import { log, logError } from "./logging";
-import MultiStats from "webpack/lib/stats/MultiStats";
 import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
@@ -24,6 +23,7 @@ import {
 import { Compiler, Compilation } from "webpack";
 import createRenderer from "./createRenderer";
 import { Router } from "express";
+import { resolveMultiStats } from "./multiStats";
 
 const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
 const defaultMapStats = ({ webpackStats }: { webpackStats: WebpackStats }) =>
@@ -184,7 +184,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       const clientStats =
         clientCompilations.length === 1
           ? clientCompilations[0].compilation!.getStats()
-          : new MultiStats(
+          : new (resolveMultiStats())(
               clientCompilations
                 .map((compilationStatus) => compilationStatus.compilation)
                 .filter(Boolean)
