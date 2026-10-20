@@ -1,12 +1,10 @@
-const { Volume } = require("memfs");
-const path = require("path");
+import path from "node:path";
+import { Volume } from "memfs";
 
-function createInMemoryFileSystem() {
+export function createInMemoryFileSystem() {
   const memoryFs = Volume.fromJSON({});
 
-  // Webpack 4 expects outputFileSystem to contain it's own join function
-  memoryFs.join = path.join.bind(path.join);
+  // Webpack expects outputFileSystem to contain its own join function
+  memoryFs.join = path.join.bind(path);
   return memoryFs;
 }
-
-module.exports = { createInMemoryFileSystem };

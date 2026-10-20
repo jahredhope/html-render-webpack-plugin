@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import { log, logError } from "./logging";
 import exceptionFormatter from "exception-formatter";
 import {
@@ -23,7 +23,7 @@ export = <Route extends BaseRoute>({
   onRendererReady,
   transformExpressPath,
   getClientStats,
-}: Params<Route>) => {
+}: Params<Route>): Router => {
   log("Create dev server");
   const formatErrorResponse = (
     error: string,
@@ -78,7 +78,7 @@ export = <Route extends BaseRoute>({
           log(`Static render for ${route} from ${req.path}`);
           try {
             res.send(await render(route));
-          } catch (error) {
+          } catch (error: any) {
             res.status(500).send(
               formatErrorResponse(
                 exceptionFormatter(error, {

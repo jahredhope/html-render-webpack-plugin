@@ -1,13 +1,13 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Render asynchronously should render a HTML once resolved 1`] = `
-Object {
+exports[`Render asynchronously > should render a HTML once resolved 1`] = `
+{
   "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"\\"
+      "route": ""
     }
   ]</code>
 </body>
@@ -15,243 +15,243 @@ Object {
 }
 `;
 
-exports[`Render asynchronously should render a multiple files at once 1`] = `
-Object {
-  "page0": Object {
+exports[`Render asynchronously > should render a multiple files at once 1`] = `
+{
+  "page0": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page0\\"
+      "route": "page0"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page1": Object {
+  "page1": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page1\\"
+      "route": "page1"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page10": Object {
+  "page10": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page10\\"
+      "route": "page10"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page11": Object {
+  "page11": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page11\\"
+      "route": "page11"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page12": Object {
+  "page12": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page12\\"
+      "route": "page12"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page13": Object {
+  "page13": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page13\\"
+      "route": "page13"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page14": Object {
+  "page14": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page14\\"
+      "route": "page14"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page15": Object {
+  "page15": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page15\\"
+      "route": "page15"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page16": Object {
+  "page16": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page16\\"
+      "route": "page16"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page17": Object {
+  "page17": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page17\\"
+      "route": "page17"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page18": Object {
+  "page18": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page18\\"
+      "route": "page18"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page19": Object {
+  "page19": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page19\\"
+      "route": "page19"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page2": Object {
+  "page2": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page2\\"
+      "route": "page2"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page3": Object {
+  "page3": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page3\\"
+      "route": "page3"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page4": Object {
+  "page4": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page4\\"
+      "route": "page4"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page5": Object {
+  "page5": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page5\\"
+      "route": "page5"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page6": Object {
+  "page6": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page6\\"
+      "route": "page6"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page7": Object {
+  "page7": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page7\\"
+      "route": "page7"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page8": Object {
+  "page8": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page8\\"
+      "route": "page8"
     }
   ]</code>
 </body>
 </html>",
   },
-  "page9": Object {
+  "page9": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"page9\\"
+      "route": "page9"
     }
   ]</code>
 </body>

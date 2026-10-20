@@ -63,24 +63,27 @@ export default async function renderRoutes<Route extends BaseRoute>({
   transformFilePath,
 }: Params<Route>) {
   log(`Starting render of ${routes.length} routes`);
+
+  const outputFileSystem = renderCompilation.compiler.outputFileSystem;
+  if (!outputFileSystem) {
+    throw new Error(
+      "Unable to render HTML: the compilation has no output file system."
+    );
+  }
+  const fileSystem = (outputFileSystem as unknown) as FileSystem;
+
   async function emitFile(dir: string, content: string) {
     log("Emitting file to", dir);
-    await safeMkdir(
-      renderCompilation.compiler.outputFileSystem as FileSystem,
-      path.dirname(dir)
-    );
+    await safeMkdir(fileSystem, path.dirname(dir));
     return new Promise<void>((resolve, reject) =>
-      renderCompilation.compiler.outputFileSystem.writeFile(
-        dir,
-        content,
-        (error) => {
-          if (error) {
-            reject(error);
-          }
-
-          resolve();
+      fileSystem.writeFile(dir, content, (error) => {
+        if (error) {
+          reject(error);
+          return;
         }
-      )
+
+        resolve();
+      })
     );
   }
 

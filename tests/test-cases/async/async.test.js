@@ -1,17 +1,19 @@
-const { createInMemoryFileSystem } = require("../../utils/memory-fs");
-const webpack = require("webpack");
-const path = require("path");
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import webpack from "webpack";
 
-const config = require("./webpack.config");
-const HtmlRenderPlugin = require("../../../src").default;
-const getDirContentsSync = require("../../utils/getDirContentsSync");
+import HtmlRenderPlugin from "../../../src";
+import getDirContentsSync from "../../utils/getDirContentsSync";
+import { createInMemoryFileSystem } from "../../utils/memory-fs";
+import { runWebpack } from "../../utils/run-webpack";
+import getConfig from "./webpack.config.js";
 
 describe("Render asynchronously", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
 
-  it("should render a HTML once resolved", async (done) => {
+  it("should render a HTML once resolved", async () => {
     const compiler = webpack(
-      config(
+      getConfig(
         new HtmlRenderPlugin({ mapStatsToParams: () => ({}), renderDirectory })
       )
     );
@@ -19,18 +21,16 @@ describe("Render asynchronously", () => {
     const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run((error, stats) => {
-      expect(error).toBe(null);
-      expect(stats.hasErrors()).toBe(false);
-      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-      expect(contents).toMatchSnapshot();
-      done();
-    });
+    const stats = await runWebpack(compiler);
+
+    expect(stats.hasErrors()).toBe(false);
+    const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents).toMatchSnapshot();
   });
-  it("should render a multiple files at once", async (done) => {
-    jest.setTimeout(2000);
+
+  it("should render a multiple files at once", async () => {
     const compiler = webpack(
-      config(
+      getConfig(
         new HtmlRenderPlugin({
           mapStatsToParams: () => ({}),
           renderConcurrency: "parallel",
@@ -43,12 +43,10 @@ describe("Render asynchronously", () => {
     const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run((error, stats) => {
-      expect(stats.hasErrors()).toBe(false);
-      expect(error).toBe(null);
-      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-      expect(contents).toMatchSnapshot();
-      done();
-    });
+    const stats = await runWebpack(compiler);
+
+    expect(stats.hasErrors()).toBe(false);
+    const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents).toMatchSnapshot();
   });
 });

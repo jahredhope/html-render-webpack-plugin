@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import HtmlRenderPlugin from "../../../src";
 
 describe("dev-server", () => {

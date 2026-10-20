@@ -1,12 +1,12 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Render WebpackStats should render a with asset names 1`] = `
-Object {
+exports[`Render WebpackStats > should render a with asset names 1`] = `
+{
   "index.html": "{
-  \\"name\\": \\"client\\",
-  \\"assets\\": {
-    \\"main\\": [
-      \\"client-main-2e89222a666cbba273f0.js\\"
+  "name": "client",
+  "assets": {
+    "main": [
+      "client-main-b72e071e85d30264c303.js"
     ]
   }
 }",

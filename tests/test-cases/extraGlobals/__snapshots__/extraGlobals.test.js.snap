@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`with extra globals in scope should render a HTML file 1`] = `
-Object {
-  "a": Object {
+exports[`with extra globals in scope > should render a HTML file 1`] = `
+{
+  "a": {
     "index.html": "<html>
 <body>
   anExtraGlobalValue: An Extra Global Value

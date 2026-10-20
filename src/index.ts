@@ -4,7 +4,7 @@ import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
 import { log, logError } from "./logging";
-import MultiStats from "webpack/lib/MultiStats";
+import MultiStats from "webpack/lib/stats/MultiStats";
 import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
@@ -220,7 +220,8 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
 
       const rootDir = renderCompilation.compiler.outputPath;
       renderer = createRenderer({
-        fileSystem: renderCompilation.compiler.outputFileSystem as FileSystem,
+        fileSystem: (renderCompilation.compiler
+          .outputFileSystem as unknown) as FileSystem,
         fileName: renderEntry,
         rootDir,
         extraGlobals,

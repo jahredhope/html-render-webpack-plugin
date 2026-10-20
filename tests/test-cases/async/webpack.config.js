@@ -1,12 +1,15 @@
-const path = require("path");
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const srcPath = path.resolve(__dirname, "./src");
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
+const srcPath = path.resolve(currentDir, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
   clientEntry: path.resolve(srcPath, "client.js"),
 };
 
-module.exports = (plugin) => [
+export default (plugin) => [
   {
     name: "client",
     target: "web",

@@ -1,14 +1,17 @@
-const path = require("path");
-const HtmlRenderPlugin = require("../../../src").default;
+import path from "node:path";
+import HtmlRenderPlugin from "../../../src";
+import { fileURLToPath } from "node:url";
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
-const srcPath = path.resolve(__dirname, "./src");
+const srcPath = path.resolve(currentDir, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
   clientEntry: path.resolve(srcPath, "client.js"),
 };
 
-module.exports = {
+export default {
   name: "render",
   target: "node",
   mode: "production",

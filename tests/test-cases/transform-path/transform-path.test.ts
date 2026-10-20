@@ -1,12 +1,13 @@
+import path from "node:path";
+import { describe, expect, it } from "vitest";
 import webpack from "webpack";
-import path from "path";
-// @ts-ignore: Not yet typed
-import getDirContentsSync from "../../utils/getDirContentsSync";
 
-import getConfig from "./webpack.config";
 import HtmlRenderPlugin from "../../../src";
 import { BaseRoute } from "../../../src/common-types";
+import getDirContentsSync from "../../utils/getDirContentsSync";
 import { createInMemoryFileSystem } from "../../utils/memory-fs";
+import { runWebpack } from "../../utils/run-webpack";
+import getConfig from "./webpack.config";
 
 interface Route extends BaseRoute {
   route: string;
@@ -28,7 +29,7 @@ languages.forEach((language) =>
 );
 
 describe("transformFilePath", () => {
-  it("should allow multiple routes with the same path", async (done) => {
+  it("should allow multiple routes with the same path", async () => {
     const renderDirectory = path.join(process.cwd(), "dist", "render");
     const htmlRenderPlugin = new HtmlRenderPlugin<Route>({
       mapStatsToParams: () => ({}),
@@ -44,13 +45,10 @@ describe("transformFilePath", () => {
     // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
     compiler.outputFileSystem = memoryFs;
 
-    compiler.run((error, stats) => {
-      expect(error).toBe(null);
-      expect(stats?.hasErrors()).toBe(false);
-      // @ts-ignore: Ignore fs/memoryFs conflicts
-      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-      expect(contents).toMatchSnapshot();
-      done();
-    });
+    const stats = await runWebpack(compiler);
+
+    expect(stats?.hasErrors()).toBe(false);
+    const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents).toMatchSnapshot();
   });
 });

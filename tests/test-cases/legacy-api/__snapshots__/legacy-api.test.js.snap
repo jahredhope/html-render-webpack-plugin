@@ -1,16 +1,16 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Use legacy api should render a HTML file 1`] = `
+exports[`Use legacy api > should render a HTML file 1`] = `
 "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/\\",
-      \\"extra\\": \\"extra-value\\",
-      \\"assets\\": {
-        \\"main\\": [
-          \\"client-main-c97c9861d1b174289e1a.js\\"
+      "route": "/",
+      "extra": "extra-value",
+      "assets": {
+        "main": [
+          "client-main-4d64f033a29ab3c0b880.js"
         ]
       }
     }

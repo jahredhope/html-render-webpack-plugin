@@ -1,6 +1,7 @@
-const path = require("path");
+import nodeFs from "node:fs";
+import path from "node:path";
 
-module.exports = function getDirContentsSync(rootDir, { fs = require("fs") }) {
+export default function getDirContentsSync(rootDir, { fs = nodeFs } = {}) {
   return fs.readdirSync(rootDir).reduce((acc, dir) => {
     const absoluteDirectory = path.join(rootDir, dir);
     if (fs.statSync(absoluteDirectory).isDirectory()) {
@@ -10,4 +11,4 @@ module.exports = function getDirContentsSync(rootDir, { fs = require("fs") }) {
     }
     return acc;
   }, {});
-};
+}

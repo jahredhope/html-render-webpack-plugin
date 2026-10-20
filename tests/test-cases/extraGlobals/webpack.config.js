@@ -1,11 +1,13 @@
-const path = require("path");
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import HtmlRenderPlugin from "../../../src";
 
-const srcPath = path.resolve(__dirname, "./src");
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+
+const srcPath = path.resolve(currentDir, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
 };
-
-const HtmlRenderPlugin = require("../../../src").default;
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 const plugin = new HtmlRenderPlugin({
@@ -17,7 +19,7 @@ const plugin = new HtmlRenderPlugin({
   },
 });
 
-module.exports = {
+export default {
   name: "render",
   target: "node",
   mode: "production",

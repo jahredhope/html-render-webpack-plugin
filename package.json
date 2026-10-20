@@ -4,6 +4,10 @@
   "author": "Jahred Hope <jahredhope@gmail.com>",
   "version": "0.0.0-development",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "keywords": [
     "html",
@@ -11,15 +15,19 @@
     "plugin",
     "webpack"
   ],
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "build": "tsc --declaration",
     "commit": "git-cz",
-    "lint.eslint": "eslint src/**/*.ts",
+    "lint.eslint": "eslint . --ext .ts,.js",
     "lint.prettier": "prettier --check .",
-    "lint": "npm run lint.eslint && npm run lint.prettier",
-    "prepublishOnly": "npm run build",
-    "test": "jest",
-    "posttest": "npm run lint",
+    "lint": "pnpm run lint.eslint && pnpm run lint.prettier",
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier --write .",
     "release": "semantic-release"
   },
@@ -33,29 +41,26 @@
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/express": "^4.17.11",
-    "@types/jest": "^26.0.20",
-    "@types/webpack": "^4.41.26",
+    "@types/node": "^22.10.0",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
     "commitizen": "4.2.3",
     "cz-conventional-changelog": "3.3.0",
     "eslint": "7.19.0",
     "express": "^4.17.1",
-    "jest": "26.6.3",
     "memfs": "^3.2.0",
-    "memoizee": "^0.4.15",
     "prettier": "2.2.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "semantic-release": "17.3.8",
-    "ts-jest": "^26.5.1",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.1.4",
-    "webpack": "^5.0.0",
+    "typescript": "^4.9.5",
+    "vitest": "^5.0.5",
+    "webpack": "^5.112.0",
     "webpack-merge": "^5.0.0"
   },
   "dependencies": {
     "chalk": "^4.1.0",
+    "debug": "^4.4.3",
     "eval": "^0.1.4",
     "exception-formatter": "^2.1.2",
     "schema-utils": "^3.0.0"
