@@ -12,7 +12,7 @@ Plugin to create HTML files with JavaScript.
 ```bash
 $ npm install webpack html-render-webpack-plugin
 # OR
-$ yarn add webpack html-render-webpack-plugin
+$ pnpm add webpack html-render-webpack-plugin
 ```
 
 **webpack.config.js**
