@@ -4,20 +4,38 @@ on: [push, pull_request]
 
 jobs:
   test:
-    name: Test
+    name: Test (Node ${{ matrix.node }}, webpack ${{ matrix.webpack }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - node: 22
+            webpack: "^5.112.0"
+          - node: 24
+            webpack: "^5.112.0"
+          - node: 24
+            webpack: "5.111.0"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
+          node-version: ${{ matrix.node }}
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install webpack ${{ matrix.webpack }}
+        if: matrix.webpack != '^5.112.0'
+        run: |
+          npm pkg set devDependencies.webpack=${{ matrix.webpack }}
+          pnpm install --config.prefer-frozen-lockfile=false
       - name: Lint
         run: pnpm lint
       - name: Build
         run: pnpm build
       - name: Test
         run: pnpm test
+      - name: Check package contents
+        if: matrix.node == 24 && matrix.webpack == '^5.112.0'
+        run: npm pack --dry-run

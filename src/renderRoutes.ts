@@ -1,5 +1,5 @@
 import path from "path";
-import chalk from "chalk";
+import pc from "picocolors";
 import {
   RenderConcurrency,
   TransformPath,
@@ -102,7 +102,7 @@ export default async function renderRoutes<Route extends BaseRoute>({
       renderResult = await performRender(route);
     } catch (error) {
       console.error(
-        `🚨 ${chalk.red(
+        `🚨 ${pc.red(
           `An error occurred rendering route: "${route.route}"`
         )}. Exiting render.`
       );
