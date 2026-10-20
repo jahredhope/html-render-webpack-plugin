@@ -2,7 +2,7 @@
   "name": "html-render-webpack-plugin",
   "description": "webpack plugin for rendering static HTML in a multi-config webpack build",
   "author": "Jahred Hope <jahredhope@gmail.com>",
-  "version": "0.0.0-development",
+  "version": "3.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -21,15 +21,17 @@
   },
   "scripts": {
     "build": "tsc --declaration",
+    "changeset": "changeset",
     "commit": "git-cz",
+    "format": "prettier --write .",
+    "lint": "pnpm run lint.eslint && pnpm run lint.prettier",
     "lint.eslint": "eslint . --ext .ts,.js",
     "lint.prettier": "prettier --check .",
-    "lint": "pnpm run lint.eslint && pnpm run lint.prettier",
-    "prepublishOnly": "pnpm run build",
+    "prepack": "pnpm run build",
+    "release": "changeset publish",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "prettier --write .",
-    "release": "semantic-release"
+    "version-packages": "changeset version"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,7 @@
     "express": ">=4.0.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@types/debug": "^4.1.5",
     "@types/express": "^4.17.11",
     "@types/node": "^22.10.0",
@@ -52,7 +55,6 @@
     "prettier": "2.2.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "semantic-release": "17.3.8",
     "typescript": "^4.9.5",
     "vitest": "^5.0.5",
     "webpack": "^5.112.0",
