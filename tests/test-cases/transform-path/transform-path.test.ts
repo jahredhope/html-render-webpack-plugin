@@ -24,8 +24,8 @@ languages.forEach((language) =>
   sites.forEach((site) =>
     paths.forEach((pathName) => {
       routes.push({ route: pathName, site, language });
-    })
-  )
+    }),
+  ),
 );
 
 describe("transformFilePath", () => {

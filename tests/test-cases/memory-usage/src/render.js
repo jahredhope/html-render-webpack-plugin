@@ -5,6 +5,6 @@ export default function exampleRender({ webpackStats }) {
       assets: webpackStats.assetsByChunkName,
     },
     null,
-    2
+    2,
   );
 }

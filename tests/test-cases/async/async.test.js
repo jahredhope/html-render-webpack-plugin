@@ -14,8 +14,8 @@ describe("Render asynchronously", () => {
   it("should render a HTML once resolved", async () => {
     const compiler = webpack(
       getConfig(
-        new HtmlRenderPlugin({ mapStatsToParams: () => ({}), renderDirectory })
-      )
+        new HtmlRenderPlugin({ mapStatsToParams: () => ({}), renderDirectory }),
+      ),
     );
 
     const memoryFs = createInMemoryFileSystem();
@@ -36,8 +36,8 @@ describe("Render asynchronously", () => {
           renderConcurrency: "parallel",
           routes: new Array(20).fill(null).map((_, i) => `page${i}`),
           renderDirectory,
-        })
-      )
+        }),
+      ),
     );
 
     const memoryFs = createInMemoryFileSystem();

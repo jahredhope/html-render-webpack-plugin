@@ -55,7 +55,7 @@ describe("renderWhenReady", () => {
       expect.objectContaining({
         route: "/new",
         webpackStats: expect.any(Object),
-      })
+      }),
     );
 
     const compiler = webpack(getConfig(htmlRenderPlugin));

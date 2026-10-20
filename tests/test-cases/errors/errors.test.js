@@ -18,7 +18,7 @@ describe("Errors when rendering", () => {
         expect.objectContaining({
           message: expect.stringContaining("Example error"),
         }),
-      ])
+      ]),
     );
   });
 });

@@ -27,7 +27,7 @@ export = <Route extends BaseRoute>({
   log("Create dev server");
   const formatErrorResponse = (
     error: string,
-    webpackStats: Record<string, any>
+    webpackStats: Record<string, any>,
   ) => {
     let devServerScripts: string[] = [];
     if ("entrypoints" in webpackStats && webpackStats.entrypoints) {
@@ -36,7 +36,7 @@ export = <Route extends BaseRoute>({
 
         devServerScripts = devServerAssets.map(
           (asset: string) =>
-            `<script src="${webpackStats.publicPath}${asset}"></script>`
+            `<script src="${webpackStats.publicPath}${asset}"></script>`,
         );
       } catch (err) {
         console.error("Unable to load Dev Server Scripts. Error: ", err);
@@ -86,12 +86,12 @@ export = <Route extends BaseRoute>({
                   inlineStyle: true,
                   basepath: "webpack://static/./",
                 }),
-                getClientStats().toJson()
-              )
+                getClientStats().toJson(),
+              ),
             );
           }
         });
-      }
+      },
     );
   });
 

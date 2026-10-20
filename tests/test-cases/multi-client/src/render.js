@@ -7,6 +7,6 @@ export default function exampleRender({ webpackStats }) {
       })),
     },
     null,
-    2
+    2,
   );
 }

@@ -47,6 +47,7 @@ Before committing, run `pnpm build`, `pnpm lint`, and `pnpm test`.
   `mise.toml`.
 - TypeScript emits CommonJS into `dist/`. Only `dist/` is published.
 - Vitest, not Jest. Test files and webpack fixture configs are ESM.
+- ESLint uses flat config (`eslint.config.mjs`); Prettier 3 formats the repo.
 - Tests use `memfs`; builds must not write to the real `dist/`.
 
 ## Invariants and landmines

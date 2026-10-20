@@ -41,7 +41,7 @@ function safeMkdir(fileSystem: FileSystem, dir: string) {
         // @ts-expect-error Looking for code property that shouldn't exist
         if (error.code === "EEXIST") {
           log(
-            "Ignoring error when creating folder. Folder already existed. Assuming older mock fs systems."
+            "Ignoring error when creating folder. Folder already existed. Assuming older mock fs systems.",
           );
           resolve();
           return;
@@ -67,10 +67,10 @@ export default async function renderRoutes<Route extends BaseRoute>({
   const outputFileSystem = renderCompilation.compiler.outputFileSystem;
   if (!outputFileSystem) {
     throw new Error(
-      "Unable to render HTML: the compilation has no output file system."
+      "Unable to render HTML: the compilation has no output file system.",
     );
   }
-  const fileSystem = (outputFileSystem as unknown) as FileSystem;
+  const fileSystem = outputFileSystem as unknown as FileSystem;
 
   async function emitFile(dir: string, content: string) {
     log("Emitting file to", dir);
@@ -83,7 +83,7 @@ export default async function renderRoutes<Route extends BaseRoute>({
         }
 
         resolve();
-      })
+      }),
     );
   }
 
@@ -103,15 +103,15 @@ export default async function renderRoutes<Route extends BaseRoute>({
     } catch (error) {
       console.error(
         `🚨 ${pc.red(
-          `An error occurred rendering route: "${route.route}"`
-        )}. Exiting render.`
+          `An error occurred rendering route: "${route.route}"`,
+        )}. Exiting render.`,
       );
       throw error;
     }
 
     if (typeof renderResult !== "string") {
       throw new Error(
-        `Render must return a string. Received "${typeof renderResult}".`
+        `Render must return a string. Received "${typeof renderResult}".`,
       );
     }
 

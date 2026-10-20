@@ -7,12 +7,12 @@ import { log } from "./logging";
 function getFromSourceModules(
   specifier: string,
   fsModule: FileSystem,
-  rootDir: string
+  rootDir: string,
 ) {
   const sourceModuleSpecifier = specifier.replace(/^\.\//, "");
   if (!fsModule.existsSync(path.resolve(rootDir, sourceModuleSpecifier))) {
     log(
-      `Unable to find file specifier ${sourceModuleSpecifier}. Root: ${rootDir}.`
+      `Unable to find file specifier ${sourceModuleSpecifier}. Root: ${rootDir}.`,
     );
     return undefined;
   }
@@ -23,16 +23,18 @@ function evaluateFromFileSystem(
   specifier: string,
   fsModule: FileSystem,
   rootDir: string,
-  extraGlobals: ExtraGlobals
+  extraGlobals: ExtraGlobals,
 ) {
   log(
-    `Evaluating source for ${specifier}". From root directory: "${rootDir}".`
+    `Evaluating source for ${specifier}". From root directory: "${rootDir}".`,
   );
   let source;
   try {
     source = getFromSourceModules(specifier, fsModule, rootDir);
   } catch (error) {
-    throw new Error(`An error reading "${specifier}". Error: ${error}`);
+    throw new Error(`An error reading "${specifier}". Error: ${error}`, {
+      cause: error,
+    });
   }
   return evaluate(
     source,
@@ -43,7 +45,7 @@ function evaluateFromFileSystem(
       ...(extraGlobals || {}),
       require: createLinker(specifier, fsModule, rootDir, extraGlobals),
     },
-    /* includeGlobals: */ true
+    /* includeGlobals: */ true,
   );
 }
 
@@ -51,7 +53,7 @@ function createLinker(
   parentModulePath: string,
   fsModule: FileSystem,
   rootDir: string,
-  extraGlobals: ExtraGlobals
+  extraGlobals: ExtraGlobals,
 ) {
   log("Creating linker for", parentModulePath);
   return function linker(specifier: string) {
@@ -60,6 +62,8 @@ function createLinker(
       log(`Using external require for ${specifier} from ${parentModulePath}`);
       const resolvedPath = require.resolve(specifier, { paths: [rootDir] });
       log(`Resolved ${specifier} as external package to ${resolvedPath}`);
+      // External packages are resolved from the consumer's webpack root.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       return require(resolvedPath);
     }
     log(`Linking ${parentModulePath} to asset ${specifier}`);

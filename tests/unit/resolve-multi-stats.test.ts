@@ -45,7 +45,7 @@ describe("resolveMultiStats", () => {
     expect(() =>
       resolveMultiStats(() => {
         throw new Error("Cannot find module");
-      })
+      }),
     ).toThrow(/Unable to load webpack's MultiStats class/);
   });
 });

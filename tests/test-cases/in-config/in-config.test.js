@@ -24,7 +24,7 @@ describe("Render HTML from in-config Plugin", () => {
 
     const contents = memoryFs.readFileSync(
       path.join(process.cwd(), "dist", "index.html"),
-      "utf8"
+      "utf8",
     );
     expect(contents).toMatchSnapshot();
   });
@@ -77,16 +77,16 @@ describe("Render HTML from in-config Plugin", () => {
 
     expect(
       memoryFs.existsSync(
-        path.join(renderDirectory, "/production/en-us/about/us/index.html")
-      )
+        path.join(renderDirectory, "/production/en-us/about/us/index.html"),
+      ),
     ).toBe(true);
     expect(
       memoryFs.existsSync(
-        path.join(renderDirectory, "/development/en-au/about/us/index.html")
-      )
+        path.join(renderDirectory, "/development/en-au/about/us/index.html"),
+      ),
     ).toBe(true);
     expect(
-      memoryFs.existsSync(path.join(renderDirectory, "/about/us/index.html"))
+      memoryFs.existsSync(path.join(renderDirectory, "/about/us/index.html")),
     ).toBe(false);
     const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
     expect(contents).toMatchSnapshot();

@@ -20,15 +20,14 @@ function getWebpackVersion(loadModule: LoadModule) {
 }
 
 export function resolveMultiStats(
-  loadModule: LoadModule = require
+  loadModule: LoadModule = require,
 ): MultiStatsConstructor {
   const failures: string[] = [];
 
   for (const modulePath of MULTI_STATS_MODULE_PATHS) {
     try {
       const loaded = loadModule(modulePath) as
-        | MultiStatsConstructor
-        | { default: MultiStatsConstructor };
+        MultiStatsConstructor | { default: MultiStatsConstructor };
 
       return (
         (loaded as { default?: MultiStatsConstructor }).default ??
@@ -36,14 +35,14 @@ export function resolveMultiStats(
       );
     } catch (error) {
       failures.push(
-        `${modulePath}: ${error instanceof Error ? error.message : error}`
+        `${modulePath}: ${error instanceof Error ? error.message : error}`,
       );
     }
   }
 
   throw new Error(
     `Unable to load webpack's MultiStats class. Installed webpack: ${getWebpackVersion(
-      loadModule
-    )}. Tried ${failures.join(", ")}.`
+      loadModule,
+    )}. Tried ${failures.join(", ")}.`,
   );
 }

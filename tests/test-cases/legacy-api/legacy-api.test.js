@@ -17,7 +17,7 @@ describe("Use legacy api", () => {
 
     const contents = memoryFs.readFileSync(
       path.join(process.cwd(), "dist", "index.html"),
-      "utf8"
+      "utf8",
     );
     expect(contents).toMatchSnapshot();
   });
