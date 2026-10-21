@@ -1,10 +1,9 @@
 import { validate as validateOptions } from "schema-utils";
-import path from "node:path";
 
 import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
-import { log, logError, logWarning } from "./logging";
+import { log, logError } from "./logging";
 import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
@@ -97,32 +96,6 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     );
 
     const renderDirectory = options.renderDirectory || "dist";
-
-    let warnedRendererOutputInsideRenderDirectory = false;
-    const warnIfRendererOutputInsideRenderDirectory = (
-      compilation: Compilation,
-    ) => {
-      if (warnedRendererOutputInsideRenderDirectory) {
-        return;
-      }
-      const outputPath = compilation.compiler.outputPath;
-      const resolvedRenderDirectory = path.resolve(renderDirectory);
-      const relativeOutputPath = path.relative(
-        resolvedRenderDirectory,
-        outputPath,
-      );
-      const isInside =
-        relativeOutputPath === "" ||
-        (!relativeOutputPath.startsWith("..") &&
-          !path.isAbsolute(relativeOutputPath));
-      if (!isInside) {
-        return;
-      }
-      warnedRendererOutputInsideRenderDirectory = true;
-      logWarning(
-        `The renderer output "${outputPath}" is at or inside the render directory "${resolvedRenderDirectory}", so the renderer bundle will be published with the static files. Set the renderer compilation's output.path outside the render directory.`,
-      );
-    };
 
     const clientCompilations: CompilationStatus[] = [];
     let rendererCompilation: CompilationStatus;
@@ -270,7 +243,6 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       log("Render route:", { renderEntry });
 
       const rootDir = renderCompilation.compiler.outputPath;
-      warnIfRendererOutputInsideRenderDirectory(renderCompilation);
       renderer = createRenderer({
         fileSystem: renderCompilation.compiler
           .outputFileSystem as unknown as FileSystem,
