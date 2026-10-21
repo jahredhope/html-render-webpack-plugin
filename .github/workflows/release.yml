@@ -5,12 +5,6 @@ on:
     branches:
       - master
   workflow_dispatch:
-    inputs:
-      snapshot_tag:
-        description: "npm dist-tag for the snapshot release"
-        required: true
-        default: "snapshot"
-        type: string
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -128,7 +122,14 @@ jobs:
 
   snapshot:
     name: Publish snapshot
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && github.repository == 'jahredhope/html-render-webpack-plugin'
+    needs: select-mode
+    if: |
+      !cancelled() &&
+      github.repository == 'jahredhope/html-render-webpack-plugin' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'push' && needs.select-mode.outputs.mode == 'version')
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -137,6 +138,7 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -145,6 +147,12 @@ jobs:
           package-manager-cache: false
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Check for changesets
+        run: |
+          if ! find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | grep -q .; then
+            echo "No changesets found on this branch; nothing to snapshot." >&2
+            exit 1
+          fi
       - name: Lint
         run: pnpm lint
       - name: Build
@@ -153,17 +161,17 @@ jobs:
         run: pnpm test
       - name: Validate snapshot tag
         env:
-          SNAPSHOT_TAG: ${{ inputs.snapshot_tag }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
+          SNAPSHOT_TAG="${BRANCH_NAME//\//-}"
+          echo "Snapshot dist-tag: $SNAPSHOT_TAG"
           if [ "$SNAPSHOT_TAG" = "latest" ]; then
             echo "Refusing to publish a snapshot to the latest dist-tag." >&2
             exit 1
           fi
-          if ! [[ "$SNAPSHOT_TAG" =~ ^[a-z0-9][a-z0-9._-]*$ ]]; then
-            echo "Invalid npm dist-tag: $SNAPSHOT_TAG" >&2
-            exit 1
-          fi
-      - name: Version snapshot
-        run: pnpm changeset version --snapshot "${{ inputs.snapshot_tag }}"
       - name: Publish snapshot
-        run: pnpm changeset publish --tag "${{ inputs.snapshot_tag }}" --no-git-tag
+        uses: seek-oss/changesets-snapshot@56b8b82b8e45fd725daa2890453dfa0fa28f9eb0 # v1.0.0
+        with:
+          pre-publish: pnpm build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
