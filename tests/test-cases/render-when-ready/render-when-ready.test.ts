@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
-import webpack from "webpack";
 
 import HtmlRenderPlugin from "../../../src";
-import { BaseRoute } from "../../../src/common-types";
-import { createInMemoryFileSystem } from "../../utils/memory-fs";
-import { runWebpack } from "../../utils/run-webpack";
+import type { BaseRoute } from "../../../src/common-types";
+import { buildFixture } from "../../utils/build-fixture";
 import getConfig from "./webpack.config";
 
 describe("renderWhenReady", () => {
@@ -26,16 +24,12 @@ describe("renderWhenReady", () => {
       route: "/new",
       language: "en-us",
     });
-    const resolution = expect(promise).resolves.toMatchSnapshot();
 
-    const compiler = webpack(getConfig(htmlRenderPlugin));
+    await buildFixture(getConfig(htmlRenderPlugin));
 
-    const memoryFs = createInMemoryFileSystem();
-    // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
-    compiler.outputFileSystem = memoryFs;
-
-    await runWebpack(compiler);
-    await resolution;
+    const html = await promise;
+    expect(html).toContain('"route": "/new"');
+    expect(html).toMatchSnapshot();
   });
 
   it("should contain webpackStats when render errors", async () => {
@@ -58,13 +52,7 @@ describe("renderWhenReady", () => {
       }),
     );
 
-    const compiler = webpack(getConfig(htmlRenderPlugin));
-
-    const memoryFs = createInMemoryFileSystem();
-    // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
-    compiler.outputFileSystem = memoryFs;
-
-    await runWebpack(compiler);
+    await buildFixture(getConfig(htmlRenderPlugin));
     await rejection;
   });
 });

@@ -1,26 +1,27 @@
+import path from "node:path";
 import { describe, expect, it } from "vitest";
-import webpack from "webpack";
 
-import { createInMemoryFileSystem } from "../../utils/memory-fs";
-import { runWebpack } from "../../utils/run-webpack";
-import config from "./webpack.config.js";
+import { buildFixture } from "../../utils/build-fixture";
+import config, { statsJsonCalls } from "./webpack.config.js";
 
-function getCurrentMemoryUsageInMB() {
-  return Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100;
-}
+describe("Render many routes", () => {
+  const renderDirectory = path.join(process.cwd(), "dist", "render");
 
-describe("Render multiple times without increasing heap memory", () => {
-  it("should not leak memory when memoizing webpackStats", async () => {
-    const compiler = webpack(config);
-    const initialMemoryUsage = getCurrentMemoryUsageInMB();
+  it("should render every route without serialising stats more than once", async () => {
+    statsJsonCalls.count = 0;
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    const stats = await runWebpack(compiler);
+    const { stats, memoryFs } = await buildFixture(config);
 
     expect(stats.hasErrors()).toBe(false);
-    const afterMemoryUsage = getCurrentMemoryUsageInMB();
-    expect(afterMemoryUsage - initialMemoryUsage).toBeLessThan(150);
+    expect(memoryFs.readdirSync(renderDirectory)).toHaveLength(20_000);
+    // Every route shares one memoised stats payload. If the plugin calls
+    // toJson() per render, this climbs and the heap grows with route count.
+    expect(statsJsonCalls.count).toBe(1);
+    expect(
+      memoryFs.readFileSync(
+        path.join(renderDirectory, "route-0", "index.html"),
+        "utf8",
+      ),
+    ).toContain('"name": "client"');
   });
 });

@@ -31,6 +31,7 @@
     "release": "changeset publish",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.test.json",
     "version-packages": "changeset version"
   },
   "repository": {

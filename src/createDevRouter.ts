@@ -34,10 +34,11 @@ export = <Route extends BaseRoute>({
       try {
         const devServerAssets = webpackStats.entrypoints.main.assets;
 
-        devServerScripts = devServerAssets.map(
-          (asset: string) =>
-            `<script src="${webpackStats.publicPath}${asset}"></script>`,
-        );
+        devServerScripts = devServerAssets.map((asset: any) => {
+          // webpack 5 reports assets as objects; older stats used strings.
+          const assetName = typeof asset === "string" ? asset : asset.name;
+          return `<script src="${webpackStats.publicPath}${assetName}"></script>`;
+        });
       } catch (err) {
         console.error("Unable to load Dev Server Scripts. Error: ", err);
       }
@@ -68,12 +69,14 @@ export = <Route extends BaseRoute>({
             : defaultRoute;
           if (!route) {
             next();
+            return;
           }
           if (!routes.includes(route)) {
             const errorMessage =
               "Returned route was not an existing route. Ensure return value from getRouteFromRequest is route";
             logError(errorMessage);
-            throw new Error(errorMessage);
+            next(new Error(errorMessage));
+            return;
           }
           log(`Static render for ${route} from ${req.path}`);
           try {

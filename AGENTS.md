@@ -26,7 +26,9 @@ also exposes an Express router for just-in-time rendering in development.
 - `src/common-types.ts` — shared and public types.
 
 Tests live in `tests/test-cases/*` (integration fixtures), `tests/unit/*`
-(focused unit tests), and `tests/utils/*` (memfs and compiler helpers).
+(focused unit tests), and `tests/utils/*` (memfs, fixture build helper that
+closes compilers, and directory snapshots). Test `.ts` files are type-checked
+separately through `tsconfig.test.json`; the `.js` fixtures are not.
 
 ## Commands
 
@@ -37,10 +39,12 @@ Tests live in `tests/test-cases/*` (integration fixtures), `tests/unit/*`
 | `pnpm test:watch`       | Run Vitest in watch mode      |
 | `pnpm build`            | Emit `dist/` and declarations |
 | `pnpm lint`             | ESLint and Prettier checks    |
+| `pnpm typecheck`        | Type-check the test suite     |
 | `pnpm changeset`        | Add a release note            |
 | `pnpm changeset status` | Show the pending release      |
 
-Before committing, run `pnpm build`, `pnpm lint`, and `pnpm test`.
+Before committing, run `pnpm build`, `pnpm lint`, `pnpm typecheck`, and
+`pnpm test`.
 `npm pack --dry-run` verifies the published file list.
 
 ## Toolchain

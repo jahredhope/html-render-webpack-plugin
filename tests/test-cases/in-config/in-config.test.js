@@ -1,10 +1,8 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import webpack from "webpack";
 
+import { buildFixture } from "../../utils/build-fixture";
 import getDirContentsSync from "../../utils/getDirContentsSync";
-import { createInMemoryFileSystem } from "../../utils/memory-fs";
-import { runWebpack } from "../../utils/run-webpack";
 import directoryConfig from "./webpack.directory.config.js";
 import pathsConfig from "./webpack.paths.config.js";
 import routeInfoConfig from "./webpack.route-info.config.js";
@@ -15,66 +13,53 @@ describe("Render HTML from in-config Plugin", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
 
   it("should render a HTML file", async () => {
-    const compiler = webpack(zeroConfig);
+    const { stats, memoryFs } = await buildFixture(zeroConfig);
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    await runWebpack(compiler);
-
+    expect(stats.hasErrors()).toBe(false);
     const contents = memoryFs.readFileSync(
       path.join(process.cwd(), "dist", "index.html"),
       "utf8",
     );
+    expect(contents).toContain("Rendered with");
     expect(contents).toMatchSnapshot();
   });
 
   it("should render in a custom directory", async () => {
-    const compiler = webpack(directoryConfig);
+    const { stats, memoryFs } = await buildFixture(directoryConfig);
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    await runWebpack(compiler);
-
-    const contents = getDirContentsSync(renderDirectory, {
-      fs: memoryFs,
-    });
+    expect(stats.hasErrors()).toBe(false);
+    const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents["index.html"]).toContain("Rendered with");
     expect(contents).toMatchSnapshot();
   });
 
   it("should render a file per route", async () => {
-    const compiler = webpack(routesConfig);
+    const { stats, memoryFs } = await buildFixture(routesConfig);
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    await runWebpack(compiler);
-
+    expect(stats.hasErrors()).toBe(false);
     const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents["pageA"]["index.html"]).toContain('"route": "pageA"');
+    expect(contents["pageB"]["index.html"]).toContain('"route": "pageB"');
+    // Routes ending in ".html" are written as files rather than directories.
+    expect(contents["error.html"]).toContain('"route": "error.html"');
     expect(contents).toMatchSnapshot();
   });
 
   it("should render routes with extra information", async () => {
-    const compiler = webpack(routeInfoConfig);
+    const { stats, memoryFs } = await buildFixture(routeInfoConfig);
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    await runWebpack(compiler);
-
+    expect(stats.hasErrors()).toBe(false);
     const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents.production["index.html"]).toContain(
+      '"environment": "production"',
+    );
     expect(contents).toMatchSnapshot();
   });
 
   it("should allow custom file paths", async () => {
-    const compiler = webpack(pathsConfig);
+    const { stats, memoryFs } = await buildFixture(pathsConfig);
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    await runWebpack(compiler);
-
+    expect(stats.hasErrors()).toBe(false);
     expect(
       memoryFs.existsSync(
         path.join(renderDirectory, "/production/en-us/about/us/index.html"),
@@ -89,6 +74,9 @@ describe("Render HTML from in-config Plugin", () => {
       memoryFs.existsSync(path.join(renderDirectory, "/about/us/index.html")),
     ).toBe(false);
     const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents.production["en-us"].about.us["index.html"]).toContain(
+      '"route": "about/us"',
+    );
     expect(contents).toMatchSnapshot();
   });
 });

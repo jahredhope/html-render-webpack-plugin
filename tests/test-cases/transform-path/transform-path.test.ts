@@ -1,12 +1,10 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import webpack from "webpack";
 
 import HtmlRenderPlugin from "../../../src";
-import { BaseRoute } from "../../../src/common-types";
+import type { BaseRoute } from "../../../src/common-types";
+import { buildFixture } from "../../utils/build-fixture";
 import getDirContentsSync from "../../utils/getDirContentsSync";
-import { createInMemoryFileSystem } from "../../utils/memory-fs";
-import { runWebpack } from "../../utils/run-webpack";
 import getConfig from "./webpack.config";
 
 interface Route extends BaseRoute {
@@ -38,17 +36,15 @@ describe("transformFilePath", () => {
       transformFilePath: (route) =>
         `/${route.site}/${route.language}/${route.route}`,
     });
-    const config = getConfig(htmlRenderPlugin);
-    const compiler = webpack(config);
 
-    const memoryFs = createInMemoryFileSystem();
-    // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
-    compiler.outputFileSystem = memoryFs;
-
-    const stats = await runWebpack(compiler);
+    const { stats, memoryFs } = await buildFixture(getConfig(htmlRenderPlugin));
 
     expect(stats?.hasErrors()).toBe(false);
-    const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    const contents = getDirContentsSync(renderDirectory, {
+      fs: memoryFs,
+    }) as any;
+    expect(contents.us["en-us"]["index.html"]).toContain('"site": "us"');
+    expect(Object.keys(contents).sort()).toEqual(["global", "us"]);
     expect(contents).toMatchSnapshot();
   });
 });

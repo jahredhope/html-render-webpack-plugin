@@ -13,8 +13,10 @@ const routes = new Array(20000)
   .map((v, i) => ({ route: `route-${i}`, seed: i }));
 
 const statsCache = new Map();
+export const statsJsonCalls = { count: 0 };
 const getStats = (stats) => {
   if (!statsCache.has(stats)) {
+    statsJsonCalls.count += 1;
     statsCache.set(stats, stats.toJson());
   }
   return statsCache.get(stats);

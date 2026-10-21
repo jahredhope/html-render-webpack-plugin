@@ -11,21 +11,26 @@ describe("Watch", () => {
 
   it("should render a HTML on initial watch build", async () => {
     const compiler = webpack(config);
-
     const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
-    await new Promise((resolve, reject) => {
-      const watching = compiler.watch({}, (error) => {
-        if (error) {
-          watching.close(() => reject(error));
-          return;
-        }
-        watching.close(() => resolve(undefined));
+    try {
+      await new Promise((resolve, reject) => {
+        const watching = compiler.watch({}, (error) => {
+          if (error) {
+            watching.close(() => reject(error));
+            return;
+          }
+          watching.close(() => resolve(undefined));
+        });
       });
-    });
+    } finally {
+      await new Promise((resolve) => compiler.close(() => resolve()));
+    }
 
     const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents.a["index.html"]).toContain('"extra": "a"');
+    expect(contents.b["index.html"]).toContain('"extra": "b"');
     expect(contents).toMatchSnapshot();
   });
 });

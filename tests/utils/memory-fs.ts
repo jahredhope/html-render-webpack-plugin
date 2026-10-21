@@ -5,6 +5,6 @@ export function createInMemoryFileSystem() {
   const memoryFs = Volume.fromJSON({});
 
   // Webpack expects outputFileSystem to contain its own join function
-  memoryFs.join = path.join.bind(path);
+  (memoryFs as any).join = path.join.bind(path);
   return memoryFs;
 }

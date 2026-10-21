@@ -1,13 +1,15 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import type { FileSystem } from "../../src/common-types";
 import evaluateFromFileSystem from "../../src/evaluateFromFileSystem";
 import { createInMemoryFileSystem } from "../utils/memory-fs";
 
-function createFileSystem(files: Record<string, string>) {
+function createFileSystem(files: Record<string, string>): FileSystem {
   const fileSystem = createInMemoryFileSystem();
   fileSystem.fromJSON(files);
-  return fileSystem;
+  // memfs implements the parts of fs the evaluator uses.
+  return fileSystem as unknown as FileSystem;
 }
 
 describe("evaluateFromFileSystem", () => {
