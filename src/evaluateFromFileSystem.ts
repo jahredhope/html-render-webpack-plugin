@@ -1,8 +1,20 @@
 import path from "path";
-import evaluate from "eval";
-import { ExtraGlobals, FileSystem } from "./common-types";
+import { compileFunction } from "node:vm";
+import { ExtraGlobals, FileSystem, Renderer } from "./common-types";
 
 import { log } from "./logging";
+
+// The wrapper Node uses for CommonJS modules. `extraGlobals` are appended as
+// further parameters so module assets can read them as free variables.
+const moduleParameters = [
+  "exports",
+  "require",
+  "module",
+  "__filename",
+  "__dirname",
+];
+
+const identifierPattern = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 function getFromSourceModules(
   specifier: string,
@@ -19,12 +31,27 @@ function getFromSourceModules(
   return fsModule.readFileSync(path.resolve(rootDir, sourceModuleSpecifier));
 }
 
+function getExtraGlobalNames(extraGlobals: ExtraGlobals) {
+  const names = Object.keys(extraGlobals || {});
+  for (const name of names) {
+    if (moduleParameters.includes(name)) {
+      throw new Error(`extraGlobals cannot use the reserved name "${name}".`);
+    }
+    if (!identifierPattern.test(name)) {
+      throw new Error(
+        `extraGlobals key "${name}" is not a valid JavaScript identifier.`,
+      );
+    }
+  }
+  return names;
+}
+
 function evaluateFromFileSystem(
   specifier: string,
   fsModule: FileSystem,
   rootDir: string,
   extraGlobals: ExtraGlobals,
-) {
+): Renderer {
   log(
     `Evaluating source for ${specifier}". From root directory: "${rootDir}".`,
   );
@@ -36,17 +63,40 @@ function evaluateFromFileSystem(
       cause: error,
     });
   }
-  return evaluate(
-    source,
-    /* filename: */ specifier,
-    /* scope: */ {
-      console,
-      process,
-      ...(extraGlobals || {}),
-      require: createLinker(specifier, fsModule, rootDir, extraGlobals),
-    },
-    /* includeGlobals: */ true,
+  if (!source) {
+    throw new Error(`Unable to find source for "${specifier}".`);
+  }
+
+  const filename = specifier;
+  const extraGlobalNames = getExtraGlobalNames(extraGlobals);
+  const module = {
+    exports: {} as unknown,
+    id: filename,
+    filename,
+    loaded: false,
+  };
+
+  // Compiling in the current context keeps Node's globals (Buffer, process,
+  // console, ...) and built-in object identities intact, so values crossing
+  // into the module still satisfy `instanceof` checks.
+  const compiled = compileFunction(
+    source.toString(),
+    [...moduleParameters, ...extraGlobalNames],
+    { filename },
   );
+
+  compiled.call(
+    module.exports,
+    module.exports,
+    createLinker(specifier, fsModule, rootDir, extraGlobals),
+    module,
+    filename,
+    path.dirname(filename),
+    ...extraGlobalNames.map((name) => extraGlobals[name]),
+  );
+
+  module.loaded = true;
+  return module.exports as Renderer;
 }
 
 function createLinker(

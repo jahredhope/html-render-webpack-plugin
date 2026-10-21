@@ -64,7 +64,6 @@
   },
   "dependencies": {
     "debug": "^4.4.3",
-    "eval": "^0.1.8",
     "exception-formatter": "^2.1.2",
     "schema-utils": "^4.8.1"
   },

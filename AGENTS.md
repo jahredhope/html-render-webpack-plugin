@@ -15,7 +15,9 @@ also exposes an Express router for just-in-time rendering in development.
   compilations; `rendererPlugin` waits for all compilations, creates the
   renderer, and renders every configured route.
 - `src/createRenderer.ts` and `src/evaluateFromFileSystem.ts` — evaluate the
-  emitted renderer bundle in a controlled scope.
+  emitted renderer bundle with `vm.compileFunction` in the current context,
+  passing the CommonJS wrapper, `__dirname`/`__filename`, `extraGlobals`, and a
+  `require` linker that reads assets from the compiler's output file system.
 - `src/renderRoutes.ts` — resolves output paths, renders each route, and writes
   the HTML files.
 - `src/createDevRouter.ts` — Express middleware built on `renderWhenReady`.
