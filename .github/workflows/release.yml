@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      snapshot_tag:
+        description: "npm dist-tag for the snapshot release"
+        required: true
+        default: "snapshot"
+        type: string
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -13,7 +20,7 @@ permissions: {}
 jobs:
   select-mode:
     name: Select release mode
-    if: github.repository == 'jahredhope/html-render-webpack-plugin'
+    if: github.event_name == 'push' && github.repository == 'jahredhope/html-render-webpack-plugin'
     runs-on: ubuntu-latest
     outputs:
       mode: ${{ steps.select-mode.outputs.mode }}
@@ -38,7 +45,7 @@ jobs:
 
   version:
     name: Version packages
-    if: needs.select-mode.outputs.mode == 'version'
+    if: github.event_name == 'push' && needs.select-mode.outputs.mode == 'version'
     needs: select-mode
     runs-on: ubuntu-latest
     permissions:
@@ -63,7 +70,7 @@ jobs:
 
   pack:
     name: Pack packages
-    if: needs.select-mode.outputs.mode == 'publish'
+    if: github.event_name == 'push' && needs.select-mode.outputs.mode == 'publish'
     needs: select-mode
     runs-on: ubuntu-latest
     outputs:
@@ -96,7 +103,7 @@ jobs:
 
   publish:
     name: Publish packages
-    if: needs.select-mode.outputs.mode == 'publish'
+    if: github.event_name == 'push' && needs.select-mode.outputs.mode == 'publish'
     needs: [select-mode, pack]
     runs-on: ubuntu-latest
     permissions:
@@ -118,3 +125,45 @@ jobs:
         uses: changesets/action/publish@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
           pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
+
+  snapshot:
+    name: Publish snapshot
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && github.repository == 'jahredhope/html-render-webpack-plugin'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ".nvmrc"
+          package-manager-cache: false
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Build
+        run: pnpm build
+      - name: Test
+        run: pnpm test
+      - name: Validate snapshot tag
+        env:
+          SNAPSHOT_TAG: ${{ inputs.snapshot_tag }}
+        run: |
+          if [ "$SNAPSHOT_TAG" = "latest" ]; then
+            echo "Refusing to publish a snapshot to the latest dist-tag." >&2
+            exit 1
+          fi
+          if ! [[ "$SNAPSHOT_TAG" =~ ^[a-z0-9][a-z0-9._-]*$ ]]; then
+            echo "Invalid npm dist-tag: $SNAPSHOT_TAG" >&2
+            exit 1
+          fi
+      - name: Version snapshot
+        run: pnpm changeset version --snapshot "${{ inputs.snapshot_tag }}"
+      - name: Publish snapshot
+        run: pnpm changeset publish --tag "${{ inputs.snapshot_tag }}" --no-git-tag
