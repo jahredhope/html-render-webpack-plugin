@@ -17,6 +17,8 @@ interface Params<Route> {
   onRendererReady: OnRendererReady<Route>;
   transformExpressPath: TransformExpressPath<Route>;
   getClientStats: () => WebpackStats;
+  /** Entrypoints to omit from the dev error page, such as the renderer bundle. */
+  getExcludedEntrypoints?: () => string[];
 }
 
 function loadExpress(): typeof import("express") {
@@ -27,7 +29,7 @@ function loadExpress(): typeof import("express") {
     return require("express");
   } catch (error) {
     throw new Error(
-      "The HTML render dev router requires Express. Install it with `npm install express`.",
+      "The HTML render dev router requires Express, which is an optional peer dependency.",
       { cause: error },
     );
   }
@@ -46,17 +48,18 @@ export = <Route extends BaseRoute>({
   onRendererReady,
   transformExpressPath,
   getClientStats,
+  getExcludedEntrypoints,
 }: Params<Route>): Router => {
   log("Create dev server");
   const express = loadExpress();
 
   const formatErrorResponse = (
     error: string,
-    webpackStats: WebpackStatsJson | WebpackStatsJson[],
+    webpackStats: WebpackStatsJson,
   ) => {
-    const devServerScripts = getScriptUrlsFromStats(webpackStats).map(
-      (url) => `<script src="${url}"></script>`,
-    );
+    const devServerScripts = getScriptUrlsFromStats(webpackStats, {
+      excludeEntrypoints: getExcludedEntrypoints?.(),
+    }).map((url) => `<script src="${url}"></script>`);
 
     return [error, ...devServerScripts].join("\n");
   };

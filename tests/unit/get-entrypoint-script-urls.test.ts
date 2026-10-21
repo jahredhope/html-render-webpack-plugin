@@ -7,17 +7,19 @@ import {
   getScriptUrlsFromStats,
 } from "../../src/assets";
 
+const singleStats = (
+  assets: Array<string | { name: string }>,
+  publicPath = "/",
+) => ({
+  entrypoints: { main: { assets } },
+  publicPath,
+});
+
 describe("getEntrypointScriptUrls", () => {
   it("returns public URLs for hashed JavaScript assets", () => {
     const webpackStats = {
-      toJson: () => ({
-        entrypoints: {
-          main: {
-            assets: [{ name: "assets/main.abc123.js" }, { name: "main.css" }],
-          },
-        },
-        publicPath: "/",
-      }),
+      toJson: () =>
+        singleStats([{ name: "assets/main.abc123.js" }, { name: "main.css" }]),
     } as unknown as WebpackStats;
 
     expect(getEntrypointScriptUrls(webpackStats)).toEqual([
@@ -69,11 +71,10 @@ describe("getEntrypointScriptUrls", () => {
   it("joins a public path that has no trailing slash", () => {
     expect(
       getScriptUrlsFromStats(
+        singleStats([{ name: "assets/main.js" }], "/static"),
         {
-          entrypoints: { main: { assets: [{ name: "assets/main.js" }] } },
-          publicPath: "/static",
+          entrypoint: "main",
         },
-        "main",
       ),
     ).toEqual(["/static/assets/main.js"]);
   });
@@ -81,69 +82,147 @@ describe("getEntrypointScriptUrls", () => {
   it("joins a fully qualified public path", () => {
     expect(
       getScriptUrlsFromStats(
-        {
-          entrypoints: { main: { assets: [{ name: "assets/main.js" }] } },
-          publicPath: "https://cdn.example.com/static",
-        },
-        "main",
+        singleStats([{ name: "assets/main.js" }], "https://cdn.example.com/x"),
+        { entrypoint: "main" },
       ),
-    ).toEqual(["https://cdn.example.com/static/assets/main.js"]);
+    ).toEqual(["https://cdn.example.com/x/assets/main.js"]);
   });
 
-  it("collects scripts from every stats object in a multi-compilation build", () => {
-    const webpackStats = {
+  it("throws instead of combining compilations that share an entrypoint", () => {
+    expect(() =>
+      getScriptUrlsFromStats(
+        {
+          children: [
+            {
+              name: "client-a",
+              entrypoints: { main: { assets: [{ name: "runtime.js" }] } },
+              publicPath: "/",
+            },
+            {
+              name: "client-b",
+              entrypoints: { main: { assets: [{ name: "runtime.js" }] } },
+              publicPath: "/",
+            },
+          ],
+        },
+        { entrypoint: "main" },
+      ),
+    ).toThrowError(
+      'Entrypoint "main" exists in multiple compilations (client-a, client-b). Pass a compilation name to choose one, for example getEntrypointScriptUrls(webpackStats, "main", "client-a").',
+    );
+  });
+
+  it("selects one compilation by name", () => {
+    const webpackStats: MultiStatsLike = {
       toJson: () => ({
         children: [
           {
+            name: "client",
             entrypoints: {
-              main: {
-                assets: [{ name: "runtime.js" }, { name: "client-a.js" }],
-              },
+              main: { assets: [{ name: "runtime.js" }, { name: "client.js" }] },
             },
             publicPath: "/",
           },
           {
-            entrypoints: {
-              main: {
-                assets: [{ name: "runtime.js" }, { name: "client-b.js" }],
-              },
-            },
-            publicPath: "/",
+            name: "render",
+            entrypoints: { main: { assets: [{ name: "render.js" }] } },
+            publicPath: "",
           },
         ],
       }),
-    } as MultiStatsLike;
+    };
 
-    expect(getEntrypointScriptUrls(webpackStats)).toEqual([
+    expect(getEntrypointScriptUrls(webpackStats, "main", "client")).toEqual([
       "/runtime.js",
-      "/client-a.js",
-      "/client-b.js",
+      "/client.js",
     ]);
   });
 
-  it("uses each compilation's public path in a multi-compilation build", () => {
+  it("throws for an unknown compilation and lists the available ones", () => {
+    expect(() =>
+      getScriptUrlsFromStats(
+        {
+          children: [
+            { name: "client", entrypoints: { main: { assets: [] } } },
+            { name: "render", entrypoints: { main: { assets: [] } } },
+          ],
+        },
+        { entrypoint: "main", compilation: "missing" },
+      ),
+    ).toThrowError(
+      'Unable to find compilation "missing" in webpack stats. Available compilations: client, render.',
+    );
+  });
+
+  it("rejects a compilation name for single-compilation stats", () => {
+    expect(() =>
+      getScriptUrlsFromStats(singleStats([{ name: "main.js" }]), {
+        entrypoint: "main",
+        compilation: "client",
+      }),
+    ).toThrowError("Available compilations: none.");
+  });
+
+  it("does not require a compilation name when only one compilation has the entrypoint", () => {
     expect(
       getScriptUrlsFromStats(
         {
           children: [
             {
-              entrypoints: { main: { assets: [{ name: "main.js" }] } },
+              name: "client",
+              entrypoints: { main: { assets: [{ name: "client.js" }] } },
               publicPath: "/",
             },
             {
+              name: "render",
+              entrypoints: { server: { assets: [{ name: "render.js" }] } },
+              publicPath: "",
+            },
+          ],
+        },
+        { entrypoint: "main" },
+      ),
+    ).toEqual(["/client.js"]);
+  });
+
+  it("uses each compilation's public path", () => {
+    expect(
+      getScriptUrlsFromStats(
+        {
+          children: [
+            {
+              name: "client",
               entrypoints: { main: { assets: [{ name: "main.js" }] } },
               publicPath: "https://cdn.example.com/",
             },
           ],
         },
-        "main",
+        { entrypoint: "main" },
       ),
-    ).toEqual(["/main.js", "https://cdn.example.com/main.js"]);
+    ).toEqual(["https://cdn.example.com/main.js"]);
+  });
+
+  it("omits excluded entrypoints", () => {
+    expect(
+      getScriptUrlsFromStats(
+        {
+          entrypoints: {
+            main: { assets: [{ name: "render-main.js" }] },
+            vendor: { assets: [{ name: "vendor.js" }] },
+          },
+          publicPath: "/",
+        },
+        { excludeEntrypoints: ["main"] },
+      ),
+    ).toEqual(["/vendor.js"]);
   });
 
   it("throws when the entrypoint is missing", () => {
     expect(() =>
-      getScriptUrlsFromStats({ entrypoints: {}, publicPath: "/" }, "missing"),
+      getScriptUrlsFromStats(
+        { entrypoints: {}, publicPath: "/" },
+        { entrypoint: "missing" },
+      ),
     ).toThrowError(
       'Unable to find entrypoint "missing" in webpack stats. Available entrypoints: none.',
     );
@@ -153,20 +232,8 @@ describe("getEntrypointScriptUrls", () => {
     expect(() =>
       getScriptUrlsFromStats(
         { entrypoints: { app: { assets: [] } }, publicPath: "/" },
-        "main",
+        { entrypoint: "main" },
       ),
     ).toThrowError("Available entrypoints: app.");
-  });
-
-  it("accepts an entrypoint that only exists in one compilation", () => {
-    expect(
-      getScriptUrlsFromStats(
-        [
-          { entrypoints: { main: { assets: [{ name: "main.js" }] } } },
-          { entrypoints: { admin: { assets: [{ name: "admin.js" }] } } },
-        ],
-        "admin",
-      ),
-    ).toEqual(["/admin.js"]);
   });
 });

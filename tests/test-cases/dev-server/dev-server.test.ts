@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import webpack from "webpack";
 import devMiddleware from "webpack-dev-middleware";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import HtmlRenderPlugin, { getEntrypointScriptUrls } from "../../../src";
 import type { BaseRoute } from "../../../src/common-types";
@@ -232,6 +232,47 @@ describe("dev-server", () => {
 
       const about = await fetchRoute(server.baseUrl, "/about");
       expect(about.status).toBe(404);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("does not inject the renderer bundle into a single-compilation error page", async () => {
+    const routes: Route[] = [{ route: "/broken", forceError: true }];
+    const plugin = new HtmlRenderPlugin<Route>({ routes, skipAssets: true });
+    const singleCompilationConfig = {
+      name: "render",
+      target: "node",
+      mode: "production" as const,
+      entry: path.resolve(import.meta.dirname, "src/render.js"),
+      output: {
+        libraryExport: "default",
+        library: "static",
+        libraryTarget: "umd2",
+        filename: "render-[name]-[contenthash].js",
+      },
+      plugins: [plugin.rendererPlugin],
+    };
+    const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
+    const stderrOutput: string[] = [];
+    try {
+      await buildFixture(singleCompilationConfig);
+      stderrOutput.push(...stderr.mock.calls.flat());
+    } finally {
+      stderr.mockRestore();
+    }
+    expect(stderrOutput.join(" ")).toContain(
+      "is at or inside the render directory",
+    );
+
+    const server = await startServer(plugin);
+    try {
+      const response = await fetchRoute(server.baseUrl, "/broken");
+
+      expect(response.status).toBe(500);
+      const body = await response.text();
+      expect(body).toContain("Dev server render error");
+      expect(body).not.toMatch(/<script src="[^"]*render-main-/);
     } finally {
       await server.close();
     }

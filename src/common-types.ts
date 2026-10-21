@@ -1,9 +1,19 @@
 import type * as originalFs from "fs";
-import type { Request } from "express";
 import type { Stats } from "webpack";
 
 export type WebpackStats = Stats;
 export type BaseRoute = { route: string };
+
+/**
+ * The value returned by `createDevRouter`. It is an Express router at runtime,
+ * but this structural type keeps Express out of the package entry point, so
+ * build-only TypeScript users do not need Express types.
+ */
+export interface DevRouter {
+  (req: any, res: any, next: any): void;
+  use: (...args: any[]) => any;
+}
+
 export type Render<Route = BaseRoute> = (route: Route) => Promise<string>;
 export type OnRendererReady<Route = BaseRoute> = (
   callback: (render: Render<Route>) => Promise<void>,
@@ -28,7 +38,12 @@ export type TransformExpressPath<Route = BaseRoute> = (
   route: Route,
 ) => string | undefined;
 export type GetRouteFromRequest<Route> = (
-  req: Request,
+  /**
+   * An Express request. Typed as `any` so the main entry point does not depend
+   * on Express's types; annotate it with `Request` from `express` if you want
+   * the full type.
+   */
+  req: any,
   routes: Route[],
 ) => Route | undefined;
 

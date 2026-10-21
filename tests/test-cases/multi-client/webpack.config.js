@@ -9,7 +9,8 @@ const htmlRenderPlugin = new HtmlRenderPlugin({
   renderDirectory,
   mapStatsToParams: ({ webpackStats }) => ({
     webpackStats: webpackStats.toJson(),
-    scripts: getEntrypointScriptUrls(webpackStats),
+    // Both clients use the "main" entrypoint, so a compilation is required.
+    scripts: getEntrypointScriptUrls(webpackStats, "main", "client-a"),
   }),
 });
 

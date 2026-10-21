@@ -156,13 +156,18 @@ export default function render({ route, scripts }) {
 }
 ```
 
-`getEntrypointScriptUrls(webpackStats, entrypoint = "main")` returns public URLs
-for the JavaScript assets of an entrypoint. It handles hashed filenames,
-`publicPath` values with or without a trailing slash, string assets and asset
-objects. It accepts the stats of a single client compilation and the multi
-compilation stats produced when several compilations use
-`statsCollectorPlugin`. An unknown entrypoint name throws instead of returning an
-empty list.
+`getEntrypointScriptUrls(webpackStats, entrypoint = "main", compilation?)`
+returns public URLs for the JavaScript assets of an entrypoint. It handles hashed
+filenames, `publicPath` values with or without a trailing slash, string assets
+and asset objects. An unknown entrypoint or compilation name throws instead of
+returning an empty list.
+
+Inside `mapStatsToParams` the stats are already client-only: the plugin only
+collects compilations that use `statsCollectorPlugin`. The stats webpack passes to
+its build callback include every compilation, including the renderer, so pass the
+compilation name (the webpack `name` of that compilation) there. When several
+compilations define the entrypoint, `compilation` is required; scripts from
+different compilations are never combined.
 
 If you need more control, `mapStatsToParams` receives the route and the client
 stats, and whatever it returns is merged into the renderer's parameters.
@@ -171,7 +176,9 @@ stats, and whatever it returns is merged into the renderer's parameters.
 
 `routes` accepts strings or objects. A `route` may start with or without a
 leading slash. Paths are appended with `index.html` unless they already end in
-`.html`.
+`.html`. Normalization applies to the generated file path and the dev-router path
+only: the renderer still receives the route string exactly as configured, so
+`"about"` stays `"about"` in the page while writing `about/index.html`.
 
 ```js
 const routes = [
@@ -415,13 +422,15 @@ Keep the renderer output outside `renderDirectory`. Avoid `output.clean` across
 compilations that share an output directory; clean the directories yourself
 before the build instead.
 
+The plugin warns once if the renderer compilation's `output.path` is at or inside
+`renderDirectory`, since the bundle would be published with the static files. It
+does not move the files.
+
 ## TypeScript
 
 The package ships declarations and exports the public option and route types.
-The declarations reference Express's `Request` and `Router` types, so a
-TypeScript project with `skipLibCheck: false` needs `@types/express` available.
-Install it (`pnpm add -D @types/express`) if your project does not already
-include it.
+`createDevRouter` returns a structural `DevRouter` type, so build-only usage does
+not need Express types.
 
 ```ts
 import {

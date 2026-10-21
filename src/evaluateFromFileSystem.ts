@@ -52,9 +52,7 @@ function evaluateFromFileSystem(
   rootDir: string,
   extraGlobals: ExtraGlobals,
 ): Renderer {
-  log(
-    `Evaluating source for ${specifier}". From root directory: "${rootDir}".`,
-  );
+  log(`Evaluating source for ${specifier}. From root directory: "${rootDir}".`);
   let source;
   try {
     source = getFromSourceModules(specifier, fsModule, rootDir);

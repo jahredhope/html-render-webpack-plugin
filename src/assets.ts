@@ -5,6 +5,8 @@ interface StatsAssetLike {
 }
 
 export interface WebpackStatsJson {
+  /** Compilation name. `MultiStats.toJson()` sets this on every child. */
+  name?: string;
   entrypoints?: Record<
     string,
     { assets?: Array<string | StatsAssetLike> } | undefined
@@ -19,19 +21,67 @@ export interface WebpackStatsJson {
  * public type for `MultiStats`.
  */
 export interface MultiStatsLike {
-  toJson(options?: unknown): WebpackStatsJson | WebpackStatsJson[];
+  toJson(options?: unknown): WebpackStatsJson;
 }
 
-type StatsJsonInput = WebpackStatsJson | WebpackStatsJson[];
+export interface ScriptUrlOptions {
+  entrypoint?: string;
+  /** Compilation name. Required when several children share an entrypoint. */
+  compilation?: string;
+  /** Entrypoint names to omit, for example the renderer entry on an error page. */
+  excludeEntrypoints?: string[];
+}
 
-function getStatsList(stats: StatsJsonInput): WebpackStatsJson[] {
-  if (Array.isArray(stats)) {
-    return stats;
+function getCompilations(stats: WebpackStatsJson): WebpackStatsJson[] {
+  return stats.children && stats.children.length > 0 ? stats.children : [stats];
+}
+
+function describeCompilations(compilations: WebpackStatsJson[]): string {
+  const names = compilations
+    .map((compilation) => compilation.name)
+    .filter((name): name is string => Boolean(name));
+  return names.length > 0 ? names.join(", ") : "none";
+}
+
+function selectCompilations(
+  stats: WebpackStatsJson,
+  entrypoint: string | undefined,
+  compilation: string | undefined,
+): WebpackStatsJson[] {
+  const compilations = getCompilations(stats);
+
+  if (compilation !== undefined) {
+    const match = compilations.filter((child) => child.name === compilation);
+    if (match.length === 0) {
+      throw new Error(
+        `Unable to find compilation "${compilation}" in webpack stats. Available compilations: ${describeCompilations(
+          compilations,
+        )}.`,
+      );
+    }
+    return match;
   }
-  if (stats.children && stats.children.length > 0) {
-    return stats.children;
+
+  if (entrypoint === undefined) {
+    return compilations;
   }
-  return [stats];
+
+  const withEntrypoint = compilations.filter(
+    (child) => child.entrypoints?.[entrypoint] !== undefined,
+  );
+  if (withEntrypoint.length > 1) {
+    const example = withEntrypoint.find((child) => child.name)?.name;
+    const hint = example
+      ? ` Pass a compilation name to choose one, for example getEntrypointScriptUrls(webpackStats, "${entrypoint}", "${example}").`
+      : " Pass a compilation name to choose one.";
+    throw new Error(
+      `Entrypoint "${entrypoint}" exists in multiple compilations (${describeCompilations(
+        withEntrypoint,
+      )}).${hint}`,
+    );
+  }
+
+  return withEntrypoint.length === 1 ? withEntrypoint : compilations;
 }
 
 function getAssetName(asset: string | StatsAssetLike): string | undefined {
@@ -52,15 +102,21 @@ function joinPublicPath(publicPath: string, assetName: string): string {
   return `${base}${assetName.replace(/^\/+/, "")}`;
 }
 
-function getAssetNames(stats: WebpackStatsJson, entrypoint?: string): string[] {
-  const entrypoints = stats.entrypoints ?? {};
+function getAssetNames(
+  stats: WebpackStatsJson,
+  entrypoint: string | undefined,
+  excludeEntrypoints: string[],
+): string[] {
+  const entries = Object.entries(stats.entrypoints ?? {}).filter(
+    ([name]) => !excludeEntrypoints.includes(name),
+  );
   const groups =
     entrypoint === undefined
-      ? Object.values(entrypoints)
-      : [entrypoints[entrypoint]];
+      ? entries
+      : entries.filter(([name]) => name === entrypoint);
 
   return groups
-    .flatMap((group) => group?.assets ?? [])
+    .flatMap(([, group]) => group?.assets ?? [])
     .map(getAssetName)
     .filter(
       (name): name is string =>
@@ -86,27 +142,24 @@ function assertEntrypointExists(
 /**
  * Get the public URLs of the JavaScript assets for one entrypoint.
  *
- * Accepts a single stats JSON object or an array of them. The object returned
- * by `MultiStats.toJson()` for builds with more than one client compilation is
- * supported through its `children` array.
- *
- * Pass `undefined` as the entrypoint to collect scripts from every entrypoint,
- * which is useful for an error page that does not know which client entry failed.
- * An unknown entrypoint name throws rather than returning an empty list.
+ * Works with single and multi-compilation stats. When more than one compilation
+ * defines the entrypoint, pass `compilation` to choose between them; combining
+ * several compilations' scripts is never implicit. An unknown entrypoint or
+ * compilation name throws rather than returning an empty list.
  */
 export function getScriptUrlsFromStats(
-  stats: StatsJsonInput,
-  entrypoint?: string,
+  stats: WebpackStatsJson,
+  { entrypoint, compilation, excludeEntrypoints = [] }: ScriptUrlOptions = {},
 ): string[] {
-  const statsList = getStatsList(stats);
+  const selected = selectCompilations(stats, entrypoint, compilation);
   if (entrypoint !== undefined) {
-    assertEntrypointExists(statsList, entrypoint);
+    assertEntrypointExists(selected, entrypoint);
   }
 
-  const urls = statsList.flatMap((statsJson) => {
+  const urls = selected.flatMap((statsJson) => {
     const publicPath = getPublicPath(statsJson);
-    return getAssetNames(statsJson, entrypoint).map((name) =>
-      joinPublicPath(publicPath, name),
+    return getAssetNames(statsJson, entrypoint, excludeEntrypoints).map(
+      (name) => joinPublicPath(publicPath, name),
     );
   });
 
@@ -116,18 +169,20 @@ export function getScriptUrlsFromStats(
 /**
  * Get the public URLs of the JavaScript assets for an entrypoint.
  *
- * This is the common bridge from client stats to a renderer: the renderer can
- * emit script tags without receiving the whole webpack stats object. It works
- * for a single client compilation and for multiple client compilations.
+ * Inside `mapStatsToParams` the stats are already client-only: the plugin only
+ * collects compilations that use `statsCollectorPlugin`. The stats webpack
+ * passes to its build callback include every compilation, including the
+ * renderer, so pass a compilation name there.
  *
  * @example
  * mapStatsToParams: ({ webpackStats }) => ({
- *   scripts: getEntrypointScriptUrls(webpackStats, "main"),
+ *   scripts: getEntrypointScriptUrls(webpackStats),
  * })
  */
 export function getEntrypointScriptUrls(
   webpackStats: WebpackStats | MultiStatsLike,
   entrypoint = "main",
+  compilation?: string,
 ): string[] {
   const statsJson = webpackStats.toJson({
     all: false,
@@ -135,5 +190,8 @@ export function getEntrypointScriptUrls(
     publicPath: true,
   });
 
-  return getScriptUrlsFromStats(statsJson as StatsJsonInput, entrypoint);
+  return getScriptUrlsFromStats(statsJson as WebpackStatsJson, {
+    entrypoint,
+    compilation,
+  });
 }
