@@ -57,7 +57,7 @@
       "type": "string"
     },
     "extraGlobals": {
-      "description": "Extra values to pass to the global scope.",
+      "description": "Extra values to pass to the evaluated renderer's module scope.",
       "type": "object"
     }
   }

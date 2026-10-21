@@ -63,6 +63,10 @@ Before committing, run `pnpm build`, `pnpm lint`, and `pnpm test`.
   and fail with a clear error; see `src/multiStats.ts`.
 - `compiler.outputFileSystem` is nullable in webpack's types. Check it before
   use; see `renderRoutes.ts`.
+- **Renderer bundles are not sandboxed.** `evaluateFromFileSystem` runs them in
+  the host realm with `vm.compileFunction`, so the bundle can mutate globals and
+  prototypes and is not isolated from the build process. That is a deliberate
+  trade for `require`-like fidelity; do not treat it as a security boundary.
 - The `MultiStats` branch is only used when there is more than one client
   compilation. Keep the multi-client fixture passing when changing stats code.
 - Snapshots are meaningful. Inspect snapshot changes; never run a blanket

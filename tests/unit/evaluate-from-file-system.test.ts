@@ -31,8 +31,8 @@ describe("evaluateFromFileSystem", () => {
       {},
     ) as any;
 
-    expect(renderer.dirname).toBe(".");
-    expect(renderer.filename).toBe("render.js");
+    expect(renderer.dirname).toBe("/output");
+    expect(renderer.filename).toBe(path.resolve("/output", "render.js"));
     expect(renderer.thisIsExports).toBe(true);
     // Values from the host realm keep their prototypes.
     expect(renderer.isArray([])).toBe(true);
@@ -66,6 +66,27 @@ describe("evaluateFromFileSystem", () => {
     ) as any;
 
     expect(renderer()).toBe("nested");
+  });
+
+  it("exposes module.require", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `module.exports = module.require("./nested.js");`,
+      "/output/nested.js": `module.exports = "nested";`,
+    });
+
+    expect(evaluateFromFileSystem("render.js", fileSystem, "/output", {})).toBe(
+      "nested",
+    );
+  });
+
+  it("accepts a shebang banner", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `#!/usr/bin/env node\nmodule.exports = "rendered";`,
+    });
+
+    expect(evaluateFromFileSystem("render.js", fileSystem, "/output", {})).toBe(
+      "rendered",
+    );
   });
 
   it("falls back to the real require for external packages", () => {

@@ -67,13 +67,15 @@ function evaluateFromFileSystem(
     throw new Error(`Unable to find source for "${specifier}".`);
   }
 
-  const filename = specifier;
+  const filename = path.resolve(rootDir, specifier);
   const extraGlobalNames = getExtraGlobalNames(extraGlobals);
+  const requireFn = createLinker(specifier, fsModule, rootDir, extraGlobals);
   const module = {
     exports: {} as unknown,
     id: filename,
     filename,
     loaded: false,
+    require: requireFn,
   };
 
   // Compiling in the current context keeps Node's globals (Buffer, process,
@@ -88,7 +90,7 @@ function evaluateFromFileSystem(
   compiled.call(
     module.exports,
     module.exports,
-    createLinker(specifier, fsModule, rootDir, extraGlobals),
+    requireFn,
     module,
     filename,
     path.dirname(filename),
