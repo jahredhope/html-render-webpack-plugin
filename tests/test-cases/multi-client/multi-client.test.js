@@ -19,5 +19,8 @@ describe("Multiple client builds", () => {
     expect(html).toContain('"name": "client-b"');
     expect(html).toContain("client-a-main-");
     expect(html).toContain("client-b-main-");
+    // getEntrypointScriptUrls reads every child stats object.
+    expect(html).toContain('"/client-a-main-');
+    expect(html).toContain('"/client-b-main-');
   });
 });

@@ -8,7 +8,8 @@ import {
   TransformExpressPath,
   GetRouteFromRequest,
 } from "./common-types";
-import { getScriptUrlsFromStats, WebpackStatsJson } from "./assets";
+import { getScriptUrlsFromStats } from "./assets";
+import type { WebpackStatsJson } from "./assets";
 
 interface Params<Route> {
   routes: Route[];
@@ -51,7 +52,7 @@ export = <Route extends BaseRoute>({
 
   const formatErrorResponse = (
     error: string,
-    webpackStats: WebpackStatsJson,
+    webpackStats: WebpackStatsJson | WebpackStatsJson[],
   ) => {
     const devServerScripts = getScriptUrlsFromStats(webpackStats).map(
       (url) => `<script src="${url}"></script>`,
@@ -62,24 +63,26 @@ export = <Route extends BaseRoute>({
 
   const devServerRouter = express.Router();
 
-  const routesByExpressPath: Record<string, Route> = {};
-
-  // Deduplicate paths to avoid duplicated processing in Express. Routes are
-  // allowed without a leading slash, matching how they are written to disk.
-  // A falsy transform result keeps its previous meaning: exclude the route
-  // from the dev router. The default route is "" and is served at "/".
+  // Deduplicate paths to avoid duplicated processing in Express. Routes may be
+  // written with or without a leading slash, matching the file paths used by
+  // the static build.
+  //
+  // Returning `undefined` from transformExpressPath excludes a route. An empty
+  // result keeps its previous meaning for every route except the default one:
+  // the default route is `""` and is served at `/`.
+  const routesByExpressPath = new Map<string, Route>();
   routes.forEach((route) => {
     const expressPath = transformExpressPath(route);
-    if (expressPath) {
-      routesByExpressPath[normalizeExpressPath(expressPath)] = route;
+    if (expressPath === undefined) {
       return;
     }
-    if (expressPath === "" && route.route === "") {
-      routesByExpressPath["/"] = route;
+    if (expressPath === "" && route.route !== "") {
+      return;
     }
+    routesByExpressPath.set(normalizeExpressPath(expressPath), route);
   });
 
-  Object.entries(routesByExpressPath).forEach(([expressPath, defaultRoute]) => {
+  routesByExpressPath.forEach((defaultRoute, expressPath) => {
     devServerRouter.get(
       expressPath,
       async (req: Request, res: Response, next: NextFunction) => {

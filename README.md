@@ -24,6 +24,8 @@ pnpm add express
 ```
 
 Express is an optional peer dependency. Build-only usage does not require it.
+The published type declarations include the Express request and router types, so
+TypeScript users do not need to install `@types/express` separately.
 
 ## Quick start
 
@@ -158,7 +160,11 @@ export default function render({ route, scripts }) {
 
 `getEntrypointScriptUrls(webpackStats, entrypoint = "main")` returns public URLs
 for the JavaScript assets of an entrypoint. It handles hashed filenames,
-`publicPath`, string assets and asset objects.
+`publicPath` values with or without a trailing slash, string assets and asset
+objects. It accepts the stats of a single client compilation and the multi
+compilation stats produced when several compilations use
+`statsCollectorPlugin`. An unknown entrypoint name throws instead of returning an
+empty list.
 
 If you need more control, `mapStatsToParams` receives the route and the client
 stats, and whatever it returns is merged into the renderer's parameters.
@@ -291,18 +297,21 @@ demand.
 **Default:** `(route) => route.route`
 
 Changes the path used by the dev router. Routes are normalized to a leading
-slash, so `"about"` and `"/about"` both work.
+slash, so `"about"` and `"/about"` both work. The default `""` route is served
+at `/`. Return `undefined` to exclude a route from the dev router; an empty
+string excludes every route except the default one.
 
 ```js
 new HtmlRenderPlugin({
-  transformExpressPath: (route) => `/static${route.route}`,
+  transformExpressPath: (route) =>
+    route.route === "/draft" ? undefined : `/static${route.route}`,
 });
 ```
 
 ### `getRouteFromRequest`
 
 Used by the dev router to choose a route for a request. It must return one of the
-configured routes.
+configured routes, or `undefined` to pass the request to the next middleware.
 
 ```js
 new HtmlRenderPlugin({
@@ -401,14 +410,15 @@ dist/                     # deploy this
   assets/main.<hash>.js
   assets/<chunk>.<hash>.js
 .render/                  # renderer bundle, do not deploy
-  main.js
+  render.js
 ```
 
 Keep the renderer output outside `renderDirectory`. Avoid `output.clean` across
 compilations that share an output directory; clean the directories yourself
 before the build instead.
 
-The plugin prints a summary after rendering:
+The plugin prints a summary after rendering. It is written to stderr so
+machine-readable output such as `webpack --json` stays valid:
 
 ```text
 HtmlRenderPlugin: Rendered 2 routes to /project/dist in 0.04s

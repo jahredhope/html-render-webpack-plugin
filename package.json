@@ -51,7 +51,6 @@
     "@changesets/cli": "^3.0.3",
     "@eslint/js": "^10.0.1",
     "@types/debug": "^4.1.13",
-    "@types/express": "^5.0.6",
     "@types/node": "^22.10.0",
     "commitizen": "4.2.3",
     "cz-conventional-changelog": "3.3.0",
@@ -70,6 +69,7 @@
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
+    "@types/express": "^5.0.6",
     "debug": "^4.4.3",
     "exception-formatter": "^2.1.2",
     "schema-utils": "^4.0.0"

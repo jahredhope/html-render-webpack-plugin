@@ -1,15 +1,8 @@
 import path from "node:path";
 
-import HtmlRenderPlugin from "../../../src";
-
-const renderDirectory = path.join(
-  process.cwd(),
-  "dist",
-  "single-config-default",
-);
 const srcPath = path.resolve(import.meta.dirname, "./src");
 
-export default {
+export default (htmlRenderPlugin) => ({
   name: "render",
   target: "node",
   mode: "production",
@@ -18,5 +11,5 @@ export default {
     library: { type: "umd2", export: "default" },
     filename: "render-[name]-[contenthash].js",
   },
-  plugins: [new HtmlRenderPlugin({ renderDirectory }).rendererPlugin],
-};
+  plugins: [htmlRenderPlugin.rendererPlugin],
+});

@@ -1,4 +1,5 @@
 import { validate as validateOptions } from "schema-utils";
+import path from "node:path";
 
 import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
@@ -41,7 +42,7 @@ export type {
   WebpackStats,
 } from "./common-types";
 export { getEntrypointScriptUrls } from "./assets";
-export type { WebpackStatsJson } from "./assets";
+export type { MultiStatsLike, WebpackStatsJson } from "./assets";
 
 const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
 const defaultMapStats: MapStatsToParams = ({
@@ -169,7 +170,9 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         logSummary(
           `Rendered ${routes.length} ${
             routes.length === 1 ? "route" : "routes"
-          } to ${renderDirectory} in ${timeSince(renderStartTime)}`,
+          } to ${path.resolve(renderDirectory)} in ${timeSince(
+            renderStartTime,
+          )}`,
         );
       } catch (error) {
         logError("An error occurred rendering HTML", error);

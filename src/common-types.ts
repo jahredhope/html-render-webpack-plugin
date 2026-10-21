@@ -1,4 +1,4 @@
-import type originalFs from "fs";
+import type * as originalFs from "fs";
 import type { Request } from "express";
 import type { Stats } from "webpack";
 
@@ -20,10 +20,16 @@ export type MapStatsToParams<Route extends BaseRoute = BaseRoute> = (
   params: { webpackStats: WebpackStats } & Route,
 ) => Record<string, unknown>;
 export type TransformPath<Route = BaseRoute> = (route: Route) => string;
-export type TransformExpressPath<Route = BaseRoute> = (route: Route) => string;
+/**
+ * Build the Express path for a route. Paths are normalized to a leading slash.
+ * Return `undefined` to exclude a route from the dev router.
+ */
+export type TransformExpressPath<Route = BaseRoute> = (
+  route: Route,
+) => string | undefined;
 export type GetRouteFromRequest<Route> = (
   req: Request,
   routes: Route[],
-) => Route;
+) => Route | undefined;
 
 export type FileSystem = typeof originalFs;

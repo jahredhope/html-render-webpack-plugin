@@ -8,5 +8,6 @@ export const logError = (...args: any[]) => {
 };
 
 export const logSummary = (message: string) => {
-  console.log(styleText("green", "HtmlRenderPlugin:"), message);
+  // stderr keeps machine-readable build output such as `webpack --json` valid.
+  console.error(styleText("green", "HtmlRenderPlugin:"), message);
 };

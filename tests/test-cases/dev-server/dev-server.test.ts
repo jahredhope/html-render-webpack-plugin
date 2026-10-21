@@ -193,6 +193,50 @@ describe("dev-server", () => {
     }
   });
 
+  it("excludes routes when transformExpressPath returns undefined", async () => {
+    const routes: Route[] = [{ route: "/served" }, { route: "/hidden" }];
+    const plugin = new HtmlRenderPlugin<Route>({
+      routes,
+      skipAssets: true,
+      transformExpressPath: (route) =>
+        route.route === "/hidden" ? undefined : route.route,
+    });
+    await buildFixture(getConfig(plugin));
+
+    const server = await startServer(plugin);
+    try {
+      const served = await fetchRoute(server.baseUrl, "/served");
+      expect(served.status).toBe(200);
+
+      const hidden = await fetchRoute(server.baseUrl, "/hidden");
+      expect(hidden.status).toBe(404);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("treats an empty transform result as root only for the default route", async () => {
+    const routes: Route[] = [{ route: "" }, { route: "/about" }];
+    const plugin = new HtmlRenderPlugin<Route>({
+      routes,
+      skipAssets: true,
+      transformExpressPath: () => "",
+    });
+    await buildFixture(getConfig(plugin));
+
+    const server = await startServer(plugin);
+    try {
+      const root = await fetchRoute(server.baseUrl, "/");
+      expect(root.status).toBe(200);
+      expect(await root.text()).toContain("route:");
+
+      const about = await fetchRoute(server.baseUrl, "/about");
+      expect(about.status).toBe(404);
+    } finally {
+      await server.close();
+    }
+  });
+
   it("serves rendered routes and client assets through webpack-dev-middleware", async () => {
     const routes: Route[] = [{ route: "/" }, { route: "/about" }];
     const plugin = new HtmlRenderPlugin<Route>({
@@ -203,6 +247,8 @@ describe("dev-server", () => {
       }),
     });
     const compiler = webpack(getConfig(plugin));
+    // webpack-dev-middleware owns the compiler's output file system and keeps
+    // it in memory, so this test does not write to the real `dist/`.
     const app = express();
     app.use(plugin.createDevRouter());
     app.use(devMiddleware(compiler, { publicPath: "/" }));
