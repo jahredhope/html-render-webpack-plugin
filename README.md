@@ -24,8 +24,6 @@ pnpm add express
 ```
 
 Express is an optional peer dependency. Build-only usage does not require it.
-The published type declarations include the Express request and router types, so
-TypeScript users do not need to install `@types/express` separately.
 
 ## Quick start
 
@@ -419,7 +417,11 @@ before the build instead.
 
 ## TypeScript
 
-The package ships declarations and exports the public option and route types:
+The package ships declarations and exports the public option and route types.
+The declarations reference Express's `Request` and `Router` types, so a
+TypeScript project with `skipLibCheck: false` needs `@types/express` available.
+Install it (`pnpm add -D @types/express`) if your project does not already
+include it.
 
 ```ts
 import {

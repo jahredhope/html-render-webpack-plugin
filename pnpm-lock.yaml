@@ -166,9 +166,6 @@ importers:
 
   .:
     dependencies:
-      '@types/express':
-        specifier: ^5.0.6
-        version: 5.0.6
       debug:
         specifier: ^4.4.3
         version: 4.4.3(supports-color@8.1.1)
@@ -188,6 +185,9 @@ importers:
       '@types/debug':
         specifier: ^4.1.13
         version: 4.1.13
+      '@types/express':
+        specifier: ^5.0.6
+        version: 5.0.6
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.5
