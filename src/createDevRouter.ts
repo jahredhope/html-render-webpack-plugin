@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction, Router } from "express";
+import type { NextFunction, Request, Response, Router } from "express";
 import { log, logError } from "./logging";
 import exceptionFormatter from "exception-formatter";
 import {
@@ -8,6 +8,7 @@ import {
   TransformExpressPath,
   GetRouteFromRequest,
 } from "./common-types";
+import { getScriptUrlsFromStats, WebpackStatsJson } from "./assets";
 
 interface Params<Route> {
   routes: Route[];
@@ -15,6 +16,27 @@ interface Params<Route> {
   onRendererReady: OnRendererReady<Route>;
   transformExpressPath: TransformExpressPath<Route>;
   getClientStats: () => WebpackStats;
+}
+
+function loadExpress(): typeof import("express") {
+  try {
+    // Express is only needed by the dev router. Requiring it lazily keeps it
+    // optional for build-only consumers.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("express");
+  } catch (error) {
+    throw new Error(
+      "The HTML render dev router requires Express. Install it with `npm install express`.",
+      { cause: error },
+    );
+  }
+}
+
+function normalizeExpressPath(expressPath: string) {
+  if (!expressPath) {
+    return "/";
+  }
+  return expressPath.startsWith("/") ? expressPath : `/${expressPath}`;
 }
 
 export = <Route extends BaseRoute>({
@@ -25,24 +47,15 @@ export = <Route extends BaseRoute>({
   getClientStats,
 }: Params<Route>): Router => {
   log("Create dev server");
+  const express = loadExpress();
+
   const formatErrorResponse = (
     error: string,
-    webpackStats: Record<string, any>,
+    webpackStats: WebpackStatsJson,
   ) => {
-    let devServerScripts: string[] = [];
-    if ("entrypoints" in webpackStats && webpackStats.entrypoints) {
-      try {
-        const devServerAssets = webpackStats.entrypoints.main.assets;
-
-        devServerScripts = devServerAssets.map((asset: any) => {
-          // webpack 5 reports assets as objects; older stats used strings.
-          const assetName = typeof asset === "string" ? asset : asset.name;
-          return `<script src="${webpackStats.publicPath}${assetName}"></script>`;
-        });
-      } catch (err) {
-        console.error("Unable to load Dev Server Scripts. Error: ", err);
-      }
-    }
+    const devServerScripts = getScriptUrlsFromStats(webpackStats).map(
+      (url) => `<script src="${url}"></script>`,
+    );
 
     return [error, ...devServerScripts].join("\n");
   };
@@ -51,11 +64,18 @@ export = <Route extends BaseRoute>({
 
   const routesByExpressPath: Record<string, Route> = {};
 
-  // Deduplicate paths to avoid duplicated processing in Express
+  // Deduplicate paths to avoid duplicated processing in Express. Routes are
+  // allowed without a leading slash, matching how they are written to disk.
+  // A falsy transform result keeps its previous meaning: exclude the route
+  // from the dev router. The default route is "" and is served at "/".
   routes.forEach((route) => {
     const expressPath = transformExpressPath(route);
     if (expressPath) {
-      routesByExpressPath[expressPath] = route;
+      routesByExpressPath[normalizeExpressPath(expressPath)] = route;
+      return;
+    }
+    if (expressPath === "" && route.route === "") {
+      routesByExpressPath["/"] = route;
     }
   });
 

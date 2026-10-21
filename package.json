@@ -42,6 +42,11 @@
     "express": ">=4.0.0",
     "webpack": "^5.0.0"
   },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
     "@eslint/js": "^10.0.1",
@@ -61,12 +66,13 @@
     "typescript-eslint": "^8.72.0",
     "vitest": "^5.0.5",
     "webpack": "^5.112.0",
+    "webpack-dev-middleware": "^8.5.0",
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
     "debug": "^4.4.3",
     "exception-formatter": "^2.1.2",
-    "schema-utils": "^4.8.1"
+    "schema-utils": "^4.0.0"
   },
   "config": {
     "commitizen": {

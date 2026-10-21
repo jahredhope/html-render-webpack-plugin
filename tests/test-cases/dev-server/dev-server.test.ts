@@ -3,9 +3,11 @@ import path from "node:path";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import express from "express";
+import webpack from "webpack";
+import devMiddleware from "webpack-dev-middleware";
 import { describe, expect, it } from "vitest";
 
-import HtmlRenderPlugin from "../../../src";
+import HtmlRenderPlugin, { getEntrypointScriptUrls } from "../../../src";
 import type { BaseRoute } from "../../../src/common-types";
 import { buildFixture } from "../../utils/build-fixture";
 import getConfig from "./webpack.config";
@@ -161,6 +163,79 @@ describe("dev-server", () => {
       );
     } finally {
       await server.close();
+    }
+  });
+
+  it("serves routes written without a leading slash", async () => {
+    const routes: Route[] = [
+      { route: "" },
+      { route: "contact" },
+      { route: "/about" },
+    ];
+    const plugin = new HtmlRenderPlugin<Route>({ routes, skipAssets: true });
+    await buildFixture(getConfig(plugin));
+
+    const server = await startServer(plugin);
+    try {
+      const root = await fetchRoute(server.baseUrl, "/");
+      expect(root.status).toBe(200);
+      expect(await root.text()).toContain("route:");
+
+      const contact = await fetchRoute(server.baseUrl, "/contact");
+      expect(contact.status).toBe(200);
+      expect(await contact.text()).toContain("route:contact");
+
+      const about = await fetchRoute(server.baseUrl, "/about");
+      expect(about.status).toBe(200);
+      expect(await about.text()).toContain("route:/about");
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("serves rendered routes and client assets through webpack-dev-middleware", async () => {
+    const routes: Route[] = [{ route: "/" }, { route: "/about" }];
+    const plugin = new HtmlRenderPlugin<Route>({
+      routes,
+      skipAssets: true,
+      mapStatsToParams: ({ webpackStats }) => ({
+        scripts: getEntrypointScriptUrls(webpackStats),
+      }),
+    });
+    const compiler = webpack(getConfig(plugin));
+    const app = express();
+    app.use(plugin.createDevRouter());
+    app.use(devMiddleware(compiler, { publicPath: "/" }));
+
+    const server = app.listen(0);
+    await once(server, "listening");
+    const { port } = server.address() as AddressInfo;
+    const baseUrl = `http://127.0.0.1:${port}`;
+
+    try {
+      const response = await fetch(`${baseUrl}/about`, {
+        signal: AbortSignal.timeout(5_000),
+      });
+      expect(response.status).toBe(200);
+
+      const html = await response.text();
+      expect(html).toContain("route:/about");
+
+      const scriptPath = /<script src="([^"]+)"/.exec(html)?.[1];
+      expect(scriptPath).toMatch(/^\/client-main-[a-f0-9]+\.js$/);
+
+      const assetResponse = await fetch(`${baseUrl}${scriptPath}`, {
+        signal: AbortSignal.timeout(5_000),
+      });
+      expect(assetResponse.status).toBe(200);
+      expect(await assetResponse.text()).toContain("dev-server-client");
+    } finally {
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      });
+      await new Promise<void>((resolve) => {
+        compiler.close(() => resolve());
+      });
     }
   });
 });

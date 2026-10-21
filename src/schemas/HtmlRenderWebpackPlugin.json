@@ -25,7 +25,7 @@
       }
     },
     "skipAssets": {
-      "description": "If true, skip creating assets after a build. Often used in conjuction with createDevRouter.",
+      "description": "If true, skip creating assets after a build. Often used in conjunction with createDevRouter.",
       "type": "boolean"
     },
     "mapStatsToParams": {

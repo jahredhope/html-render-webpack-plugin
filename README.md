@@ -2,310 +2,460 @@
 
 [![npm](https://img.shields.io/npm/v/html-render-webpack-plugin.svg)](https://www.npmjs.com/package/html-render-webpack-plugin)
 
-Plugin to create HTML files with JavaScript.
+Render HTML files with JavaScript during a webpack build.
 
 - Supports [multiple configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations)
 - Supports [code-splitting](https://webpack.js.org/guides/code-splitting/) and [dynamic imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports)
+- Renders every route to a static file, or on demand through an Express dev router
+- Passes client build stats into the renderer so hashed asset names are correct
 
-# Setup
+## Requirements
+
+- Node >= 22.13
+- webpack ^5.0.0
+- Express >= 4, only if you use `createDevRouter`
+
+## Install
 
 ```bash
-$ npm install webpack html-render-webpack-plugin
-# OR
-$ pnpm add webpack html-render-webpack-plugin
+pnpm add webpack html-render-webpack-plugin
+# Only needed for the development server:
+pnpm add express
 ```
 
-**webpack.config.js**
+Express is an optional peer dependency. Build-only usage does not require it.
 
-```js
-module.exports = {
-  ...,
-  plugins: [new HtmlRenderPlugin().rendererPlugin]
-};
-```
+## Quick start
 
-# Multiple configurations
-
-If you use [multiple webpack configurations](https://webpack.js.org/configuration/configuration-types/#exporting-multiple-configurations) you may want to add information from other builds when rendering.
-
-For example, you may wish to add a script tag where the name includes a hash. The asset name comes from the output of one build (browser assets) whilst the render is performed in another build (node rendering).
+A single webpack compilation can render HTML when it targets Node and exports a
+function. This is the smallest useful setup.
 
 **src/render.js**
 
 ```js
-export default ({ assetsByChunkName }) => {
-  return `<html>
-<body>
-  <script src="${assetsByChunkName.main}"></script>
-</body>
+export default function render({ route }) {
+  return `<!doctype html>
+<html lang="en">
+  <body>
+    <h1>Rendered ${route}</h1>
+  </body>
 </html>`;
+}
+```
+
+**webpack.config.js**
+
+```js
+import path from "node:path";
+
+import { HtmlRenderPlugin } from "html-render-webpack-plugin";
+
+const htmlRenderPlugin = new HtmlRenderPlugin({
+  routes: ["/"],
+  renderDirectory: path.resolve("dist"),
+});
+
+export default {
+  name: "render",
+  target: "node",
+  mode: "production",
+  entry: path.resolve("src/render.js"),
+  output: {
+    // Keep the Node renderer out of the folder you deploy.
+    path: path.resolve(".render"),
+    filename: "render.js",
+    // The plugin evaluates the default export, so expose it as a UMD2 module.
+    library: { type: "umd2", export: "default" },
+  },
+  plugins: [htmlRenderPlugin.rendererPlugin],
 };
 ```
 
-**dist/index.html**
+The build writes `dist/index.html`. The renderer bundle is written to
+`.render/` and is not part of the static site.
 
-```html
-<html>
-  <body>
-    <script src="/main-daf2166db871ad045ea4.js"></script>
-  </body>
-</html>
-```
-
-See [the full example below](#example-client-assets).
-
-## Multiple configuration setup
-
-Add `htmlRenderPlugin.statsCollectorPlugin` to the plugins of all configurations you want to get stats for.
-
-Add `htmlRenderPlugin.rendererPlugin` to the plugin of the configuration you want to use to render html.
-
-HtmlRenderPlugin will then pass the [Webpack Stats](https://webpack.js.org/api/stats/) for those builds into your render function.
-
-**webpack.config.js**
+CommonJS configs can use:
 
 ```js
 const { HtmlRenderPlugin } = require("html-render-webpack-plugin");
-
-const htmlRenderPlugin = new HtmlRenderPlugin();
-module.exports = [
-  {
-    name: "render",
-    target: "node", // Creates assets that render HTML that runs well in node
-    plugins: [htmlRenderPlugin.rendererPlugin],
-  },
-  {
-    name: "client",
-    target: "web", // Creates files that run on the browser
-    plugins: [htmlRenderPlugin.statsCollectorPlugin],
-  },
-];
 ```
 
-See [examples](#examples) for more details.
+## Multiple configurations
 
-# Options
+Use two compilations when the renderer needs information from a browser build,
+such as a hashed script filename.
 
-## Option: renderEntry _string_
-
-**default:** "main"
-
-The [webpack entry](https://webpack.js.org/concepts/entry-points/) to use when rendering. Override when using [object syntax](https://webpack.js.org/concepts/entry-points/#object-syntax).
+Add `htmlRenderPlugin.statsCollectorPlugin` to every compilation whose stats the
+renderer needs. Add `htmlRenderPlugin.rendererPlugin` to the compilation that
+renders HTML.
 
 **webpack.config.js**
 
 ```js
-module.exports = {
-  entry: {
-    myRender: "./src/myRender.js",
-  },
-  plugins: [
-    new HtmlRenderPlugin({
-      renderEntry: "myRender",
-    }).render,
-  ],
-};
-```
+import path from "node:path";
 
-## Option: renderDirectory _string_
+import {
+  HtmlRenderPlugin,
+  getEntrypointScriptUrls,
+} from "html-render-webpack-plugin";
 
-The location to create rendered files. Defaults to the rendered assets output.
-
-Useful when deploying HTML files separate to other build assets.
-
-## Option: routes _Array<object|string>_
-
-**default:** `[""]`
-
-Renders a HTML page for each value in the array.
-A route can be a string showing the folder or file to render, or an object containing a route parameter. `index.html` is automatically appended for paths.
-
-```js
-const routes = ["", "contact", "about"];
-```
-
-A route can be an object, containing a `route` parameter.
-
-```js
-const routes = [
-  {
-    route: "en-us/contact",
-    language: "en-us",
-  },
-  {
-    route: "en-us/about",
-    language: "en-us",
-  },
-  {
-    route: "en-au/contact",
-    language: "en-au",
-  },
-  {
-    route: "/en-au/about",
-    language: "en-au",
-  },
-];
-```
-
-## Option: mapStatsToParams _Function_
-
-**default:** `({webpackStats, ...route}) => ({ webpackStats })`
-
-mapStatsToParams should accept webpackStats and [route](#option-routes-arrayobjectstring) information and returns values to be passed into render.
-The function is called individually for each render.
-
-**Recommendation:** mapStatsToParams is an opportunity to limit what information is provided to your render function. Keeping the boundary between your build code and application code simple. Avoid passing all webpackStats into your render function, pull out only the information needed. It is recommended to override the default mapStatsToParams behaviour.
-
-## Option: transformFilePath _Function_
-
-**default:** `(route) => route.route ? route.route : route`
-
-By default a file will be created using the `route` value.
-For example the value `{route: '/about/us'}` would create **about/us/index.html**
-
-If you want to use a different file path you can provide a `transformFilePath` function.
-
-```js
-new HtmlRenderPlugin({
-  ...
-  transformFilePath: ({ route, language }) => `${language}/${route}`
-  routes: [
-    { route: '/about/us', language: 'en-us' },
-    { route: '/about/us', language: 'en-au' }
-  ]
-});
-```
-
-In this example, the resulting files will be
-
-- **en-us/about/us/index.html**
-
-- **en-au/about/us/index.html**
-
-## Option: renderConcurrency _string ("serial"|"parallel")_
-
-**default:** `"serial"`
-
-By default each file will be rendered one after the other, creating a simple sequential build log. When renders with significant asynchronous work you may want to have each render run in parallel.
-
-```
-new HtmlRenderPlugin({
-  renderConcurrency: 'parallel'
-});
-```
-
-## Option: skipAssets _Function_
-
-**default:** `false`
-
-After waiting for all builds to complete HtmlRenderPlugin will render all routes. For particularly large projects with a large number of routes this can take some time. For watch builds you may want to skip emitting assets, relying on `createDevRouter` instead.
-
-## Option: transformExpressPath _Function_
-
-**default:** `(route) => route.route ? route.route : route`
-
-When creating a dev router each route will be attached to the router using it's `route` value.
-
-If you want to use a different express route you can provide a `transformExpressPath` function.
-
-# Dev Server
-
-Create an [Express Middleware](https://expressjs.com/en/guide/using-middleware.html) to attach to Webpack Dev Server to speed up development builds.
-
-For particularly large projects with slow renders and a large number of routes rendering every route on every build can slow down development. The dev server allows you to only render the pages as they are needed during development, whilst ensuring the resulting render works like the full production render.
-
-Using the [Webpack Dev Server Node API](https://github.com/webpack/webpack-dev-server/blob/master/examples/api/simple/server.js#L14) create a dev server and attach the dev HtmlRenderPlugin router to it. When pages are requested they will be rendered just-in-time, using the same method of rendering as production.
-
-```js
 const htmlRenderPlugin = new HtmlRenderPlugin({
-  routes,
-  skipAssets: true,
-});
-
-const compiler = webpack(config);
-
-const webpackDevServer = new WebpackDevServer(compiler, {
-  before: (app) => {
-    app.use(htmlRenderPlugin.createDevRouter());
-  },
-});
-
-webpackDevServer.listen("8081");
-```
-
-**Note:** Ensure that you use the same htmlRenderPlugin created for your webpack configuration as you use for your dev server.
-
-# Manual just-in-time rendering
-
-As an alternative to using the default dev server you can access `renderWhenReady` to apply your own just-in-time rendering.
-
-Just call `renderWhenReady` with any route, and the next time the renderer is ready the render will be performed.
-
-**Note:** Be careful to only use routes that are generated in a production. Not doing this can lead to differences between development and production builds.
-
-Example: Using an Express App to render a dynamic path with ids.
-
-```js
-app.get('/books/:id', (req, res) => {
-  res.send(await htmlRenderPlugin.renderWhenReady({route: '/books/_id'}))
-})
-```
-
-Errors returned during this render will contain a `webpackStats` attribute when available. This can be useful when rendering your own error pages.
-
-# Examples
-
-## Example: Client assets
-
-An example of using `mapStatsToParams` to create `<script>` tags.
-
-**src/render.js**
-
-```js
-export default ({ mainChunk }) => {
-  return `<html>
-  <body>
-    <script src="${mainChunk}"></script>
-  </body>
-  </html>`;
-};
-```
-
-**webpack.config.js**
-
-```js
-const path = require("path");
-
-const { htmlRenderPlugin, htmlRenderClientPlugin } = createHtmlRenderPlugin({
+  routes: ["/", "/about"],
+  renderDirectory: path.resolve("dist"),
+  // Keep the renderer boundary small: pass URLs, not the whole stats object.
   mapStatsToParams: ({ webpackStats }) => ({
-    mainChunk: webpackStats.toJson().assetsByChunkName.main,
+    scripts: getEntrypointScriptUrls(webpackStats),
   }),
 });
 
-module.exports = [
+export default [
   {
     name: "client",
     target: "web",
+    mode: "production",
+    entry: path.resolve("src/client.js"),
     output: {
-      filename: "client-[name]-[contenthash].js",
+      path: path.resolve("dist"),
+      filename: "assets/[name].[contenthash].js",
+      chunkFilename: "assets/[name].[contenthash].js",
+      publicPath: "/",
     },
-    entry: path.resolve("src", "client.js"),
     plugins: [htmlRenderPlugin.statsCollectorPlugin],
   },
   {
     name: "render",
     target: "node",
+    mode: "production",
+    // Optional: the plugin already waits for every compilation. Declaring the
+    // dependency makes the intended build order explicit.
+    dependencies: ["client"],
+    entry: path.resolve("src/render.js"),
     output: {
-      libraryExport: "default",
-      libraryTarget: "umd2",
-      filename: "render-[name]-[contenthash].js",
+      path: path.resolve(".render"),
+      filename: "[name].js",
+      library: { type: "umd2", export: "default" },
     },
-    entry: path.resolve("src", "render.js"),
     plugins: [htmlRenderPlugin.rendererPlugin],
   },
 ];
 ```
 
-# Migration Guides
+**src/render.js**
 
-Migration from v1 to v2? Checkout the [Migration Guide](./MIGRATION_GUIDE_v1_to_v2.md).
+```js
+export default function render({ route, scripts }) {
+  return `<!doctype html>
+<html lang="en">
+  <body>
+    <div id="app">Rendered ${route}</div>
+    ${scripts
+      .map((src) => `<script src="${src}" defer></script>`)
+      .join("\n    ")}
+  </body>
+</html>`;
+}
+```
+
+`getEntrypointScriptUrls(webpackStats, entrypoint = "main")` returns public URLs
+for the JavaScript assets of an entrypoint. It handles hashed filenames,
+`publicPath`, string assets and asset objects.
+
+If you need more control, `mapStatsToParams` receives the route and the client
+stats, and whatever it returns is merged into the renderer's parameters.
+
+## Routes
+
+`routes` accepts strings or objects. A `route` may start with or without a
+leading slash. Paths are appended with `index.html` unless they already end in
+`.html`.
+
+```js
+const routes = [
+  "/", // dist/index.html
+  "/about", // dist/about/index.html
+  "contact", // dist/contact/index.html
+  { route: "/blog/hello", title: "Hello", category: "news" },
+];
+```
+
+Extra keys on a route object are passed to the renderer, which makes routes a
+convenient place for page metadata:
+
+```js
+new HtmlRenderPlugin({
+  routes: [
+    { route: "/", title: "Home", description: "Welcome" },
+    { route: "/about", title: "About", description: "How it works" },
+  ],
+  // mapStatsToParams also receives the route:
+  mapStatsToParams: ({ title, webpackStats }) => ({
+    title,
+    scripts: getEntrypointScriptUrls(webpackStats),
+  }),
+});
+```
+
+The renderer receives `{ route, title, scripts, webpackStats, ... }` depending on
+what `mapStatsToParams` returns.
+
+## Options
+
+### `routes`
+
+**Default:** `[""]`
+
+Routes to render. A file is created for each route. `""` and `"/"` both render
+to `index.html`.
+
+### `renderEntry`
+
+**Default:** `"main"`
+
+The webpack entry in the renderer compilation. Set this when the renderer uses
+[object entry syntax](https://webpack.js.org/concepts/entry-points/#object-syntax).
+
+```js
+new HtmlRenderPlugin({ renderEntry: "myRender" });
+```
+
+### `renderDirectory`
+
+**Default:** `"dist"`
+
+The directory to write HTML files to, resolved from the current working
+directory. This can differ from the renderer compilation's `output.path`; that
+is the recommended setup, so the Node renderer bundle is not deployed with the
+static site.
+
+### `mapStatsToParams`
+
+**Default:** `({ webpackStats }) => ({ webpackStats: webpackStats.toJson() })`
+
+Builds the values passed to the render function for each route. The function
+receives the route fields plus `webpackStats`, and its return value is merged
+into the render parameters.
+
+Prefer passing only what the renderer needs:
+
+```js
+mapStatsToParams: ({ webpackStats }) => ({
+  scripts: getEntrypointScriptUrls(webpackStats),
+});
+```
+
+In a single-compilation setup the renderer's own stats are used. If you do not
+need stats at all, return an empty object:
+
+```js
+mapStatsToParams: () => ({});
+```
+
+### `transformFilePath`
+
+**Default:** `(route) => route.route`
+
+Changes the output path for a route.
+
+```js
+new HtmlRenderPlugin({
+  routes: [
+    { route: "/about", language: "en-us" },
+    { route: "/about", language: "en-au" },
+  ],
+  transformFilePath: ({ route, language }) => `${language}${route}`,
+});
+```
+
+This writes `en-us/about/index.html` and `en-au/about/index.html`.
+
+### `renderConcurrency`
+
+**Default:** `"serial"`
+
+Use `"parallel"` when renders do a lot of asynchronous work.
+
+```js
+new HtmlRenderPlugin({ renderConcurrency: "parallel" });
+```
+
+### `skipAssets`
+
+**Default:** `false`
+
+When `true`, routes are not rendered to files after the build. Use this in watch
+mode with `createDevRouter` or `renderWhenReady`, where pages are rendered on
+demand.
+
+### `transformExpressPath`
+
+**Default:** `(route) => route.route`
+
+Changes the path used by the dev router. Routes are normalized to a leading
+slash, so `"about"` and `"/about"` both work.
+
+```js
+new HtmlRenderPlugin({
+  transformExpressPath: (route) => `/static${route.route}`,
+});
+```
+
+### `getRouteFromRequest`
+
+Used by the dev router to choose a route for a request. It must return one of the
+configured routes.
+
+```js
+new HtmlRenderPlugin({
+  routes: [
+    { route: "/books/1", id: "1" },
+    { route: "/books/2", id: "2" },
+  ],
+  getRouteFromRequest: (req, routes) =>
+    routes.find((route) => route.id === req.params.id),
+});
+```
+
+### `extraGlobals`
+
+Extra values to expose as free variables in the evaluated renderer bundle. Names
+must be valid JavaScript identifiers and cannot be `exports`, `require`,
+`module`, `__filename` or `__dirname`.
+
+## Development server
+
+The dev router renders configured routes on demand with the same renderer bundle
+used by the production build. Use it with Express and
+[`webpack-dev-middleware`](https://github.com/webpack/webpack-dev-middleware) so
+client assets are served from memory.
+
+Set `skipAssets: true` on the plugin when using the dev router. Share the same
+plugin instance between the webpack configuration and the server.
+
+**webpack.config.js**
+
+```js
+export const htmlRenderPlugin = new HtmlRenderPlugin({
+  routes: ["/", "/about"],
+  skipAssets: true,
+});
+```
+
+**dev-server.js**
+
+```js
+import express from "express";
+import webpack from "webpack";
+import devMiddleware from "webpack-dev-middleware";
+
+import config, { htmlRenderPlugin } from "./webpack.config.js";
+
+const compiler = webpack(config);
+const app = express();
+
+// Mount the renderer first, then serve client assets from webpack.
+app.use(htmlRenderPlugin.createDevRouter());
+app.use(devMiddleware(compiler, { publicPath: "/" }));
+
+app.listen(3000, () => {
+  console.log("http://localhost:3000");
+});
+```
+
+If you use webpack-dev-server v5 instead, mount the router in
+`setupMiddlewares`:
+
+```js
+devServer: {
+  setupMiddlewares(middlewares, devServer) {
+    devServer.app.use(htmlRenderPlugin.createDevRouter());
+    return middlewares;
+  },
+}
+```
+
+The dev router does not add hot module replacement. It rerenders a route when it
+is requested after a rebuild.
+
+## Just-in-time rendering
+
+`renderWhenReady` renders any route using the same renderer. It waits until the
+build is ready, so it is safe to call during startup.
+
+```js
+app.get("/books/:id", (req, res) => {
+  res.send(await htmlRenderPlugin.renderWhenReady({ route: "/books/_id" }));
+});
+```
+
+Only use routes that also exist in the production build. Errors contain a
+`webpackStats` property when stats are available.
+
+## Output layout
+
+A typical multi-compilation project looks like this:
+
+```text
+dist/                     # deploy this
+  index.html
+  about/index.html
+  assets/main.<hash>.js
+  assets/<chunk>.<hash>.js
+.render/                  # renderer bundle, do not deploy
+  main.js
+```
+
+Keep the renderer output outside `renderDirectory`. Avoid `output.clean` across
+compilations that share an output directory; clean the directories yourself
+before the build instead.
+
+The plugin prints a summary after rendering:
+
+```text
+HtmlRenderPlugin: Rendered 2 routes to /project/dist in 0.04s
+```
+
+## TypeScript
+
+The package ships declarations and exports the public option and route types:
+
+```ts
+import {
+  HtmlRenderPlugin,
+  getEntrypointScriptUrls,
+  type BaseRoute,
+  type MapStatsToParams,
+  type Options,
+} from "html-render-webpack-plugin";
+
+interface Route extends BaseRoute {
+  title: string;
+}
+
+const mapStatsToParams: MapStatsToParams<Route> = ({
+  route,
+  title,
+  webpackStats,
+}) => ({
+  route,
+  title,
+  scripts: getEntrypointScriptUrls(webpackStats),
+});
+
+const options: Options<Route> = {
+  routes: [{ route: "/", title: "Home" }],
+  mapStatsToParams,
+};
+
+const plugin = new HtmlRenderPlugin<Route>(options);
+```
+
+## Examples
+
+The fixtures under [`tests/test-cases`](./tests/test-cases) are complete,
+buildable examples, including single and multi-compilation setups, a dev server,
+route metadata and asynchronous rendering.
+
+## Migration
+
+Upgrading from v1? See the
+[v1 to v2 migration guide](./MIGRATION_GUIDE_v1_to_v2.md).

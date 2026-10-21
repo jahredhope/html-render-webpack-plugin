@@ -3,7 +3,7 @@ import { validate as validateOptions } from "schema-utils";
 import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
-import { log, logError } from "./logging";
+import { log, logError, logSummary } from "./logging";
 import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
@@ -20,23 +20,44 @@ import {
   WebpackStats,
   GetRouteFromRequest,
 } from "./common-types";
-import { Compiler, Compilation } from "webpack";
+import type { Compiler, Compilation } from "webpack";
 import createRenderer from "./createRenderer";
-import { Router } from "express";
+import type { Router } from "express";
 import { resolveMultiStats } from "./multiStats";
 
+export type {
+  BaseRoute,
+  ExtraGlobals,
+  FileSystem,
+  GetRouteFromRequest,
+  MapStatsToParams,
+  OnRendererReady,
+  Render,
+  RenderConcurrency,
+  Renderer,
+  RouteInput,
+  TransformExpressPath,
+  TransformPath,
+  WebpackStats,
+} from "./common-types";
+export { getEntrypointScriptUrls } from "./assets";
+export type { WebpackStatsJson } from "./assets";
+
 const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
-const defaultMapStats = ({ webpackStats }: { webpackStats: WebpackStats }) =>
-  webpackStats ? { webpackStats: webpackStats.toJson() } : {};
+const defaultMapStats: MapStatsToParams = ({
+  webpackStats,
+}: {
+  webpackStats: WebpackStats;
+}) => (webpackStats ? { webpackStats: webpackStats.toJson() } : {});
 const defaultTransform: TransformPath = <Route extends BaseRoute>(
   route: Route,
 ) => route.route;
 
-interface Options<Route extends BaseRoute = BaseRoute> {
+export interface Options<Route extends BaseRoute = BaseRoute> {
   skipAssets?: boolean;
   getRouteFromRequest?: GetRouteFromRequest<Route>;
   routes?: RouteInput<Route>[];
-  mapStatsToParams?: MapStatsToParams;
+  mapStatsToParams?: MapStatsToParams<Route>;
   renderDirectory?: string;
   renderConcurrency?: RenderConcurrency;
   transformFilePath?: TransformPath<Route>;
@@ -126,6 +147,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     };
 
     const onRenderAll = async (currentCompilation: Compilation) => {
+      const renderStartTime = Date.now();
       log(`Starting routes render`);
 
       if (!rendererCompilation.compilation) {
@@ -144,6 +166,11 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
           routes,
           transformFilePath,
         });
+        logSummary(
+          `Rendered ${routes.length} ${
+            routes.length === 1 ? "route" : "routes"
+          } to ${renderDirectory} in ${timeSince(renderStartTime)}`,
+        );
       } catch (error) {
         logError("An error occurred rendering HTML", error);
         // @ts-expect-error Allow passing errors to compilation
@@ -182,14 +209,16 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         return lastClientStats;
       }
       const clientStats =
-        clientCompilations.length === 1
-          ? clientCompilations[0].compilation!.getStats()
-          : new (resolveMultiStats())(
-              clientCompilations
-                .map((compilationStatus) => compilationStatus.compilation)
-                .filter(Boolean)
-                .map((compilation) => compilation!.getStats()),
-            );
+        clientCompilations.length === 0
+          ? rendererCompilation.compilation!.getStats()
+          : clientCompilations.length === 1
+            ? clientCompilations[0].compilation!.getStats()
+            : new (resolveMultiStats())(
+                clientCompilations
+                  .map((compilationStatus) => compilationStatus.compilation)
+                  .filter(Boolean)
+                  .map((compilation) => compilation!.getStats()),
+              );
 
       lastClientStats = clientStats;
       return clientStats;
@@ -197,7 +226,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
 
     const flushQueuedRenders = () => {
       if (isRendererReady() && renderCallbacks.length > 0) {
-        renderCallbacks.shift()(renderer, getClientStats());
+        renderCallbacks.shift()(render);
         flushQueuedRenders();
       }
     };

@@ -3,5 +3,9 @@ export default async function render(params) {
     throw new Error("Dev server render error");
   }
 
-  return `<html><body>route:${params.route}</body></html>`;
+  const scripts = (params.scripts ?? [])
+    .map((src) => `<script src="${src}"></script>`)
+    .join("");
+
+  return `<html><body>route:${params.route}${scripts}</body></html>`;
 }

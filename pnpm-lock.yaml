@@ -173,7 +173,7 @@ importers:
         specifier: ^2.1.2
         version: 2.1.2
       schema-utils:
-        specifier: ^4.8.1
+        specifier: ^4.0.0
         version: 4.8.1(webpack@5.112.0(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
     devDependencies:
       '@changesets/cli':
@@ -230,6 +230,9 @@ importers:
       webpack:
         specifier: ^5.112.0
         version: 5.112.0(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)
+      webpack-dev-middleware:
+        specifier: ^8.5.0
+        version: 8.5.0(webpack@5.112.0(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
       webpack-merge:
         specifier: ^6.0.1
         version: 6.0.1
@@ -2069,8 +2072,8 @@ packages:
     resolution: {integrity: sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg==}
     engines: {node: '>=0.6'}
 
-  range-parser@1.2.1:
-    resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
+  range-parser@1.3.0:
+    resolution: {integrity: sha512-hek2mFQpPuI4E1BBKrSto+BU3e3x4xuarsbiwr3+lf7p44juvFMV0XFWQAP3xUyqXA4RrXLIoaSUGbSt056ZMw==}
     engines: {node: '>= 0.6'}
 
   raw-body@3.0.2:
@@ -2519,6 +2522,15 @@ packages:
     resolution: {integrity: sha512-s3NZy0QpTY9qGqzc0wtz4qI28z3+5qKbbAec4MV4G9N3CfgZ9wgvQRr0cl2jh/tqkWG1NWHkmVMHZpCamev5Wg==}
     engines: {node: '>=10.13.0'}
 
+  webpack-dev-middleware@8.5.0:
+    resolution: {integrity: sha512-+rXF28E5GKr7VnLH5qJaGIKLNPkthlA0VhqBFp/K6mjjCzOd6q34vYc2/3/ysRTjxmN01S98r1LwTTpWXDzWWA==}
+    engines: {node: '>= 20.9.0'}
+    peerDependencies:
+      webpack: ^5.101.0
+    peerDependenciesMeta:
+      webpack:
+        optional: true
+
   webpack-merge@6.0.1:
     resolution: {integrity: sha512-hXXvrjtx2PLYx4qruKl+kyRSLc52V+cCvMxRjmKwoA+CBbbF5GfIBtR6kCvl0fYGqTUPKB+1ktVmTHqMOzgCBg==}
     engines: {node: '>=18.0.0'}
@@ -2560,6 +2572,18 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+
+  ws@8.22.0:
+    resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
 
   yaml@2.9.1:
     resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
@@ -3769,7 +3793,7 @@ snapshots:
       parseurl: 1.3.3
       proxy-addr: 2.0.8
       qs: 6.16.1
-      range-parser: 1.2.1
+      range-parser: 1.3.0
       router: 2.2.0(supports-color@8.1.1)
       send: 1.2.1(supports-color@8.1.1)
       serve-static: 2.2.1(supports-color@8.1.1)
@@ -4499,7 +4523,7 @@ snapshots:
       es-define-property: 1.0.1
       side-channel: 1.1.1
 
-  range-parser@1.2.1: {}
+  range-parser@1.3.0: {}
 
   raw-body@3.0.2:
     dependencies:
@@ -4621,7 +4645,7 @@ snapshots:
       mime-types: 3.0.2
       ms: 2.1.3
       on-finished: 2.4.1
-      range-parser: 1.2.1
+      range-parser: 1.3.0
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
@@ -4927,6 +4951,19 @@ snapshots:
     dependencies:
       graceful-fs: 4.2.11
 
+  webpack-dev-middleware@8.5.0(webpack@5.112.0(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)):
+    dependencies:
+      memfs: 4.80.0
+      mime-db: 1.54.0
+      range-parser: 1.3.0
+      schema-utils: 4.8.1(webpack@5.112.0(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3))
+    optionalDependencies:
+      webpack: 5.112.0(lightningcss@1.33.0)(postcss@8.5.31)(uglify-js@3.19.3)
+      ws: 8.22.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   webpack-merge@6.0.1:
     dependencies:
       clone-deep: 4.0.1
@@ -4987,6 +5024,9 @@ snapshots:
   word-wrap@1.2.5: {}
 
   wrappy@1.0.2: {}
+
+  ws@8.22.0:
+    optional: true
 
   yaml@2.9.1: {}
 

@@ -1,5 +1,6 @@
-import { Stats } from "webpack";
-import { Request } from "express";
+import type originalFs from "fs";
+import type { Request } from "express";
+import type { Stats } from "webpack";
 
 export type WebpackStats = Stats;
 export type BaseRoute = { route: string };
@@ -15,18 +16,14 @@ export type Trace = (...values: any[]) => void;
 export type Specifier = string;
 export type ExtraGlobals = Record<string, unknown>;
 export type RenderConcurrency = "parallel" | "serial";
-export type MapStatsToParams = ({
-  webpackStats,
-}: {
-  webpackStats: WebpackStats;
-}) => Record<string, unknown>;
+export type MapStatsToParams<Route extends BaseRoute = BaseRoute> = (
+  params: { webpackStats: WebpackStats } & Route,
+) => Record<string, unknown>;
 export type TransformPath<Route = BaseRoute> = (route: Route) => string;
 export type TransformExpressPath<Route = BaseRoute> = (route: Route) => string;
 export type GetRouteFromRequest<Route> = (
   req: Request,
   routes: Route[],
 ) => Route;
-
-import originalFs from "fs";
 
 export type FileSystem = typeof originalFs;
