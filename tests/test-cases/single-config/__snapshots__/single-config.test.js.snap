@@ -1,13 +1,13 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Single webpack build should render a HTML file 1`] = `
-Object {
+exports[`Single webpack build > should render a HTML file 1`] = `
+{
   "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"\\"
+      "route": ""
     }
   ]</code>
 </body>

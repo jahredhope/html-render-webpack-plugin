@@ -1,24 +1,20 @@
-const { createInMemoryFileSystem } = require("../../utils/memory-fs");
-const webpack = require("webpack");
-const path = require("path");
+import path from "node:path";
+import { describe, expect, it } from "vitest";
 
-const config = require("./webpack.config");
+import { buildFixture } from "../../utils/build-fixture";
+import config from "./webpack.config.js";
 
 describe("Use legacy api", () => {
-  it("should render a HTML file", async (done) => {
-    const compiler = webpack(config);
+  it("should render a HTML file", async () => {
+    const { stats, memoryFs } = await buildFixture(config);
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    compiler.run((error) => {
-      expect(error).toBe(null);
-      const contents = memoryFs.readFileSync(
-        path.join(process.cwd(), "dist", "index.html"),
-        "utf8"
-      );
-      expect(contents).toMatchSnapshot();
-      done();
-    });
+    expect(stats.hasErrors()).toBe(false);
+    const contents = memoryFs.readFileSync(
+      path.join(process.cwd(), "dist", "index.html"),
+      "utf8",
+    );
+    expect(contents).toContain("Rendered with");
+    expect(contents).toContain('"route": "/"');
+    expect(contents).toMatchSnapshot();
   });
 });

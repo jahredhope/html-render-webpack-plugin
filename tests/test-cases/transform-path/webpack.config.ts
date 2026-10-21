@@ -2,7 +2,7 @@ import path from "path";
 import { Configuration } from "webpack";
 import HtmlRenderPlugin from "../../../src";
 
-const srcPath = path.resolve(__dirname, "./src");
+const srcPath = path.resolve(import.meta.dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
   clientEntry: path.resolve(srcPath, "client.js"),

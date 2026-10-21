@@ -1,0 +1,140 @@
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+
+import type { FileSystem } from "../../src/common-types";
+import evaluateFromFileSystem from "../../src/evaluateFromFileSystem";
+import { createInMemoryFileSystem } from "../utils/memory-fs";
+
+function createFileSystem(files: Record<string, string>): FileSystem {
+  const fileSystem = createInMemoryFileSystem();
+  fileSystem.fromJSON(files);
+  // memfs implements the parts of fs the evaluator uses.
+  return fileSystem as unknown as FileSystem;
+}
+
+describe("evaluateFromFileSystem", () => {
+  it("evaluates a module with a require-like scope", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `
+        module.exports = {
+          dirname: __dirname,
+          filename: __filename,
+          thisIsExports: this === exports,
+          isArray: (value) => value instanceof Array,
+          isError: (value) => value instanceof Error,
+        };
+      `,
+    });
+
+    const renderer = evaluateFromFileSystem(
+      "render.js",
+      fileSystem,
+      "/output",
+      {},
+    ) as any;
+
+    expect(renderer.dirname).toBe("/output");
+    expect(renderer.filename).toBe(path.resolve("/output", "render.js"));
+    expect(renderer.thisIsExports).toBe(true);
+    // Values from the host realm keep their prototypes.
+    expect(renderer.isArray([])).toBe(true);
+    expect(renderer.isError(new Error("boom"))).toBe(true);
+  });
+
+  it("exposes extraGlobals as free variables", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `module.exports = anExtraGlobalValue;`,
+    });
+
+    const result = evaluateFromFileSystem("render.js", fileSystem, "/output", {
+      anExtraGlobalValue: "from options",
+    });
+
+    expect(result).toBe("from options");
+    expect("anExtraGlobalValue" in globalThis).toBe(false);
+  });
+
+  it("requires assets from the output file system", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `module.exports = require("./nested.js");`,
+      "/output/nested.js": `module.exports = () => "nested";`,
+    });
+
+    const renderer = evaluateFromFileSystem(
+      "render.js",
+      fileSystem,
+      "/output",
+      {},
+    ) as any;
+
+    expect(renderer()).toBe("nested");
+  });
+
+  it("exposes module.require", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `module.exports = module.require("./nested.js");`,
+      "/output/nested.js": `module.exports = "nested";`,
+    });
+
+    expect(evaluateFromFileSystem("render.js", fileSystem, "/output", {})).toBe(
+      "nested",
+    );
+  });
+
+  it("accepts a shebang banner", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `#!/usr/bin/env node\nmodule.exports = "rendered";`,
+    });
+
+    expect(evaluateFromFileSystem("render.js", fileSystem, "/output", {})).toBe(
+      "rendered",
+    );
+  });
+
+  it("falls back to the real require for external packages", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `module.exports = require("path").sep;`,
+    });
+
+    const result = evaluateFromFileSystem(
+      "render.js",
+      fileSystem,
+      "/output",
+      {},
+    );
+
+    expect(result).toBe(path.sep);
+  });
+
+  it("rejects extraGlobals that shadow the module scope", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `module.exports = {};`,
+    });
+
+    expect(() =>
+      evaluateFromFileSystem("render.js", fileSystem, "/output", {
+        require: () => {},
+      }),
+    ).toThrow(/cannot use the reserved name "require"/);
+  });
+
+  it("rejects extraGlobals that are not identifiers", () => {
+    const fileSystem = createFileSystem({
+      "/output/render.js": `module.exports = {};`,
+    });
+
+    expect(() =>
+      evaluateFromFileSystem("render.js", fileSystem, "/output", {
+        "not-an-identifier": true,
+      }),
+    ).toThrow(/is not a valid JavaScript identifier/);
+  });
+
+  it("throws a clear error when the source is missing", () => {
+    const fileSystem = createFileSystem({});
+
+    expect(() =>
+      evaluateFromFileSystem("missing.js", fileSystem, "/output", {}),
+    ).toThrow(/Unable to find source for "missing.js"/);
+  });
+});

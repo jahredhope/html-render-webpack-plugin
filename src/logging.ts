@@ -1,8 +1,8 @@
-import chalk from "chalk";
 import debug from "debug";
+import { styleText } from "node:util";
 
 export const log = debug("HTMLRenderPlugin");
 
 export const logError = (...args: any[]) => {
-  console.log(chalk.red("🚨 HtmlRenderPlugin:"), ...args);
+  console.log(styleText("red", "🚨 HtmlRenderPlugin:"), ...args);
 };

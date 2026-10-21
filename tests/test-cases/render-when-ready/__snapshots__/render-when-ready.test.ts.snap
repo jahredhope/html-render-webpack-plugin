@@ -1,13 +1,13 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`renderWhenReady should render a HTML once resolved 1`] = `
+exports[`renderWhenReady > should render a HTML once resolved 1`] = `
 "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/new\\",
-      \\"language\\": \\"en-us\\"
+      "route": "/new",
+      "language": "en-us"
     }
   ]</code>
 </body>

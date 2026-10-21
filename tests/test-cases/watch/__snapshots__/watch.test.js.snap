@@ -1,34 +1,34 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Watch should render a HTML on initial watch build 1`] = `
-Object {
-  "a": Object {
+exports[`Watch > should render a HTML on initial watch build 1`] = `
+{
+  "a": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   common: {
-  \\"value\\": \\"a\\"
+  "value": "a"
 }
   <code>[
     {
-      \\"route\\": \\"/a/\\",
-      \\"extra\\": \\"a\\"
+      "route": "/a/",
+      "extra": "a"
     }
   ]</code>
 </body>
 </html>",
   },
-  "b": Object {
+  "b": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   common: {
-  \\"value\\": \\"a\\"
+  "value": "a"
 }
   <code>[
     {
-      \\"route\\": \\"/b/\\",
-      \\"extra\\": \\"b\\"
+      "route": "/b/",
+      "extra": "b"
     }
   ]</code>
 </body>

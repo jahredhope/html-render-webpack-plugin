@@ -1,7 +1,7 @@
-const path = require("path");
-const { merge } = require("webpack-merge");
-const defaultConfig = require("./webpack.default.config");
-const HtmlRenderPlugin = require("../../../src").default;
+import path from "node:path";
+import { merge } from "webpack-merge";
+import defaultConfig from "./webpack.default.config.js";
+import HtmlRenderPlugin from "../../../src";
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 
@@ -20,7 +20,7 @@ const htmlRenderPlugin = new HtmlRenderPlugin({
   renderDirectory,
 });
 
-module.exports = [
+export default [
   merge(defaultConfig[0], {
     plugins: [htmlRenderPlugin.statsCollectorPlugin],
   }),

@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import { log, logError } from "./logging";
 import exceptionFormatter from "exception-formatter";
 import {
@@ -23,21 +23,22 @@ export = <Route extends BaseRoute>({
   onRendererReady,
   transformExpressPath,
   getClientStats,
-}: Params<Route>) => {
+}: Params<Route>): Router => {
   log("Create dev server");
   const formatErrorResponse = (
     error: string,
-    webpackStats: Record<string, any>
+    webpackStats: Record<string, any>,
   ) => {
     let devServerScripts: string[] = [];
     if ("entrypoints" in webpackStats && webpackStats.entrypoints) {
       try {
         const devServerAssets = webpackStats.entrypoints.main.assets;
 
-        devServerScripts = devServerAssets.map(
-          (asset: string) =>
-            `<script src="${webpackStats.publicPath}${asset}"></script>`
-        );
+        devServerScripts = devServerAssets.map((asset: any) => {
+          // webpack 5 reports assets as objects; older stats used strings.
+          const assetName = typeof asset === "string" ? asset : asset.name;
+          return `<script src="${webpackStats.publicPath}${assetName}"></script>`;
+        });
       } catch (err) {
         console.error("Unable to load Dev Server Scripts. Error: ", err);
       }
@@ -68,17 +69,19 @@ export = <Route extends BaseRoute>({
             : defaultRoute;
           if (!route) {
             next();
+            return;
           }
           if (!routes.includes(route)) {
             const errorMessage =
               "Returned route was not an existing route. Ensure return value from getRouteFromRequest is route";
             logError(errorMessage);
-            throw new Error(errorMessage);
+            next(new Error(errorMessage));
+            return;
           }
           log(`Static render for ${route} from ${req.path}`);
           try {
             res.send(await render(route));
-          } catch (error) {
+          } catch (error: any) {
             res.status(500).send(
               formatErrorResponse(
                 exceptionFormatter(error, {
@@ -86,12 +89,12 @@ export = <Route extends BaseRoute>({
                   inlineStyle: true,
                   basepath: "webpack://static/./",
                 }),
-                getClientStats().toJson()
-              )
+                getClientStats().toJson(),
+              ),
             );
           }
         });
-      }
+      },
     );
   });
 

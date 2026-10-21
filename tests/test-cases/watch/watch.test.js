@@ -1,24 +1,36 @@
-const { createInMemoryFileSystem } = require("../../utils/memory-fs");
-const webpack = require("webpack");
-const path = require("path");
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import webpack from "webpack";
 
-const config = require("./webpack.config");
-const getDirContentsSync = require("../../utils/getDirContentsSync");
+import getDirContentsSync from "../../utils/getDirContentsSync";
+import { createInMemoryFileSystem } from "../../utils/memory-fs";
+import config from "./webpack.config.js";
 
 describe("Watch", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
-  it("should render a HTML on initial watch build", async (done) => {
-    const compiler = webpack(config);
 
+  it("should render a HTML on initial watch build", async () => {
+    const compiler = webpack(config);
     const memoryFs = createInMemoryFileSystem();
     compiler.outputFileSystem = memoryFs;
 
-    const watching = compiler.watch({}, (error) => {
-      watching.close();
-      expect(error).toBe(null);
-      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-      expect(contents).toMatchSnapshot();
-      done();
-    });
+    try {
+      await new Promise((resolve, reject) => {
+        const watching = compiler.watch({}, (error) => {
+          if (error) {
+            watching.close(() => reject(error));
+            return;
+          }
+          watching.close(() => resolve(undefined));
+        });
+      });
+    } finally {
+      await new Promise((resolve) => compiler.close(() => resolve()));
+    }
+
+    const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents.a["index.html"]).toContain('"extra": "a"');
+    expect(contents.b["index.html"]).toContain('"extra": "b"');
+    expect(contents).toMatchSnapshot();
   });
 });

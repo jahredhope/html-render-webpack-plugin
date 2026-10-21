@@ -1,32 +1,32 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`transformFilePath should allow multiple routes with the same path 1`] = `
-Object {
-  "global": Object {
-    "en-au": Object {
-      "book": Object {
+exports[`transformFilePath > should allow multiple routes with the same path 1`] = `
+{
+  "global": {
+    "en-au": {
+      "book": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/book\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-au\\"
+      "route": "/book",
+      "site": "global",
+      "language": "en-au"
     }
   ]</code>
 </body>
 </html>",
       },
-      "books": Object {
+      "books": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/books\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-au\\"
+      "route": "/books",
+      "site": "global",
+      "language": "en-au"
     }
   ]</code>
 </body>
@@ -37,38 +37,38 @@ Object {
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-au\\"
+      "route": "/",
+      "site": "global",
+      "language": "en-au"
     }
   ]</code>
 </body>
 </html>",
     },
-    "en-gb": Object {
-      "book": Object {
+    "en-gb": {
+      "book": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/book\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-gb\\"
+      "route": "/book",
+      "site": "global",
+      "language": "en-gb"
     }
   ]</code>
 </body>
 </html>",
       },
-      "books": Object {
+      "books": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/books\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-gb\\"
+      "route": "/books",
+      "site": "global",
+      "language": "en-gb"
     }
   ]</code>
 </body>
@@ -79,38 +79,38 @@ Object {
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-gb\\"
+      "route": "/",
+      "site": "global",
+      "language": "en-gb"
     }
   ]</code>
 </body>
 </html>",
     },
-    "en-us": Object {
-      "book": Object {
+    "en-us": {
+      "book": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/book\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-us\\"
+      "route": "/book",
+      "site": "global",
+      "language": "en-us"
     }
   ]</code>
 </body>
 </html>",
       },
-      "books": Object {
+      "books": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/books\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-us\\"
+      "route": "/books",
+      "site": "global",
+      "language": "en-us"
     }
   ]</code>
 </body>
@@ -121,40 +121,40 @@ Object {
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/\\",
-      \\"site\\": \\"global\\",
-      \\"language\\": \\"en-us\\"
+      "route": "/",
+      "site": "global",
+      "language": "en-us"
     }
   ]</code>
 </body>
 </html>",
     },
   },
-  "us": Object {
-    "en-au": Object {
-      "book": Object {
+  "us": {
+    "en-au": {
+      "book": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/book\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-au\\"
+      "route": "/book",
+      "site": "us",
+      "language": "en-au"
     }
   ]</code>
 </body>
 </html>",
       },
-      "books": Object {
+      "books": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/books\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-au\\"
+      "route": "/books",
+      "site": "us",
+      "language": "en-au"
     }
   ]</code>
 </body>
@@ -165,38 +165,38 @@ Object {
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-au\\"
+      "route": "/",
+      "site": "us",
+      "language": "en-au"
     }
   ]</code>
 </body>
 </html>",
     },
-    "en-gb": Object {
-      "book": Object {
+    "en-gb": {
+      "book": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/book\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-gb\\"
+      "route": "/book",
+      "site": "us",
+      "language": "en-gb"
     }
   ]</code>
 </body>
 </html>",
       },
-      "books": Object {
+      "books": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/books\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-gb\\"
+      "route": "/books",
+      "site": "us",
+      "language": "en-gb"
     }
   ]</code>
 </body>
@@ -207,38 +207,38 @@ Object {
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-gb\\"
+      "route": "/",
+      "site": "us",
+      "language": "en-gb"
     }
   ]</code>
 </body>
 </html>",
     },
-    "en-us": Object {
-      "book": Object {
+    "en-us": {
+      "book": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/book\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-us\\"
+      "route": "/book",
+      "site": "us",
+      "language": "en-us"
     }
   ]</code>
 </body>
 </html>",
       },
-      "books": Object {
+      "books": {
         "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/books\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-us\\"
+      "route": "/books",
+      "site": "us",
+      "language": "en-us"
     }
   ]</code>
 </body>
@@ -249,9 +249,9 @@ Object {
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"/\\",
-      \\"site\\": \\"us\\",
-      \\"language\\": \\"en-us\\"
+      "route": "/",
+      "site": "us",
+      "language": "en-us"
     }
   ]</code>
 </body>

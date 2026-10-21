@@ -2,8 +2,12 @@
   "name": "html-render-webpack-plugin",
   "description": "webpack plugin for rendering static HTML in a multi-config webpack build",
   "author": "Jahred Hope <jahredhope@gmail.com>",
-  "version": "0.0.0-development",
+  "version": "3.0.2",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "keywords": [
     "html",
@@ -11,54 +15,58 @@
     "plugin",
     "webpack"
   ],
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "build": "tsc --declaration",
+    "changeset": "changeset",
     "commit": "git-cz",
-    "lint.eslint": "eslint src/**/*.ts",
-    "lint.prettier": "prettier --check .",
-    "lint": "npm run lint.eslint && npm run lint.prettier",
-    "prepublishOnly": "npm run build",
-    "test": "jest",
-    "posttest": "npm run lint",
     "format": "prettier --write .",
-    "release": "semantic-release"
+    "lint": "pnpm run lint.eslint && pnpm run lint.prettier && pnpm run lint.typecheck",
+    "lint.eslint": "eslint .",
+    "lint.prettier": "prettier --check .",
+    "lint.typecheck": "tsc -p tsconfig.test.json",
+    "prepack": "pnpm run build",
+    "release": "changeset publish",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "version-packages": "changeset version"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/jahredhope/html-render-webpack-plugin.git"
   },
   "peerDependencies": {
-    "express": ">=4.0.0"
+    "express": ">=4.0.0",
+    "webpack": "^5.0.0"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.5",
-    "@types/express": "^4.17.11",
-    "@types/jest": "^26.0.20",
-    "@types/webpack": "^4.41.26",
-    "@typescript-eslint/eslint-plugin": "^4.15.0",
-    "@typescript-eslint/parser": "^4.15.0",
+    "@changesets/cli": "^3.0.3",
+    "@eslint/js": "^10.0.1",
+    "@types/debug": "^4.1.13",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.10.0",
     "commitizen": "4.2.3",
     "cz-conventional-changelog": "3.3.0",
-    "eslint": "7.19.0",
-    "express": "^4.17.1",
-    "jest": "26.6.3",
-    "memfs": "^3.2.0",
-    "memoizee": "^0.4.15",
-    "prettier": "2.2.1",
+    "eslint": "10.13.0",
+    "express": "^5.3.0",
+    "globals": "^17.13.0",
+    "memfs": "^4.80.0",
+    "prettier": "3.9.10",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "semantic-release": "17.3.8",
-    "ts-jest": "^26.5.1",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.1.4",
-    "webpack": "^5.0.0",
-    "webpack-merge": "^5.0.0"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5",
+    "webpack": "^5.112.0",
+    "webpack-merge": "^6.0.1"
   },
   "dependencies": {
-    "chalk": "^4.1.0",
-    "eval": "^0.1.4",
+    "debug": "^4.4.3",
     "exception-formatter": "^2.1.2",
-    "schema-utils": "^3.0.0"
+    "schema-utils": "^4.8.1"
   },
   "config": {
     "commitizen": {

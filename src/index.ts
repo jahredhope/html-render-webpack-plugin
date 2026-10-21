@@ -4,7 +4,6 @@ import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
 import { log, logError } from "./logging";
-import MultiStats from "webpack/lib/MultiStats";
 import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
@@ -24,12 +23,13 @@ import {
 import { Compiler, Compilation } from "webpack";
 import createRenderer from "./createRenderer";
 import { Router } from "express";
+import { resolveMultiStats } from "./multiStats";
 
 const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
 const defaultMapStats = ({ webpackStats }: { webpackStats: WebpackStats }) =>
   webpackStats ? { webpackStats: webpackStats.toJson() } : {};
 const defaultTransform: TransformPath = <Route extends BaseRoute>(
-  route: Route
+  route: Route,
 ) => route.route;
 
 interface Options<Route extends BaseRoute = BaseRoute> {
@@ -70,7 +70,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     } = options;
 
     const routes: Route[] = (options.routes || [""]).map((route) =>
-      typeof route === "string" ? ({ route } as Route) : route
+      typeof route === "string" ? ({ route } as Route) : route,
     );
 
     const renderDirectory = options.renderDirectory || "dist";
@@ -85,7 +85,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       rendererCompilation &&
       rendererCompilation.isReady &&
       clientCompilations.every(
-        (compilationStatus) => compilationStatus.isReady
+        (compilationStatus) => compilationStatus.isReady,
       );
     const isRendererReady = () => isBuildReady() && Boolean(renderer);
 
@@ -112,7 +112,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         const result = await renderer(renderParams);
 
         log(
-          `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`
+          `Successfully rendered ${route.route} (${timeSince(startRenderTime)})`,
         );
         return result;
       } catch (error: any) {
@@ -159,8 +159,8 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       if (!asset) {
         throw new Error(
           `Unable to find renderEntry "${renderEntry}" in assets. Possible entries are: ${Object.keys(
-            renderStats.assetsByChunkName!
-          ).join(", ")}.`
+            renderStats.assetsByChunkName!,
+          ).join(", ")}.`,
         );
       }
 
@@ -184,11 +184,11 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       const clientStats =
         clientCompilations.length === 1
           ? clientCompilations[0].compilation!.getStats()
-          : new MultiStats(
+          : new (resolveMultiStats())(
               clientCompilations
                 .map((compilationStatus) => compilationStatus.compilation)
                 .filter(Boolean)
-                .map((compilation) => compilation!.getStats())
+                .map((compilation) => compilation!.getStats()),
             );
 
       lastClientStats = clientStats;
@@ -220,7 +220,8 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
 
       const rootDir = renderCompilation.compiler.outputPath;
       renderer = createRenderer({
-        fileSystem: renderCompilation.compiler.outputFileSystem as FileSystem,
+        fileSystem: renderCompilation.compiler
+          .outputFileSystem as unknown as FileSystem,
         fileName: renderEntry,
         rootDir,
         extraGlobals,
@@ -229,10 +230,10 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
 
       if (typeof renderer !== "function") {
         log(
-          `Unable to find render function. File "${renderEntry}". Received ${typeof renderer}.`
+          `Unable to find render function. File "${renderEntry}". Received ${typeof renderer}.`,
         );
         throw new Error(
-          `Unable to find render function. File "${renderEntry}". Received ${typeof renderer}.`
+          `Unable to find render function. File "${renderEntry}". Received ${typeof renderer}.`,
         );
       }
       flushQueuedRenders();
@@ -289,7 +290,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       // Support legacy behaviour of calling '.render()' until next breaking change
       if (!compiler) {
         console.warn(
-          "Warning. Calling render no longer required. Change htmlRenderPlugin.render() to htmlRenderPlugin.render"
+          "Warning. Calling render no longer required. Change htmlRenderPlugin.render() to htmlRenderPlugin.render",
         );
         return (compiler: Compiler) => apply(compiler, true);
       }
@@ -297,7 +298,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     };
     this.apply = (compiler: Compiler) => {
       console.warn(
-        "Warning. Attempted to apply directly to webpack. Use htmlRenderPlugin.statsCollectorPlugin instead."
+        "Warning. Attempted to apply directly to webpack. Use htmlRenderPlugin.statsCollectorPlugin instead.",
       );
       this.statsCollectorPlugin(compiler);
     };

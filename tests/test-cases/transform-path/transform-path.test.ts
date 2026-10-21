@@ -1,12 +1,11 @@
-import webpack from "webpack";
-import path from "path";
-// @ts-ignore: Not yet typed
-import getDirContentsSync from "../../utils/getDirContentsSync";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
 
-import getConfig from "./webpack.config";
 import HtmlRenderPlugin from "../../../src";
-import { BaseRoute } from "../../../src/common-types";
-import { createInMemoryFileSystem } from "../../utils/memory-fs";
+import type { BaseRoute } from "../../../src/common-types";
+import { buildFixture } from "../../utils/build-fixture";
+import getDirContentsSync from "../../utils/getDirContentsSync";
+import getConfig from "./webpack.config";
 
 interface Route extends BaseRoute {
   route: string;
@@ -23,12 +22,12 @@ languages.forEach((language) =>
   sites.forEach((site) =>
     paths.forEach((pathName) => {
       routes.push({ route: pathName, site, language });
-    })
-  )
+    }),
+  ),
 );
 
 describe("transformFilePath", () => {
-  it("should allow multiple routes with the same path", async (done) => {
+  it("should allow multiple routes with the same path", async () => {
     const renderDirectory = path.join(process.cwd(), "dist", "render");
     const htmlRenderPlugin = new HtmlRenderPlugin<Route>({
       mapStatsToParams: () => ({}),
@@ -37,20 +36,15 @@ describe("transformFilePath", () => {
       transformFilePath: (route) =>
         `/${route.site}/${route.language}/${route.route}`,
     });
-    const config = getConfig(htmlRenderPlugin);
-    const compiler = webpack(config);
 
-    const memoryFs = createInMemoryFileSystem();
-    // @ts-ignore: Yes outputFileSystem does exist on MultiCompiler
-    compiler.outputFileSystem = memoryFs;
+    const { stats, memoryFs } = await buildFixture(getConfig(htmlRenderPlugin));
 
-    compiler.run((error, stats) => {
-      expect(error).toBe(null);
-      expect(stats?.hasErrors()).toBe(false);
-      // @ts-ignore: Ignore fs/memoryFs conflicts
-      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-      expect(contents).toMatchSnapshot();
-      done();
-    });
+    expect(stats?.hasErrors()).toBe(false);
+    const contents = getDirContentsSync(renderDirectory, {
+      fs: memoryFs,
+    }) as any;
+    expect(contents.us["en-us"]["index.html"]).toContain('"site": "us"');
+    expect(Object.keys(contents).sort()).toEqual(["global", "us"]);
+    expect(contents).toMatchSnapshot();
   });
 });

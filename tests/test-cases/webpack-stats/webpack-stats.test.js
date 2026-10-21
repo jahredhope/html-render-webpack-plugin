@@ -1,28 +1,20 @@
-const { createInMemoryFileSystem } = require("../../utils/memory-fs");
-const webpack = require("webpack");
-const path = require("path");
+import path from "node:path";
+import { describe, expect, it } from "vitest";
 
-const config = require("./webpack.config");
-const getDirContentsSync = require("../../utils/getDirContentsSync");
+import { buildFixture } from "../../utils/build-fixture";
+import getDirContentsSync from "../../utils/getDirContentsSync";
+import config from "./webpack.config.js";
 
 describe("Render WebpackStats", () => {
   const renderDirectory = path.join(process.cwd(), "dist", "render");
 
-  it("should render a with asset names", async (done) => {
-    const compiler = webpack(config);
+  it("should render a with asset names", async () => {
+    const { stats, memoryFs } = await buildFixture(config);
 
-    const memoryFs = createInMemoryFileSystem();
-    compiler.outputFileSystem = memoryFs;
-
-    compiler.run((error, stats) => {
-      if (error) {
-        throw error;
-      }
-
-      expect(stats.hasErrors()).toBe(false);
-      const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
-      expect(contents).toMatchSnapshot();
-      done();
-    });
+    expect(stats.hasErrors()).toBe(false);
+    const contents = getDirContentsSync(renderDirectory, { fs: memoryFs });
+    expect(contents["index.html"]).toContain("client-main-");
+    expect(contents["index.html"]).toContain('"assets"');
+    expect(contents).toMatchSnapshot();
   });
 });

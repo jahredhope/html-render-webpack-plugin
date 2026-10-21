@@ -1,10 +1,10 @@
-const { merge } = require("webpack-merge");
-const defaultConfig = require("./webpack.default.config");
-const HtmlRenderPlugin = require("../../../src").default;
+import { merge } from "webpack-merge";
+import defaultConfig from "./webpack.default.config.js";
+import HtmlRenderPlugin from "../../../src";
 
 const htmlRenderPlugin = new HtmlRenderPlugin({ mapStatsToParams: () => ({}) });
 
-module.exports = [
+export default [
   merge(defaultConfig[0], {
     plugins: [htmlRenderPlugin.statsCollectorPlugin],
   }),

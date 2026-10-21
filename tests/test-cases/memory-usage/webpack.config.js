@@ -1,8 +1,7 @@
-const path = require("path");
-const HtmlRenderPlugin = require("../../../src").default;
-const memoize = require("memoizee");
+import path from "node:path";
+import HtmlRenderPlugin from "../../../src";
 
-const srcPath = path.resolve(__dirname, "./src");
+const srcPath = path.resolve(import.meta.dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
   clientEntry: path.resolve(srcPath, "client.js"),
@@ -13,7 +12,15 @@ const routes = new Array(20000)
   .fill(undefined)
   .map((v, i) => ({ route: `route-${i}`, seed: i }));
 
-const getStats = memoize((stats) => stats.toJson());
+const statsCache = new Map();
+export const statsJsonCalls = { count: 0 };
+const getStats = (stats) => {
+  if (!statsCache.has(stats)) {
+    statsJsonCalls.count += 1;
+    statsCache.set(stats, stats.toJson());
+  }
+  return statsCache.get(stats);
+};
 
 const htmlRenderPlugin = new HtmlRenderPlugin({
   mapStatsToParams: ({ webpackStats }) => {
@@ -23,7 +30,7 @@ const htmlRenderPlugin = new HtmlRenderPlugin({
   routes,
 });
 
-module.exports = [
+export default [
   {
     name: "client",
     target: "web",

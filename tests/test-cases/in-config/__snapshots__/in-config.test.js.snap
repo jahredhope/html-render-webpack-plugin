@@ -1,19 +1,19 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Render HTML from in-config Plugin should allow custom file paths 1`] = `
-Object {
-  "development": Object {
-    "en-au": Object {
-      "about": Object {
-        "us": Object {
+exports[`Render HTML from in-config Plugin > should allow custom file paths 1`] = `
+{
+  "development": {
+    "en-au": {
+      "about": {
+        "us": {
           "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"about/us\\",
-      \\"language\\": \\"en-au\\",
-      \\"environment\\": \\"development\\"
+      "route": "about/us",
+      "language": "en-au",
+      "environment": "development"
     }
   ]</code>
 </body>
@@ -22,18 +22,18 @@ Object {
       },
     },
   },
-  "production": Object {
-    "en-us": Object {
-      "about": Object {
-        "us": Object {
+  "production": {
+    "en-us": {
+      "about": {
+        "us": {
           "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"about/us\\",
-      \\"language\\": \\"en-us\\",
-      \\"environment\\": \\"production\\"
+      "route": "about/us",
+      "language": "en-us",
+      "environment": "production"
     }
   ]</code>
 </body>
@@ -45,27 +45,27 @@ Object {
 }
 `;
 
-exports[`Render HTML from in-config Plugin should render a HTML file 1`] = `
+exports[`Render HTML from in-config Plugin > should render a HTML file 1`] = `
 "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"\\"
+      "route": ""
     }
   ]</code>
 </body>
 </html>"
 `;
 
-exports[`Render HTML from in-config Plugin should render a file per route 1`] = `
-Object {
+exports[`Render HTML from in-config Plugin > should render a file per route 1`] = `
+{
   "error.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"error.html\\"
+      "route": "error.html"
     }
   ]</code>
 </body>
@@ -75,30 +75,30 @@ Object {
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"\\"
+      "route": ""
     }
   ]</code>
 </body>
 </html>",
-  "pageA": Object {
+  "pageA": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"pageA\\"
+      "route": "pageA"
     }
   ]</code>
 </body>
 </html>",
   },
-  "pageB": Object {
+  "pageB": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"pageB\\"
+      "route": "pageB"
     }
   ]</code>
 </body>
@@ -107,14 +107,14 @@ Object {
 }
 `;
 
-exports[`Render HTML from in-config Plugin should render in a custom directory 1`] = `
-Object {
+exports[`Render HTML from in-config Plugin > should render in a custom directory 1`] = `
+{
   "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"\\"
+      "route": ""
     }
   ]</code>
 </body>
@@ -122,31 +122,31 @@ Object {
 }
 `;
 
-exports[`Render HTML from in-config Plugin should render routes with extra information 1`] = `
-Object {
-  "development": Object {
+exports[`Render HTML from in-config Plugin > should render routes with extra information 1`] = `
+{
+  "development": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"development\\",
-      \\"language\\": \\"en-us\\",
-      \\"environment\\": \\"development\\"
+      "route": "development",
+      "language": "en-us",
+      "environment": "development"
     }
   ]</code>
 </body>
 </html>",
   },
-  "production": Object {
+  "production": {
     "index.html": "<html>
 <body>
   Rendered with:&nbsp;
   <code>[
     {
-      \\"route\\": \\"production\\",
-      \\"language\\": \\"en-us\\",
-      \\"environment\\": \\"production\\"
+      "route": "production",
+      "language": "en-us",
+      "environment": "production"
     }
   ]</code>
 </body>
