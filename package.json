@@ -24,14 +24,14 @@
     "changeset": "changeset",
     "commit": "git-cz",
     "format": "prettier --write .",
-    "lint": "pnpm run lint.eslint && pnpm run lint.prettier",
+    "lint": "pnpm run lint.eslint && pnpm run lint.prettier && pnpm run lint.typecheck",
     "lint.eslint": "eslint .",
     "lint.prettier": "prettier --check .",
+    "lint.typecheck": "tsc -p tsconfig.test.json",
     "prepack": "pnpm run build",
     "release": "changeset publish",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.test.json",
     "version-packages": "changeset version"
   },
   "repository": {
