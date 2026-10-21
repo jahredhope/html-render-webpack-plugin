@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import webpack from "webpack";
 import devMiddleware from "webpack-dev-middleware";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import HtmlRenderPlugin, { getEntrypointScriptUrls } from "../../../src";
 import type { BaseRoute } from "../../../src/common-types";
@@ -253,17 +253,7 @@ describe("dev-server", () => {
       },
       plugins: [plugin.rendererPlugin],
     };
-    const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
-    const stderrOutput: string[] = [];
-    try {
-      await buildFixture(singleCompilationConfig);
-      stderrOutput.push(...stderr.mock.calls.flat());
-    } finally {
-      stderr.mockRestore();
-    }
-    expect(stderrOutput.join(" ")).toContain(
-      "is at or inside the render directory",
-    );
+    await buildFixture(singleCompilationConfig);
 
     const server = await startServer(plugin);
     try {

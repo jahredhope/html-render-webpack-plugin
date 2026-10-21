@@ -422,10 +422,6 @@ Keep the renderer output outside `renderDirectory`. Avoid `output.clean` across
 compilations that share an output directory; clean the directories yourself
 before the build instead.
 
-The plugin warns once if the renderer compilation's `output.path` is at or inside
-`renderDirectory`, since the bundle would be published with the static files. It
-does not move the files.
-
 ## TypeScript
 
 The package ships declarations and exports the public option and route types.
