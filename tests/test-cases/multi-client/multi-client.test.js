@@ -19,5 +19,10 @@ describe("Multiple client builds", () => {
     expect(html).toContain('"name": "client-b"');
     expect(html).toContain("client-a-main-");
     expect(html).toContain("client-b-main-");
+
+    // The helper selects one compilation rather than mixing both clients.
+    const { scripts } = JSON.parse(html);
+    expect(scripts).toHaveLength(1);
+    expect(scripts[0]).toMatch(/^\/client-a-main-[a-f0-9]+\.js$/);
   });
 });

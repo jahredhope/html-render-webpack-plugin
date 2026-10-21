@@ -1,12 +1,17 @@
 import path from "node:path";
 
-import HtmlRenderPlugin from "../../../src";
+import HtmlRenderPlugin, { getEntrypointScriptUrls } from "../../../src";
 
 const srcPath = path.resolve(import.meta.dirname, "./src");
 const renderDirectory = path.join(process.cwd(), "dist", "render");
 
 const htmlRenderPlugin = new HtmlRenderPlugin({
   renderDirectory,
+  mapStatsToParams: ({ webpackStats }) => ({
+    webpackStats: webpackStats.toJson(),
+    // Both clients use the "main" entrypoint, so a compilation is required.
+    scripts: getEntrypointScriptUrls(webpackStats, "main", "client-a"),
+  }),
 });
 
 function clientConfig(name) {

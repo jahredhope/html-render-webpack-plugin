@@ -1,12 +1,14 @@
 import { validate as validateOptions } from "schema-utils";
+import path from "node:path";
 
 import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
-import { log, logError } from "./logging";
+import { log, logError, logWarning } from "./logging";
 import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
+  DevRouter,
   ExtraGlobals,
   FileSystem,
   MapStatsToParams,
@@ -20,23 +22,44 @@ import {
   WebpackStats,
   GetRouteFromRequest,
 } from "./common-types";
-import { Compiler, Compilation } from "webpack";
+import type { Compiler, Compilation } from "webpack";
 import createRenderer from "./createRenderer";
-import { Router } from "express";
 import { resolveMultiStats } from "./multiStats";
 
+export type {
+  BaseRoute,
+  DevRouter,
+  ExtraGlobals,
+  FileSystem,
+  GetRouteFromRequest,
+  MapStatsToParams,
+  OnRendererReady,
+  Render,
+  RenderConcurrency,
+  Renderer,
+  RouteInput,
+  TransformExpressPath,
+  TransformPath,
+  WebpackStats,
+} from "./common-types";
+export { getEntrypointScriptUrls } from "./assets";
+export type { MultiStatsLike, WebpackStatsJson } from "./assets";
+
 const timeSince = (startTime: number) => `${(Date.now() - startTime) / 1000}s`;
-const defaultMapStats = ({ webpackStats }: { webpackStats: WebpackStats }) =>
-  webpackStats ? { webpackStats: webpackStats.toJson() } : {};
+const defaultMapStats: MapStatsToParams = ({
+  webpackStats,
+}: {
+  webpackStats: WebpackStats;
+}) => (webpackStats ? { webpackStats: webpackStats.toJson() } : {});
 const defaultTransform: TransformPath = <Route extends BaseRoute>(
   route: Route,
 ) => route.route;
 
-interface Options<Route extends BaseRoute = BaseRoute> {
+export interface Options<Route extends BaseRoute = BaseRoute> {
   skipAssets?: boolean;
   getRouteFromRequest?: GetRouteFromRequest<Route>;
   routes?: RouteInput<Route>[];
-  mapStatsToParams?: MapStatsToParams;
+  mapStatsToParams?: MapStatsToParams<Route>;
   renderDirectory?: string;
   renderConcurrency?: RenderConcurrency;
   transformFilePath?: TransformPath<Route>;
@@ -74,6 +97,32 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     );
 
     const renderDirectory = options.renderDirectory || "dist";
+
+    let warnedRendererOutputInsideRenderDirectory = false;
+    const warnIfRendererOutputInsideRenderDirectory = (
+      compilation: Compilation,
+    ) => {
+      if (warnedRendererOutputInsideRenderDirectory) {
+        return;
+      }
+      const outputPath = compilation.compiler.outputPath;
+      const resolvedRenderDirectory = path.resolve(renderDirectory);
+      const relativeOutputPath = path.relative(
+        resolvedRenderDirectory,
+        outputPath,
+      );
+      const isInside =
+        relativeOutputPath === "" ||
+        (!relativeOutputPath.startsWith("..") &&
+          !path.isAbsolute(relativeOutputPath));
+      if (!isInside) {
+        return;
+      }
+      warnedRendererOutputInsideRenderDirectory = true;
+      logWarning(
+        `The renderer output "${outputPath}" is at or inside the render directory "${resolvedRenderDirectory}", so the renderer bundle will be published with the static files. Set the renderer compilation's output.path outside the render directory.`,
+      );
+    };
 
     const clientCompilations: CompilationStatus[] = [];
     let rendererCompilation: CompilationStatus;
@@ -182,14 +231,16 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         return lastClientStats;
       }
       const clientStats =
-        clientCompilations.length === 1
-          ? clientCompilations[0].compilation!.getStats()
-          : new (resolveMultiStats())(
-              clientCompilations
-                .map((compilationStatus) => compilationStatus.compilation)
-                .filter(Boolean)
-                .map((compilation) => compilation!.getStats()),
-            );
+        clientCompilations.length === 0
+          ? rendererCompilation.compilation!.getStats()
+          : clientCompilations.length === 1
+            ? clientCompilations[0].compilation!.getStats()
+            : new (resolveMultiStats())(
+                clientCompilations
+                  .map((compilationStatus) => compilationStatus.compilation)
+                  .filter(Boolean)
+                  .map((compilation) => compilation!.getStats()),
+              );
 
       lastClientStats = clientStats;
       return clientStats;
@@ -197,7 +248,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
 
     const flushQueuedRenders = () => {
       if (isRendererReady() && renderCallbacks.length > 0) {
-        renderCallbacks.shift()(renderer, getClientStats());
+        renderCallbacks.shift()(render);
         flushQueuedRenders();
       }
     };
@@ -219,6 +270,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
       log("Render route:", { renderEntry });
 
       const rootDir = renderCompilation.compiler.outputPath;
+      warnIfRendererOutputInsideRenderDirectory(renderCompilation);
       renderer = createRenderer({
         fileSystem: renderCompilation.compiler
           .outputFileSystem as unknown as FileSystem,
@@ -309,6 +361,10 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
         getRouteFromRequest,
         onRendererReady,
         getClientStats,
+        // A single-compilation build uses the renderer's own stats, so its
+        // bundle would otherwise be injected into the dev error page.
+        getExcludedEntrypoints: () =>
+          clientCompilations.length === 0 ? [renderEntry] : [],
         routes,
       });
 
@@ -334,7 +390,7 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
   rendererPlugin: (compiler: Compiler) => void;
   render: () => (compiler: Compiler) => void;
   apply: (compiler: Compiler) => void;
-  createDevRouter: () => Router;
+  createDevRouter: () => DevRouter;
 }
 
 export { HtmlRenderPlugin };
