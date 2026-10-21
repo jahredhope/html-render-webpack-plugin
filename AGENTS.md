@@ -43,8 +43,8 @@ Before committing, run `pnpm build`, `pnpm lint`, and `pnpm test`.
 
 ## Toolchain
 
-- Node 24 (`.nvmrc`) and pnpm 12 (`packageManager`). Do not commit a
-  `mise.toml`.
+- Node 22 (`.nvmrc`) and pnpm 12 (`packageManager`). CI and releases run the
+  same version, which is the `engines` floor. Do not commit a `mise.toml`.
 - TypeScript emits CommonJS into `dist/`. Only `dist/` is published.
 - Vitest, not Jest. Test files and webpack fixture configs are ESM.
 - ESLint uses flat config (`eslint.config.mjs`); Prettier 3 formats the repo.
