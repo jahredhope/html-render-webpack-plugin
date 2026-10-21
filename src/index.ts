@@ -1,10 +1,9 @@
 import { validate as validateOptions } from "schema-utils";
-import path from "node:path";
 
 import schema from "./schemas/HtmlRenderWebpackPlugin.json";
 import RenderError from "./RenderError";
 import renderRoutes from "./renderRoutes";
-import { log, logError, logSummary } from "./logging";
+import { log, logError } from "./logging";
 import createDevRouter from "./createDevRouter";
 import {
   BaseRoute,
@@ -148,7 +147,6 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
     };
 
     const onRenderAll = async (currentCompilation: Compilation) => {
-      const renderStartTime = Date.now();
       log(`Starting routes render`);
 
       if (!rendererCompilation.compilation) {
@@ -167,13 +165,6 @@ export default class HtmlRenderPlugin<Route extends BaseRoute = BaseRoute> {
           routes,
           transformFilePath,
         });
-        logSummary(
-          `Rendered ${routes.length} ${
-            routes.length === 1 ? "route" : "routes"
-          } to ${path.resolve(renderDirectory)} in ${timeSince(
-            renderStartTime,
-          )}`,
-        );
       } catch (error) {
         logError("An error occurred rendering HTML", error);
         // @ts-expect-error Allow passing errors to compilation

@@ -417,13 +417,6 @@ Keep the renderer output outside `renderDirectory`. Avoid `output.clean` across
 compilations that share an output directory; clean the directories yourself
 before the build instead.
 
-The plugin prints a summary after rendering. It is written to stderr so
-machine-readable output such as `webpack --json` stays valid:
-
-```text
-HtmlRenderPlugin: Rendered 2 routes to /project/dist in 0.04s
-```
-
 ## TypeScript
 
 The package ships declarations and exports the public option and route types:
