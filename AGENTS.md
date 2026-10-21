@@ -53,7 +53,8 @@ Before committing, run `pnpm build`, `pnpm lint`, and `pnpm test`.
 ## Invariants and landmines
 
 - **This is a CommonJS package.** Do not add an ESM-only runtime dependency.
-  `chalk` was replaced with `picocolors` for this reason.
+  Color output uses Node's built-in `util.styleText`; prefer that over adding a
+  color package.
 - **Webpack internals are private.** `MultiStats` moved from
   `webpack/lib/MultiStats` to `webpack/lib/stats/MultiStats` in webpack 5.112
   with no re-export. If you touch internals, resolve every supported location

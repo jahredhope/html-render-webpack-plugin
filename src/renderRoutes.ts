@@ -1,5 +1,5 @@
 import path from "path";
-import pc from "picocolors";
+import { styleText } from "node:util";
 import {
   RenderConcurrency,
   TransformPath,
@@ -102,7 +102,8 @@ export default async function renderRoutes<Route extends BaseRoute>({
       renderResult = await performRender(route);
     } catch (error) {
       console.error(
-        `🚨 ${pc.red(
+        `🚨 ${styleText(
+          "red",
           `An error occurred rendering route: "${route.route}"`,
         )}. Exiting render.`,
       );

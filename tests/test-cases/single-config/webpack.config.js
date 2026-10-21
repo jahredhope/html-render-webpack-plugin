@@ -1,11 +1,8 @@
 import path from "node:path";
 import HtmlRenderPlugin from "../../../src";
-import { fileURLToPath } from "node:url";
-
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 const renderDirectory = path.join(process.cwd(), "dist", "render");
-const srcPath = path.resolve(currentDir, "./src");
+const srcPath = path.resolve(import.meta.dirname, "./src");
 const paths = {
   renderEntry: path.resolve(srcPath, "render.js"),
   clientEntry: path.resolve(srcPath, "client.js"),
